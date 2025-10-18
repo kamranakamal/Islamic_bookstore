@@ -1,5 +1,7 @@
 import type {
+  AdminBlogPost,
   AdminBook,
+  BlogPostRow,
   BookDetail,
   BookRowWithCategory,
   BookSummary,
@@ -97,5 +99,23 @@ export function toCategoryWithBooks(
     description: category.description,
     updatedAt: category.updated_at,
     books: category.books.map(toBookSummary)
+  };
+}
+
+export function toAdminBlogPost(row: BlogPostRow): AdminBlogPost {
+  return {
+    id: row.id,
+    slug: row.slug,
+    title: row.title,
+    excerpt: row.excerpt,
+    body: row.body,
+    coverImage: row.cover_image,
+    authorName: row.author_name,
+    tags: Array.isArray(row.tags) ? row.tags : [],
+    metadata: row.metadata ?? {},
+    published: row.published,
+    publishedAt: row.published_at,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at
   };
 }

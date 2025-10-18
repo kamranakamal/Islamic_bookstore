@@ -311,6 +311,20 @@ export interface CreateOrUpdateBookPayload {
   isFeatured?: boolean;
 }
 
+export interface CreateOrUpdateBlogPostPayload {
+  id?: string;
+  slug: string;
+  title: string;
+  excerpt?: string | null;
+  body: string;
+  coverImage?: string | null;
+  authorName?: string | null;
+  tags: string[];
+  metadata?: Json;
+  published: boolean;
+  publishedAt?: string | null;
+}
+
 export interface UploadUrlResponse {
   url: string;
   bucket: string;

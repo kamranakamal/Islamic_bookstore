@@ -1,5 +1,5 @@
 import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
-import { toAdminBook } from "@/lib/data/transformers";
+import { toAdminBlogPost, toAdminBook } from "@/lib/data/transformers";
 import type {
   AdminAnalyticsSnapshot,
   AdminBlogPost,
@@ -191,21 +191,7 @@ export async function getAdminBlogPosts(): Promise<AdminBlogPost[]> {
 
   const rows = (data ?? []) as BlogPostRow[];
 
-  return rows.map((row) => ({
-    id: row.id,
-    slug: row.slug,
-    title: row.title,
-    excerpt: row.excerpt,
-    body: row.body,
-    coverImage: row.cover_image,
-    authorName: row.author_name,
-    tags: row.tags ?? [],
-    metadata: row.metadata ?? {},
-    published: row.published,
-    publishedAt: row.published_at,
-    createdAt: row.created_at,
-    updatedAt: row.updated_at
-  }));
+  return rows.map((row) => toAdminBlogPost(row));
 }
 
 export async function getAdminBulkOrderRequests(): Promise<AdminBulkOrderRequest[]> {
