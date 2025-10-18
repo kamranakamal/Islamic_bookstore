@@ -31,8 +31,8 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const payload = parsed.data as OrderRequestPayload;
-  const admin = getSupabaseAdmin() as any;
+  const payload: OrderRequestPayload = parsed.data;
+  const admin = getSupabaseAdmin();
 
   const slugs = payload.items.map((item) => item.bookSlug);
   const { data: books, error: bookError } = await admin
@@ -46,7 +46,7 @@ export async function POST(request: NextRequest) {
   }
 
   const bookBySlug = new Map<string, { id: string; slug: string; title: string }>(
-    (books ?? []).map((book: { id: string; slug: string; title: string }) => [book.slug, book])
+    (books ?? []).map((book) => [book.slug, book])
   );
   const orderItems = payload.items.map((item) => {
     const book = bookBySlug.get(item.bookSlug);

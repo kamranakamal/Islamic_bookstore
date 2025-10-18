@@ -1,3 +1,5 @@
+import { cache } from "react";
+
 import { getServerSupabaseClient } from "@/lib/authHelpers";
 import { toSearchResult } from "@/lib/data/transformers";
 import type { BookRowWithCategory, SearchResult } from "@/lib/types";
@@ -15,7 +17,7 @@ export interface SearchBooksResponse {
   totalPages: number;
 }
 
-export async function searchBooks({ query, page = 1 }: SearchBooksParams): Promise<SearchBooksResponse> {
+export const searchBooks = cache(async ({ query, page = 1 }: SearchBooksParams): Promise<SearchBooksResponse> => {
   const supabase = getServerSupabaseClient();
   const offset = (page - 1) * PAGE_SIZE;
   const sanitizedQuery = query.replace(/[':]/g, " ").trim();
@@ -25,7 +27,7 @@ export async function searchBooks({ query, page = 1 }: SearchBooksParams): Promi
   }
 
   const selectClause =
-    "*, categories(name), rank:ts_rank_cd(search_vector, plainto_tsquery('english', '" +
+    "*, categories(name, slug), rank:ts_rank_cd(search_vector, plainto_tsquery('english', '" +
     sanitizedQuery.replace(/"/g, " ") +
     "'))";
 
@@ -53,4 +55,4 @@ export async function searchBooks({ query, page = 1 }: SearchBooksParams): Promi
     total,
     totalPages
   };
-}
+});

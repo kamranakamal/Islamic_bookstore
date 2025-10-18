@@ -1,7 +1,6 @@
 import type {
   AdminBook,
   BookDetail,
-  BookRow,
   BookRowWithCategory,
   BookSummary,
   CategoryRow,
@@ -18,7 +17,9 @@ function buildCoverUrl(path: string | null): string {
   if (!path) return "/logo.svg";
   const baseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   if (!baseUrl) return "/logo.svg";
-  return `${baseUrl.replace(/\/$/, "")}/storage/v1/object/public/${path}`;
+  const normalizedBase = baseUrl.replace(/\/$/, "");
+  const separator = path.includes("?") ? "&" : "?";
+  return `${normalizedBase}/storage/v1/object/public/${path}${separator}width=600&quality=80`;
 }
 
 export function toBookSummary(row: BookRowWithCategory): BookSummary {
@@ -32,6 +33,7 @@ export function toBookSummary(row: BookRowWithCategory): BookSummary {
     priceFormatted: formatCurrency.format(row.price_cents / 100),
     coverUrl: buildCoverUrl(row.cover_path),
     categoryName: row.categories?.name ?? "Uncategorised",
+    categorySlug: row.categories?.slug ?? undefined,
     isFeatured: row.is_featured
   };
 }
@@ -92,6 +94,7 @@ export function toCategoryWithBooks(
     slug: category.slug,
     name: category.name,
     description: category.description,
+    updatedAt: category.updated_at,
     books: category.books.map(toBookSummary)
   };
 }

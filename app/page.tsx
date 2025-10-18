@@ -1,16 +1,77 @@
+import dynamic from "next/dynamic";
+import type { Metadata } from "next";
 import Link from "next/link";
 
 import { BookCard } from "@/components/site/BookCard";
-import { SearchForm } from "@/components/site/SearchForm";
 import { getHomepageData } from "@/lib/data/home";
+import { appUrl, organization } from "@/lib/config";
+import { Skeleton } from "@/components/ui/Skeleton";
+
+const SearchForm = dynamic(() => import("@/components/site/SearchForm").then((mod) => ({ default: mod.SearchForm })), {
+  ssr: false,
+  loading: () => <Skeleton className="h-14 w-full" />
+});
 
 export const revalidate = 60;
+
+export async function generateMetadata(): Promise<Metadata> {
+  const title = "Maktab Muhammadiya";
+  const description = organization.description;
+
+  return {
+    title,
+    description,
+    alternates: {
+      canonical: appUrl
+    },
+    openGraph: {
+      title,
+      description,
+      url: appUrl,
+      siteName: title
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description
+    }
+  };
+}
 
 export default async function HomePage() {
   const { featuredBooks, latestBooks, categories } = await getHomepageData();
 
   return (
     <div className="space-y-16">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "Organization",
+            name: organization.name,
+            url: organization.url,
+            logo: organization.logo,
+            description: organization.description,
+            contactPoint: [
+              {
+                "@type": "ContactPoint",
+                telephone: organization.contact.phone,
+                contactType: "customer service",
+                email: organization.contact.email
+              }
+            ],
+            address: {
+              "@type": "PostalAddress",
+              streetAddress: organization.address.streetAddress,
+              addressLocality: organization.address.addressLocality,
+              addressRegion: organization.address.addressRegion,
+              postalCode: organization.address.postalCode,
+              addressCountry: organization.address.addressCountry
+            }
+          })
+        }}
+      />
       <section className="grid gap-10 lg:grid-cols-[2fr,1fr]">
         <div className="space-y-6">
           <h1 className="text-3xl font-semibold tracking-tight text-gray-900 md:text-4xl">

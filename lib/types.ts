@@ -1,8 +1,10 @@
+import type { GenericRelationship, GenericSchema, GenericTable } from "@supabase/supabase-js/dist/module/lib/types";
+
 export type Json = string | number | boolean | null | { [key: string]: Json } | Json[];
 
 export type UserRole = "admin" | "member";
 
-export interface ProfileRow {
+export interface ProfileRow extends Record<string, unknown> {
   id: string;
   auth_user_id: string;
   email: string;
@@ -12,7 +14,7 @@ export interface ProfileRow {
   updated_at: string;
 }
 
-export interface BookRow {
+export interface BookRow extends Record<string, unknown> {
   id: string;
   slug: string;
   title: string;
@@ -34,7 +36,7 @@ export interface BookRow {
   updated_at: string;
 }
 
-export interface CategoryRow {
+export interface CategoryRow extends Record<string, unknown> {
   id: string;
   slug: string;
   name: string;
@@ -43,7 +45,7 @@ export interface CategoryRow {
   updated_at: string;
 }
 
-export interface OrderRow {
+export interface OrderRow extends Record<string, unknown> {
   id: string;
   user_id: string | null;
   email: string;
@@ -60,13 +62,13 @@ export interface OrderRow {
   updated_at: string;
 }
 
-export interface AuditLogRow {
+export interface AuditLogRow extends Record<string, unknown> {
   id: string;
   actor_id: string | null;
   action: string;
   entity: string;
   entity_id: string | null;
-  metadata: Record<string, unknown>;
+  metadata: Json;
   created_at: string;
 }
 
@@ -109,6 +111,7 @@ export interface BookSummary {
   priceFormatted: string;
   coverUrl: string;
   categoryName: string;
+  categorySlug?: string;
   isFeatured?: boolean;
 }
 
@@ -122,7 +125,7 @@ export interface BookDetail extends BookSummary {
   highlights: string[];
 }
 
-export type BookRowWithCategory = BookRow & { categories: Pick<CategoryRow, "name"> | null };
+export type BookRowWithCategory = BookRow & { categories: Pick<CategoryRow, "name" | "slug"> | null };
 
 export type CategoryRowWithBooks = CategoryRow & { books: BookRowWithCategory[] };
 
@@ -131,6 +134,7 @@ export interface CategorySummary {
   slug: string;
   name: string;
   description: string;
+  updatedAt?: string;
 }
 
 export interface CategoryWithBooks extends CategorySummary {
@@ -204,66 +208,84 @@ export interface CartItem {
   quantity: number;
 }
 
-export type Database = {
-  public: {
-    Tables: {
-      profiles: {
-        Row: ProfileRow;
-        Insert: Omit<ProfileRow, "id" | "created_at" | "updated_at"> & {
-          id?: string;
-          created_at?: string;
-          updated_at?: string;
-        };
-        Update: Partial<Database["public"]["Tables"]["profiles"]["Insert"]>;
-        Relationships: [];
-      };
-      books: {
-        Row: BookRow;
-        Insert: Omit<BookRow, "created_at" | "updated_at" | "search_vector"> & {
-          id?: string;
-          created_at?: string;
-          updated_at?: string;
-          search_vector?: string | null;
-        };
-        Update: Partial<Database["public"]["Tables"]["books"]["Insert"]>;
-        Relationships: [];
-      };
-      categories: {
-        Row: CategoryRow;
-        Insert: Omit<CategoryRow, "created_at" | "updated_at"> & {
-          id?: string;
-          created_at?: string;
-          updated_at?: string;
-        };
-        Update: Partial<Database["public"]["Tables"]["categories"]["Insert"]>;
-        Relationships: [];
-      };
-      orders: {
-        Row: OrderRow;
-        Insert: Omit<OrderRow, "created_at" | "updated_at"> & {
-          id?: string;
-          created_at?: string;
-          updated_at?: string;
-        };
-        Update: Partial<Database["public"]["Tables"]["orders"]["Insert"]>;
-        Relationships: [];
-      };
-      audit_logs: {
-        Row: AuditLogRow;
-        Insert: Omit<AuditLogRow, "created_at"> & { id?: string; created_at?: string };
-        Update: Partial<Database["public"]["Tables"]["audit_logs"]["Insert"]>;
-        Relationships: [];
-      };
-    };
-    Views: Record<string, never>;
-    Functions: Record<string, never>;
-    Enums: {
-      order_status: OrderRow["status"];
-      user_role: UserRole;
-    };
-    CompositeTypes: Record<string, never>;
-  };
+type TableDefinition<RowType, InsertType, UpdateType> = GenericTable & {
+  Row: RowType;
+  Insert: InsertType;
+  Update: UpdateType;
+  Relationships: GenericRelationship[];
 };
+
+type PublicDatabaseSchema = GenericSchema & {
+  Tables: {
+    profiles: TableDefinition<
+      ProfileRow,
+      Omit<ProfileRow, "id" | "created_at" | "updated_at"> & {
+        id?: string;
+        created_at?: string;
+        updated_at?: string;
+      },
+      Partial<ProfileRow>
+    >;
+    books: TableDefinition<
+      BookRow,
+      Omit<BookRow, "id" | "created_at" | "updated_at" | "search_vector"> & {
+        id?: string;
+        created_at?: string;
+        updated_at?: string;
+        search_vector?: string | null;
+      },
+      Partial<BookRow>
+    >;
+    categories: TableDefinition<
+      CategoryRow,
+      Omit<CategoryRow, "id" | "created_at" | "updated_at"> & {
+        id?: string;
+        created_at?: string;
+        updated_at?: string;
+      },
+      Partial<CategoryRow>
+    >;
+    orders: TableDefinition<
+      OrderRow,
+      Omit<OrderRow, "id" | "created_at" | "updated_at"> & {
+        id?: string;
+        created_at?: string;
+        updated_at?: string;
+      },
+      Partial<OrderRow>
+    >;
+    audit_logs: TableDefinition<
+      AuditLogRow,
+      Omit<AuditLogRow, "id" | "created_at"> & { id?: string; created_at?: string },
+      Partial<AuditLogRow>
+    >;
+  };
+  Views: Record<string, never>;
+  Functions: Record<string, never>;
+  Enums: {
+    order_status: OrderRow["status"];
+    user_role: UserRole;
+  };
+  CompositeTypes: Record<string, never>;
+};
+
+export type Database = {
+  public: PublicDatabaseSchema;
+};
+
+type PublicSchema = Database["public"];
+
+export type Tables<
+  PublicTableName extends keyof PublicSchema["Tables"] & string
+> = PublicSchema["Tables"][PublicTableName]["Row"];
+
+export type TablesInsert<
+  PublicTableName extends keyof PublicSchema["Tables"] & string
+> = PublicSchema["Tables"][PublicTableName]["Insert"];
+
+export type TablesUpdate<
+  PublicTableName extends keyof PublicSchema["Tables"] & string
+> = PublicSchema["Tables"][PublicTableName]["Update"];
 
 export interface AdminOrder {
   id: string;

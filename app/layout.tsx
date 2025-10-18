@@ -6,8 +6,7 @@ import { ReactNode } from "react";
 import { Footer } from "@/components/layout/Footer";
 import { Header } from "@/components/layout/Header";
 import { Providers } from "@/components/providers";
-
-const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://maktab-muhammadiya.vercel.app";
+import { appUrl, organization } from "@/lib/config";
 
 export const metadata: Metadata = {
   metadataBase: new URL(appUrl),
@@ -31,6 +30,18 @@ export const metadata: Metadata = {
     title: "Maktab Muhammadiya",
     description:
       "Books curated from the Qur’an, authentic Sunnah, and the Salaf — verified sources, accessible knowledge."
+  },
+  icons: {
+    icon: "/favicon.ico",
+    shortcut: "/favicon.ico",
+    apple: "/apple-touch-icon.png"
+  },
+  alternates: {
+    canonical: appUrl
+  },
+  manifest: "/manifest.webmanifest",
+  other: {
+    "application-name": organization.name
   }
 };
 

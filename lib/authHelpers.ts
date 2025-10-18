@@ -38,13 +38,15 @@ export async function getSessionUser(): Promise<SessionUser | null> {
     .eq("auth_user_id", user.id)
     .maybeSingle();
 
-  if (!profile) return null;
+  const typedProfile = profile as ProfileRow | null;
+
+  if (!typedProfile) return null;
 
   return {
-    id: profile.id,
-    email: profile.email,
-    displayName: profile.display_name,
-    role: profile.role
+    id: typedProfile.id,
+    email: typedProfile.email,
+    displayName: typedProfile.display_name,
+    role: typedProfile.role
   };
 }
 
@@ -80,5 +82,5 @@ export async function requireAuthenticatedRouteUser(): Promise<{ user: User; pro
     throw new Error("Profile not found");
   }
 
-  return { user, profile };
+  return { user, profile: profile as ProfileRow };
 }

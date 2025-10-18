@@ -3,12 +3,15 @@ import { notFound } from "next/navigation";
 
 import { getBookBySlug } from "@/lib/data/books";
 import type { PageParams } from "@/lib/types";
+import { appUrl, organization } from "@/lib/config";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
 
 export async function generateMetadata({ params }: PageParams) {
   const book = await getBookBySlug(params.slug);
   if (!book) return { title: "Book not found" };
+
+  const canonical = `${appUrl}/books/${params.slug}`;
 
   return {
     title: book.title,
@@ -17,6 +20,14 @@ export async function generateMetadata({ params }: PageParams) {
       title: book.title,
       description: book.summary,
       images: book.coverUrl ? [book.coverUrl] : []
+    },
+    alternates: {
+      canonical
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: book.title,
+      description: book.summary
     }
   };
 }
@@ -27,8 +38,62 @@ export default async function BookPage({ params }: PageParams) {
     notFound();
   }
 
+  const canonical = `${appUrl}/books/${book.slug}`;
+  const breadcrumbList = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: "Home",
+        item: appUrl
+      },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: book.categoryName,
+        item: book.categorySlug ? `${appUrl}/categories/${book.categorySlug}` : undefined
+      },
+      {
+        "@type": "ListItem",
+        position: 3,
+        name: book.title,
+        item: canonical
+      }
+    ]
+  };
+
+  const bookJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Book",
+    name: book.title,
+    author: book.author,
+    inLanguage: book.language,
+    numberOfPages: book.pageCount,
+    isbn: book.isbn ?? undefined,
+    image: book.coverUrl ?? undefined,
+    description: book.summary,
+    offers: {
+      "@type": "Offer",
+      priceCurrency: "GBP",
+      price: (book.priceCents / 100).toFixed(2),
+      url: canonical,
+      availability: "https://schema.org/InStock"
+    },
+    publisher: {
+      "@type": "Organization",
+      name: organization.name
+    }
+  };
+
   return (
     <div className="grid gap-10 lg:grid-cols-[2fr,1fr]">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbList) }}
+      />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(bookJsonLd) }} />
       <article className="space-y-6">
         <div className="relative aspect-[3/4] w-full overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm lg:max-w-sm">
           {book.coverUrl ? (

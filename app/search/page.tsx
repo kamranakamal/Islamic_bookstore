@@ -1,7 +1,9 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 
 import { BookCard } from "@/components/site/BookCard";
 import { searchBooks } from "@/lib/data/search";
+import { appUrl } from "@/lib/config";
 
 interface SearchPageProps {
   searchParams: {
@@ -10,7 +12,34 @@ interface SearchPageProps {
   };
 }
 
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
+
+export async function generateMetadata({ searchParams }: SearchPageProps): Promise<Metadata> {
+  const query = searchParams.query?.trim();
+  const title = query ? `Search results for “${query}”` : "Search the catalog";
+  const description = query
+    ? `Browse books matching ${query} at Maktab Muhammadiya.`
+    : "Discover books rooted in the Qur’an and authentic Sunnah.";
+  const canonical = query ? `${appUrl}/search?query=${encodeURIComponent(query)}` : `${appUrl}/search`;
+
+  return {
+    title,
+    description,
+    alternates: {
+      canonical
+    },
+    openGraph: {
+      title,
+      description,
+      url: canonical
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description
+    }
+  };
+}
 
 export default async function SearchPage({ searchParams }: SearchPageProps) {
   const query = searchParams.query?.trim();
@@ -19,6 +48,21 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
   if (!query) {
     return (
       <div className="space-y-4">
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "WebSite",
+              url: appUrl,
+              potentialAction: {
+                "@type": "SearchAction",
+                target: `${appUrl}/search?query={search_term_string}`,
+                "query-input": "required name=search_term_string"
+              }
+            })
+          }}
+        />
         <h1 className="text-3xl font-semibold text-gray-900">Search the catalog</h1>
         <p className="text-gray-600">Use the search form to discover books by topic, title, or author.</p>
         <Link href="/" className="inline-flex rounded bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground">
@@ -32,6 +76,21 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
 
   return (
     <div className="space-y-6">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "ItemList",
+            itemListElement: results.books.map((book, index) => ({
+              "@type": "ListItem",
+              position: index + 1,
+              name: book.title,
+              url: `${appUrl}/books/${book.slug}`
+            }))
+          })
+        }}
+      />
       <header>
         <h1 className="text-3xl font-semibold text-gray-900">Search results</h1>
         <p className="text-sm text-gray-600">

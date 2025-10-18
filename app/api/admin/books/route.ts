@@ -5,7 +5,7 @@ import { requireAdminUser } from "@/lib/authHelpers";
 import { getAdminBooksData } from "@/lib/data/admin";
 import { toAdminBook } from "@/lib/data/transformers";
 import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
-import type { BookRowWithCategory } from "@/lib/types";
+import type { BookRowWithCategory, Database } from "@/lib/types";
 
 const bookSchema = z.object({
   id: z.string().uuid().optional(),
@@ -33,7 +33,7 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
-  const admin = getSupabaseAdmin() as any;
+  const admin = getSupabaseAdmin();
   const adminUser = await requireAdminUser();
   const body = await request.json();
   const parsed = bookSchema.safeParse(body);
@@ -47,26 +47,25 @@ export async function POST(request: NextRequest) {
 
   const input = parsed.data;
 
-  const { data, error } = await admin
-    .from("books")
-    .insert({
-      title: input.title,
-      slug: input.slug,
-      author: input.author,
-      publisher: input.publisher ?? null,
-      format: input.format,
-      page_count: input.pageCount,
-      language: input.language,
-      isbn: input.isbn ?? null,
-      price_cents: input.priceCents,
-      summary: input.summary,
-      description: input.description,
-      category_id: input.categoryId,
-      cover_path: input.coverPath ?? null,
-      highlights: input.highlights ?? [],
-      is_featured: input.isFeatured ?? false
-    })
-    .select("*, categories(name)");
+  const payload: Database["public"]["Tables"]["books"]["Insert"] = {
+    title: input.title,
+    slug: input.slug,
+    author: input.author,
+    publisher: input.publisher ?? null,
+    format: input.format,
+    page_count: input.pageCount,
+    language: input.language,
+    isbn: input.isbn ?? null,
+    price_cents: input.priceCents,
+    summary: input.summary,
+    description: input.description,
+    category_id: input.categoryId,
+    cover_path: input.coverPath ?? null,
+    highlights: input.highlights ?? [],
+    is_featured: input.isFeatured ?? false
+  };
+
+  const { data, error } = await admin.from("books").insert(payload).select("*, categories(name, slug)");
 
   const rows = (data ?? []) as BookRowWithCategory[];
 
@@ -75,19 +74,21 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Unable to create book", code: "BOOK_CREATE_ERROR" }, { status: 500 });
   }
 
-  await admin.from("audit_logs").insert({
+  const auditPayload: Database["public"]["Tables"]["audit_logs"]["Insert"] = {
     actor_id: adminUser.id,
     action: "book.created",
     entity: "books",
     entity_id: rows[0].id,
     metadata: { title: input.title }
-  });
+  };
+
+  await admin.from("audit_logs").insert(auditPayload);
 
   return NextResponse.json({ book: toAdminBook(rows[0]) }, { status: 201 });
 }
 
 export async function PUT(request: NextRequest) {
-  const admin = getSupabaseAdmin() as any;
+  const admin = getSupabaseAdmin();
   const adminUser = await requireAdminUser();
   const body = await request.json();
   const parsed = bookSchema.extend({ id: z.string().uuid() }).safeParse(body);
@@ -101,27 +102,29 @@ export async function PUT(request: NextRequest) {
 
   const input = parsed.data;
 
+  const updatePayload: Database["public"]["Tables"]["books"]["Update"] = {
+    title: input.title,
+    slug: input.slug,
+    author: input.author,
+    publisher: input.publisher ?? null,
+    format: input.format,
+    page_count: input.pageCount,
+    language: input.language,
+    isbn: input.isbn ?? null,
+    price_cents: input.priceCents,
+    summary: input.summary,
+    description: input.description,
+    category_id: input.categoryId,
+    cover_path: input.coverPath ?? null,
+    highlights: input.highlights ?? [],
+    is_featured: input.isFeatured ?? false
+  };
+
   const { data, error } = await admin
     .from("books")
-    .update({
-      title: input.title,
-      slug: input.slug,
-      author: input.author,
-      publisher: input.publisher ?? null,
-      format: input.format,
-      page_count: input.pageCount,
-      language: input.language,
-      isbn: input.isbn ?? null,
-      price_cents: input.priceCents,
-      summary: input.summary,
-      description: input.description,
-      category_id: input.categoryId,
-      cover_path: input.coverPath ?? null,
-      highlights: input.highlights ?? [],
-      is_featured: input.isFeatured ?? false
-    })
+    .update(updatePayload)
     .eq("id", input.id)
-    .select("*, categories(name)");
+    .select("*, categories(name, slug)");
 
   const rows = (data ?? []) as BookRowWithCategory[];
 
@@ -130,19 +133,21 @@ export async function PUT(request: NextRequest) {
     return NextResponse.json({ error: "Unable to update book", code: "BOOK_UPDATE_ERROR" }, { status: 500 });
   }
 
-  await admin.from("audit_logs").insert({
+  const updateAudit: Database["public"]["Tables"]["audit_logs"]["Insert"] = {
     actor_id: adminUser.id,
     action: "book.updated",
     entity: "books",
     entity_id: input.id,
     metadata: { title: input.title }
-  });
+  };
+
+  await admin.from("audit_logs").insert(updateAudit);
 
   return NextResponse.json({ book: toAdminBook(rows[0]) });
 }
 
 export async function DELETE(request: NextRequest) {
-  const admin = getSupabaseAdmin() as any;
+  const admin = getSupabaseAdmin();
   const adminUser = await requireAdminUser();
   const { searchParams } = new URL(request.url);
   const id = searchParams.get("id");
@@ -157,13 +162,15 @@ export async function DELETE(request: NextRequest) {
     return NextResponse.json({ error: "Unable to delete book", code: "BOOK_DELETE_ERROR" }, { status: 500 });
   }
 
-  await admin.from("audit_logs").insert({
+  const deleteAudit: Database["public"]["Tables"]["audit_logs"]["Insert"] = {
     actor_id: adminUser.id,
     action: "book.deleted",
     entity: "books",
     entity_id: id,
     metadata: {}
-  });
+  };
+
+  await admin.from("audit_logs").insert(deleteAudit);
 
   return NextResponse.json({ success: true });
 }

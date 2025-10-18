@@ -31,7 +31,7 @@ export async function PATCH(request: NextRequest) {
     );
   }
 
-  const admin = getSupabaseAdmin() as any;
+  const admin = getSupabaseAdmin();
   const { data, error } = await admin
     .from("orders")
     .update({ status: parsed.data.status })

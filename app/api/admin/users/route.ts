@@ -28,7 +28,7 @@ export async function PATCH(request: NextRequest) {
     );
   }
 
-  const admin = getSupabaseAdmin() as any;
+  const admin = getSupabaseAdmin();
   const { error } = await admin.from("profiles").update({ role: parsed.data.role }).eq("id", parsed.data.id);
 
   if (error) {

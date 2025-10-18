@@ -2,7 +2,6 @@ import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
 import { toAdminBook } from "@/lib/data/transformers";
 import type {
   AdminAnalyticsSnapshot,
-  AdminBook,
   AdminBooksData,
   AdminOrder,
   AdminUserSummary,
@@ -17,16 +16,32 @@ export async function getAdminBooksData(): Promise<AdminBooksData> {
   const [booksResponse, categoriesResponse] = await Promise.all([
     supabase
       .from("books")
-      .select("*, categories(name)")
+      .select("*, categories(name, slug)")
       .order("updated_at", { ascending: false }),
-    supabase.from("categories").select("id, slug, name, description").order("name", { ascending: true })
+    supabase
+      .from("categories")
+      .select("id, slug, name, description, updated_at")
+      .order("name", { ascending: true })
   ]);
 
   const bookRows = (booksResponse.data ?? []) as BookRowWithCategory[];
+  const categoryRows = (categoriesResponse.data ?? []) as Array<{
+    id: string;
+    slug: string;
+    name: string;
+    description: string;
+    updated_at: string;
+  }>;
 
   return {
     books: bookRows.map((row) => toAdminBook(row)),
-    categories: (categoriesResponse.data ?? []) as CategorySummary[]
+    categories: categoryRows.map((category) => ({
+      id: category.id,
+      slug: category.slug,
+      name: category.name,
+      description: category.description,
+      updatedAt: category.updated_at
+    } satisfies CategorySummary))
   };
 }
 

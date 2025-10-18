@@ -1,0 +1,49 @@
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+let supabaseHostname = null;
+try {
+  supabaseHostname = supabaseUrl ? new URL(supabaseUrl).hostname : null;
+} catch (error) {
+  supabaseHostname = null;
+}
+
+const headers = async () => [
+  {
+    source: "/:all*(js|css|svg|png|jpg|jpeg|gif|webp|ico)",
+    headers: [
+      {
+        key: "Cache-Control",
+        value: "public, max-age=31536000, immutable"
+      }
+    ]
+  },
+  {
+    source: "/:path*",
+    headers: [
+      {
+        key: "Cache-Control",
+        value: "public, max-age=60, stale-while-revalidate=600"
+      }
+    ]
+  }
+];
+
+const nextConfig = {
+  experimental: {
+    optimizeCss: true
+  },
+  images: {
+    formats: ["image/avif", "image/webp"],
+    remotePatterns: supabaseHostname
+      ? [
+          {
+            protocol: "https",
+            hostname: supabaseHostname,
+            pathname: "/storage/v1/object/public/**"
+          }
+        ]
+      : []
+  },
+  headers
+};
+
+export default nextConfig;

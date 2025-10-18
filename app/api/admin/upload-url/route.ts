@@ -10,7 +10,7 @@ const schema = z.object({
   fileSize: z.coerce.number().max(5 * 1024 * 1024, "Images must be smaller than 5MB")
 });
 
-const BUCKET = "book-covers";
+const BUCKET = process.env.SUPABASE_BUCKET_NAME ?? "book-covers";
 const SIGNED_URL_EXPIRY_SECONDS = 60 * 15; // 15 minutes
 
 export async function GET(request: NextRequest) {
@@ -50,6 +50,7 @@ export async function GET(request: NextRequest) {
     bucket: BUCKET,
     path: filePath,
     token: data.token,
-    expiresAt: new Date(Date.now() + SIGNED_URL_EXPIRY_SECONDS * 1000).toISOString()
+    expiresAt: new Date(Date.now() + SIGNED_URL_EXPIRY_SECONDS * 1000).toISOString(),
+    contentType: fileType
   });
 }
