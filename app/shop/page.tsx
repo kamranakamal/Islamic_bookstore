@@ -5,6 +5,7 @@ import { BookCard } from "@/components/site/BookCard";
 import { Breadcrumbs } from "@/components/site/Breadcrumbs";
 import { PageHero } from "@/components/site/PageHero";
 import { getCatalog } from "@/lib/data/catalog";
+import { BOOK_LANGUAGES, type BookLanguage } from "@/lib/types";
 
 export const metadata: Metadata = {
   title: "Shop · Maktab Muhammadiya",
@@ -23,6 +24,12 @@ function coerceArray(value: string | string[] | undefined): string[] {
   return Array.from(new Set(values));
 }
 
+function coerceLanguages(value: string | string[] | undefined): BookLanguage[] {
+  const raw = coerceArray(value);
+  const allowed = new Set<BookLanguage>(BOOK_LANGUAGES);
+  return raw.filter((item): item is BookLanguage => allowed.has(item as BookLanguage));
+}
+
 function coerceSort(value: string | undefined): "newest" | "price-asc" | "price-desc" | "popularity" {
   if (value === "price-asc" || value === "price-desc" || value === "popularity") return value;
   return "newest";
@@ -34,7 +41,7 @@ export default async function ShopPage({ searchParams }: ShopPageProps) {
     page: Number.isNaN(page) ? 1 : page,
     search: typeof searchParams.search === "string" ? searchParams.search : undefined,
     categories: coerceArray(searchParams.category),
-    languages: coerceArray(searchParams.language),
+    languages: coerceLanguages(searchParams.language),
     sort: coerceSort(typeof searchParams.sort === "string" ? searchParams.sort : undefined)
   });
 
@@ -83,7 +90,7 @@ export default async function ShopPage({ searchParams }: ShopPageProps) {
               type="search"
               name="search"
               defaultValue={catalog.filters.search}
-              placeholder="Search by title, author, or ISBN"
+              placeholder="Search by title, author, or description"
               className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30"
             />
           </div>
@@ -128,18 +135,18 @@ export default async function ShopPage({ searchParams }: ShopPageProps) {
             <legend className="text-sm font-semibold text-gray-900">Language</legend>
             <div className="space-y-2">
               {catalog.languages.map((language) => {
-                const id = `language-${language.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
+                const id = `language-${language.value}`;
                 return (
-                  <label key={language} htmlFor={id} className="flex items-center gap-2 text-sm text-gray-700">
+                  <label key={language.value} htmlFor={id} className="flex items-center gap-2 text-sm text-gray-700">
                     <input
                       id={id}
                       type="checkbox"
                       name="language"
-                      value={language}
-                      defaultChecked={catalog.filters.languages.includes(language)}
+                      value={language.value}
+                      defaultChecked={catalog.filters.languages.includes(language.value)}
                       className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary/60"
                     />
-                    <span>{language}</span>
+                    <span>{language.label}</span>
                   </label>
                 );
               })}

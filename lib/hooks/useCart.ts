@@ -5,6 +5,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import type { BookSummary, CartBook, CartItem } from "@/lib/types";
 
 const STORAGE_KEY = "maktab-muhammadiya-cart";
+const formatLocalCurrency = new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR" });
 
 function serialize(items: CartItem[]): string {
   return JSON.stringify(items);
@@ -17,7 +18,29 @@ function deserialize(value: string | null): CartItem[] {
     if (!Array.isArray(parsed)) {
       return [];
     }
-    return parsed.filter((item) => typeof item.book?.slug === "string" && typeof item.quantity === "number");
+    return parsed
+      .filter((item) => typeof item.book?.id === "string" && typeof item.quantity === "number")
+      .map((item) => {
+        const legacyPrice = (item.book as unknown as { priceLocalGbp?: number }).priceLocalGbp;
+        const priceLocalInr =
+          typeof item.book?.priceLocalInr === "number"
+            ? item.book.priceLocalInr
+            : typeof legacyPrice === "number"
+              ? legacyPrice
+              : 0;
+
+        return {
+          ...item,
+          book: {
+            ...item.book,
+            priceLocalInr,
+            priceFormattedLocal:
+              typeof item.book?.priceFormattedLocal === "string"
+                ? item.book.priceFormattedLocal
+                : formatLocalCurrency.format(priceLocalInr)
+          }
+        } satisfies CartItem;
+      });
   } catch (error) {
     console.warn("Failed to parse cart from storage", error);
     return [];
@@ -26,11 +49,11 @@ function deserialize(value: string | null): CartItem[] {
 
 function toCartBook(book: BookSummary): CartBook {
   return {
-    slug: book.slug,
+    id: book.id,
     title: book.title,
     author: book.author,
-    priceCents: book.priceCents,
-    priceFormatted: book.priceFormatted
+    priceLocalInr: book.priceLocalInr,
+    priceFormattedLocal: book.priceFormattedLocal ?? formatLocalCurrency.format(book.priceLocalInr)
   };
 }
 
@@ -47,35 +70,36 @@ export function useCart() {
 
   const addItem = useCallback((book: BookSummary, quantity = 1) => {
     setItems((prev: CartItem[]) => {
-      const existing = prev.find((item: CartItem) => item.book.slug === book.slug);
+      const existing = prev.find((item: CartItem) => item.book.id === book.id);
       if (existing) {
         return prev.map((item: CartItem) =>
-          item.book.slug === book.slug ? { ...item, quantity: item.quantity + quantity } : item
+          item.book.id === book.id ? { ...item, quantity: item.quantity + quantity } : item
         );
       }
       return [...prev, { book: toCartBook(book), quantity }];
     });
   }, []);
 
-  const removeItem = useCallback((slug: string) => {
-    setItems((prev: CartItem[]) => prev.filter((item: CartItem) => item.book.slug !== slug));
+  const removeItem = useCallback((id: string) => {
+    setItems((prev: CartItem[]) => prev.filter((item: CartItem) => item.book.id !== id));
   }, []);
 
   const clear = useCallback(() => setItems([]), []);
 
-  const subtotalCents = useMemo(() => {
-    return items.reduce((total: number, item: CartItem) => total + item.book.priceCents * item.quantity, 0);
+  const subtotalValue = useMemo(() => {
+    return items.reduce((total: number, item: CartItem) => total + item.book.priceLocalInr * item.quantity, 0);
   }, [items]);
 
   const subtotal = useMemo(() => {
-    return new Intl.NumberFormat("en-GB", { style: "currency", currency: "GBP" }).format(subtotalCents / 100);
-  }, [subtotalCents]);
+    return formatLocalCurrency.format(subtotalValue);
+  }, [subtotalValue]);
 
   return {
     items,
     addItem,
     removeItem,
     clear,
-    subtotal
+    subtotal,
+    subtotalValue
   };
 }

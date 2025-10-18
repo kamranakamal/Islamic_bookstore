@@ -1,10 +1,10 @@
 import type { MetadataRoute } from "next";
 
 import { appUrl } from "@/lib/config";
-import { listBookSlugs } from "@/lib/data/books";
+import { listBookIds } from "@/lib/data/books";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const books = await listBookSlugs();
+  const books = await listBookIds();
 
   const now = new Date();
   const base: MetadataRoute.Sitemap = [
@@ -27,7 +27,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   ];
 
   const bookEntries = books.map((book) => ({
-    url: `${appUrl}/books/${book.slug}`,
+    url: `${appUrl}/books/${book.id}`,
     lastModified: new Date(book.updatedAt)
   }));
 

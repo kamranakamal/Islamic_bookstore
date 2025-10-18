@@ -2,55 +2,57 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQueryClient } from "@tanstack/react-query";
-import { useEffect, useMemo, useState, type ChangeEvent } from "react";
+import { useCallback, useEffect, useMemo, useState, type ChangeEvent } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import clsx from "clsx";
 
 import { getSupabaseClient } from "@/lib/supabaseClient";
-import type { AdminBook, CategorySummary, CreateOrUpdateBookPayload, UploadUrlResponse } from "@/lib/types";
+import {
+  BOOK_LANGUAGES,
+  getBookLanguageLabel,
+  type AdminBook,
+  type BookLanguage,
+  type CategorySummary,
+  type CreateOrUpdateBookPayload,
+  type UploadUrlResponse
+} from "@/lib/types";
+
+const LANGUAGE_OPTIONS = BOOK_LANGUAGES.map((value) => ({ value, label: getBookLanguageLabel(value) }));
+
+const DEFAULT_FORMAT_OPTIONS = ["Hardcover", "Paperback", "Softcover", "Digital", "Audio"] as const;
 
 const formSchema = z.object({
   title: z.string().min(3),
-  slug: z.string().min(3),
   author: z.string().min(3),
-  publisher: z.string().optional(),
-  format: z.string().min(2),
+  availableFormats: z.array(z.string().min(1)).min(1, { message: "Select at least one format." }),
+  availableLanguages: z
+    .array(z.enum(["arabic", "urdu", "roman_urdu", "english", "hindi"]))
+    .min(1, { message: "Select at least one language." }),
   pageCount: z.coerce.number().int().positive(),
-  language: z.string().min(2),
-  isbn: z.string().optional(),
-  priceCents: z.coerce.number().int().min(0),
-  summary: z.string().min(10),
+  stockQuantity: z.coerce.number().int().min(0),
+  priceLocalInr: z.coerce.number().min(0),
+  priceInternationalUsd: z.coerce.number().min(0),
   description: z.string().min(20),
   categoryId: z.string().uuid(),
   coverPath: z.string().optional(),
-  highlights: z.string().optional(),
   isFeatured: z.boolean().optional()
 });
 
 type FormValues = z.infer<typeof formSchema>;
 
-const slugify = (value: string) =>
-  value
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
-
 const mapBookToFormValues = (book: AdminBook, fallbackCategoryId: string): FormValues => ({
   title: book.title,
-  slug: book.slug,
   author: book.author,
-  publisher: book.publisher ?? "",
-  format: book.format,
+  availableFormats: book.availableFormats ?? [],
+  availableLanguages: book.availableLanguages ?? [],
   pageCount: book.pageCount,
-  language: book.language,
-  isbn: book.isbn ?? "",
-  priceCents: book.priceCents,
-  summary: book.summary,
+  stockQuantity: book.stockQuantity,
+  priceLocalInr: book.priceLocalInr,
+  priceInternationalUsd: book.priceInternationalUsd,
   description: book.description,
   categoryId: book.categoryId ?? fallbackCategoryId,
   coverPath: book.coverPath ?? "",
-  highlights: book.highlights.length ? book.highlights.join("\n") : "",
   isFeatured: book.isFeatured ?? false
 });
 
@@ -70,22 +72,29 @@ export function BookEditor({ categories, book, onCancel, onSuccess }: BookEditor
   const hasCategories = categories.length > 0;
   const defaultCategoryId = categories[0]?.id ?? "";
 
+  const formatOptions = useMemo(() => {
+    const base = new Set<string>(DEFAULT_FORMAT_OPTIONS);
+    for (const entry of book?.availableFormats ?? []) {
+      if (entry) {
+        base.add(entry);
+      }
+    }
+    return Array.from(base);
+  }, [book?.availableFormats]);
+
   const defaultFormValues = useMemo<FormValues>(
     () => ({
       title: "",
-      slug: "",
       author: "",
-      publisher: "",
-      format: "Hardback",
+      availableFormats: [],
+      availableLanguages: [],
       pageCount: 0,
-      language: "English",
-      isbn: "",
-      priceCents: 0,
-      summary: "",
+      stockQuantity: 0,
+      priceLocalInr: 0,
+      priceInternationalUsd: 0,
       description: "",
       categoryId: defaultCategoryId,
       coverPath: "",
-      highlights: "",
       isFeatured: false
     }),
     [defaultCategoryId]
@@ -97,15 +106,21 @@ export function BookEditor({ categories, book, onCancel, onSuccess }: BookEditor
     setValue,
     reset,
     watch,
+    getValues,
     formState: { errors }
   } = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: defaultFormValues
   });
 
+  useEffect(() => {
+    register("availableFormats");
+    register("availableLanguages");
+  }, [register]);
+
   const coverPathValue = watch("coverPath");
-  const titleValue = watch("title");
-  const slugValue = watch("slug");
+  const selectedFormats = watch("availableFormats") ?? [];
+  const selectedLanguages = watch("availableLanguages") ?? [];
   const disableSubmit = status === "saving" || uploading || !hasCategories;
 
   const isEditing = Boolean(book);
@@ -121,39 +136,45 @@ export function BookEditor({ categories, book, onCancel, onSuccess }: BookEditor
     setError(null);
   }, [book, defaultCategoryId, defaultFormValues, reset]);
 
-  useEffect(() => {
-    if (!book && titleValue && !slugValue) {
-      setValue("slug", slugify(titleValue), { shouldDirty: true });
-    }
-  }, [book, titleValue, slugValue, setValue]);
+  const toggleFormat = useCallback(
+    (format: string) => {
+      const current = getValues("availableFormats") ?? [];
+      const next = current.includes(format)
+        ? current.filter((item) => item !== format)
+        : [...current, format];
+      setValue("availableFormats", next, { shouldDirty: true, shouldValidate: true });
+    },
+    [getValues, setValue]
+  );
+
+  const toggleLanguage = useCallback(
+    (language: BookLanguage) => {
+      const current = getValues("availableLanguages") ?? [];
+      const next = current.includes(language)
+        ? current.filter((item) => item !== language)
+        : [...current, language];
+      setValue("availableLanguages", next, { shouldDirty: true, shouldValidate: true });
+    },
+    [getValues, setValue]
+  );
 
   const onSubmit = async (values: FormValues) => {
     setStatus("saving");
     setError(null);
 
-    const highlights = values.highlights
-      ? values.highlights
-          .split("\n")
-          .map((item: string) => item.trim())
-          .filter(Boolean)
-      : [];
-
     const payload: CreateOrUpdateBookPayload = {
       ...(book ? { id: book.id } : {}),
-      title: values.title,
-      slug: values.slug,
-      author: values.author,
-      publisher: values.publisher?.length ? values.publisher : undefined,
-      format: values.format,
+      title: values.title.trim(),
+      author: values.author.trim(),
+      availableFormats: values.availableFormats,
+      availableLanguages: values.availableLanguages,
       pageCount: values.pageCount,
-      language: values.language,
-      isbn: values.isbn?.length ? values.isbn : undefined,
-      priceCents: values.priceCents,
-      summary: values.summary,
-      description: values.description,
+      stockQuantity: values.stockQuantity,
+      priceLocalInr: values.priceLocalInr,
+      priceInternationalUsd: values.priceInternationalUsd,
+      description: values.description.trim(),
       categoryId: values.categoryId,
       coverPath: values.coverPath?.length ? values.coverPath : null,
-      highlights,
       isFeatured: values.isFeatured ?? false
     };
 
@@ -232,8 +253,8 @@ export function BookEditor({ categories, book, onCancel, onSuccess }: BookEditor
           </h2>
           <p className="text-sm text-gray-600">
             {isEditing
-              ? "Update metadata, pricing, and highlights for this title."
-              : "Complete the metadata and upload a cover image to publish a title."}
+              ? "Update metadata, formats, pricing, and languages for this title."
+              : "Complete the metadata, choose formats and languages, then upload a cover to publish a title."}
           </p>
         </div>
         {isEditing ? (
@@ -266,18 +287,6 @@ export function BookEditor({ categories, book, onCancel, onSuccess }: BookEditor
         </div>
 
         <div className="md:col-span-1">
-          <label className="mb-1 block text-sm font-medium text-gray-700" htmlFor="slug">
-            Slug
-          </label>
-          <input
-            id="slug"
-            {...register("slug")}
-            className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/40"
-          />
-          {errors.slug ? <p className="mt-1 text-xs text-red-600">{errors.slug.message}</p> : null}
-        </div>
-
-        <div className="md:col-span-1">
           <label className="mb-1 block text-sm font-medium text-gray-700" htmlFor="author">
             Author
           </label>
@@ -287,106 +296,6 @@ export function BookEditor({ categories, book, onCancel, onSuccess }: BookEditor
             className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/40"
           />
           {errors.author ? <p className="mt-1 text-xs text-red-600">{errors.author.message}</p> : null}
-        </div>
-
-        <div className="md:col-span-1">
-          <label className="mb-1 block text-sm font-medium text-gray-700" htmlFor="publisher">
-            Publisher
-          </label>
-          <input
-            id="publisher"
-            {...register("publisher")}
-            className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/40"
-          />
-          {errors.publisher ? <p className="mt-1 text-xs text-red-600">{errors.publisher.message}</p> : null}
-        </div>
-
-        <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700" htmlFor="format">
-            Format
-          </label>
-          <input
-            id="format"
-            {...register("format")}
-            className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/40"
-          />
-          {errors.format ? <p className="mt-1 text-xs text-red-600">{errors.format.message}</p> : null}
-        </div>
-
-        <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700" htmlFor="pageCount">
-            Page count
-          </label>
-          <input
-            id="pageCount"
-            type="number"
-            {...register("pageCount")}
-            className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/40"
-          />
-          {errors.pageCount ? <p className="mt-1 text-xs text-red-600">{errors.pageCount.message}</p> : null}
-        </div>
-
-        <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700" htmlFor="language">
-            Language
-          </label>
-          <input
-            id="language"
-            {...register("language")}
-            className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/40"
-          />
-          {errors.language ? <p className="mt-1 text-xs text-red-600">{errors.language.message}</p> : null}
-        </div>
-
-        <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700" htmlFor="isbn">
-            ISBN
-          </label>
-          <input
-            id="isbn"
-            {...register("isbn")}
-            className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/40"
-          />
-          {errors.isbn ? <p className="mt-1 text-xs text-red-600">{errors.isbn.message}</p> : null}
-        </div>
-
-        <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700" htmlFor="priceCents">
-            Price (in pennies)
-          </label>
-          <input
-            id="priceCents"
-            type="number"
-            {...register("priceCents")}
-            className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/40"
-          />
-          {errors.priceCents ? <p className="mt-1 text-xs text-red-600">{errors.priceCents.message}</p> : null}
-        </div>
-
-        <div className="md:col-span-2">
-          <label className="mb-1 block text-sm font-medium text-gray-700" htmlFor="summary">
-            Summary
-          </label>
-          <textarea
-            id="summary"
-            rows={2}
-            {...register("summary")}
-            className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/40"
-          />
-          {errors.summary ? <p className="mt-1 text-xs text-red-600">{errors.summary.message}</p> : null}
-        </div>
-
-        <div className="md:col-span-2">
-          <label className="mb-1 block text-sm font-medium text-gray-700" htmlFor="description">
-            Description
-          </label>
-          <textarea
-            id="description"
-            rows={4}
-            {...register("description")}
-            className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/40"
-          />
-          {errors.description ? <p className="mt-1 text-xs text-red-600">{errors.description.message}</p> : null}
         </div>
 
         <div>
@@ -412,6 +321,137 @@ export function BookEditor({ categories, book, onCancel, onSuccess }: BookEditor
           {!hasCategories ? (
             <p className="mt-1 text-xs text-amber-600">Create a category in Supabase to enable this field.</p>
           ) : null}
+        </div>
+
+        <div className="md:col-span-2">
+          <span className="mb-1 block text-sm font-medium text-gray-700">Available formats</span>
+          <div className="flex flex-wrap gap-2">
+            {formatOptions.map((format) => {
+              const isSelected = selectedFormats.includes(format);
+              return (
+                <button
+                  type="button"
+                  key={format}
+                  onClick={() => toggleFormat(format)}
+                  className={clsx(
+                    "rounded-full border px-3 py-1 text-sm transition",
+                    isSelected
+                      ? "border-primary bg-primary text-white shadow-sm"
+                      : "border-gray-300 bg-white text-gray-700 hover:border-primary hover:text-primary"
+                  )}
+                  aria-pressed={isSelected}
+                >
+                  {format}
+                </button>
+              );
+            })}
+          </div>
+          {errors.availableFormats ? (
+            <p className="mt-1 text-xs text-red-600">{errors.availableFormats.message}</p>
+          ) : (
+            <p className="mt-1 text-xs text-gray-500">Tap to toggle the formats this title supports.</p>
+          )}
+        </div>
+
+        <div className="md:col-span-2">
+          <span className="mb-1 block text-sm font-medium text-gray-700">Available languages</span>
+          <div className="flex flex-wrap gap-2">
+            {LANGUAGE_OPTIONS.map((option) => {
+              const isSelected = selectedLanguages.includes(option.value);
+              return (
+                <button
+                  type="button"
+                  key={option.value}
+                  onClick={() => toggleLanguage(option.value)}
+                  className={clsx(
+                    "rounded-full border px-3 py-1 text-sm transition",
+                    isSelected
+                      ? "border-primary bg-primary text-white shadow-sm"
+                      : "border-gray-300 bg-white text-gray-700 hover:border-primary hover:text-primary"
+                  )}
+                  aria-pressed={isSelected}
+                >
+                  {option.label}
+                </button>
+              );
+            })}
+          </div>
+          {errors.availableLanguages ? (
+            <p className="mt-1 text-xs text-red-600">{errors.availableLanguages.message}</p>
+          ) : (
+            <p className="mt-1 text-xs text-gray-500">Tap to select the languages this title is offered in.</p>
+          )}
+        </div>
+
+        <div>
+          <label className="mb-1 block text-sm font-medium text-gray-700" htmlFor="pageCount">
+            Page count
+          </label>
+          <input
+            id="pageCount"
+            type="number"
+            {...register("pageCount")}
+            className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/40"
+          />
+          {errors.pageCount ? <p className="mt-1 text-xs text-red-600">{errors.pageCount.message}</p> : null}
+        </div>
+
+        <div>
+          <label className="mb-1 block text-sm font-medium text-gray-700" htmlFor="stockQuantity">
+            Stock quantity
+          </label>
+          <input
+            id="stockQuantity"
+            type="number"
+            {...register("stockQuantity")}
+            className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/40"
+          />
+          {errors.stockQuantity ? <p className="mt-1 text-xs text-red-600">{errors.stockQuantity.message}</p> : null}
+        </div>
+
+        <div>
+          <label className="mb-1 block text-sm font-medium text-gray-700" htmlFor="priceLocalInr">
+            Price – Local (INR)
+          </label>
+          <input
+            id="priceLocalInr"
+            type="number"
+            step="0.01"
+            {...register("priceLocalInr")}
+            className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/40"
+          />
+          {errors.priceLocalInr ? (
+            <p className="mt-1 text-xs text-red-600">{errors.priceLocalInr.message}</p>
+          ) : null}
+        </div>
+
+        <div>
+          <label className="mb-1 block text-sm font-medium text-gray-700" htmlFor="priceInternationalUsd">
+            Price – International (USD)
+          </label>
+          <input
+            id="priceInternationalUsd"
+            type="number"
+            step="0.01"
+            {...register("priceInternationalUsd")}
+            className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/40"
+          />
+          {errors.priceInternationalUsd ? (
+            <p className="mt-1 text-xs text-red-600">{errors.priceInternationalUsd.message}</p>
+          ) : null}
+        </div>
+
+        <div className="md:col-span-2">
+          <label className="mb-1 block text-sm font-medium text-gray-700" htmlFor="description">
+            Description
+          </label>
+          <textarea
+            id="description"
+            rows={4}
+            {...register("description")}
+            className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/40"
+          />
+          {errors.description ? <p className="mt-1 text-xs text-red-600">{errors.description.message}</p> : null}
         </div>
 
         <div>
@@ -452,18 +492,6 @@ export function BookEditor({ categories, book, onCancel, onSuccess }: BookEditor
           </label>
           <input id="isFeatured" type="checkbox" {...register("isFeatured")} className="mr-2 align-middle" />
           <span className="text-sm text-gray-600">Showcase this title on the homepage featured carousel.</span>
-        </div>
-
-        <div className="md:col-span-2">
-          <label className="mb-1 block text-sm font-medium text-gray-700" htmlFor="highlights">
-            Highlights (one per line)
-          </label>
-          <textarea
-            id="highlights"
-            rows={3}
-            {...register("highlights")}
-            className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/40"
-          />
         </div>
 
         {error ? <p className="md:col-span-2 text-sm text-red-600">{error}</p> : null}

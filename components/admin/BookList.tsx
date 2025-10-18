@@ -3,7 +3,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 
-import type { AdminBook } from "@/lib/types";
+import { getBookLanguageLabel, type AdminBook } from "@/lib/types";
 
 interface BookListProps {
   books: AdminBook[];
@@ -59,7 +59,10 @@ export function BookList({ books, onEdit, isRefreshing = false }: BookListProps)
               <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-600">Title</th>
               <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-600">Author</th>
               <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-600">Category</th>
-              <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-gray-600">Price</th>
+              <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-600">Formats</th>
+              <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-600">Languages</th>
+              <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-gray-600">Stock</th>
+              <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-gray-600">Prices</th>
               <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-gray-600">Updated</th>
               <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-gray-600">Actions</th>
             </tr>
@@ -76,13 +79,27 @@ export function BookList({ books, onEdit, isRefreshing = false }: BookListProps)
                     )}
                     <div>
                       <p>{book.title}</p>
-                      <p className="text-xs text-gray-500">{book.slug}</p>
+                      <p className="text-xs text-gray-500">{book.priceFormattedLocal}</p>
                     </div>
                   </div>
                 </td>
                 <td className="px-4 py-3 text-sm text-gray-700">{book.author}</td>
                 <td className="px-4 py-3 text-sm text-gray-700">{book.categoryName}</td>
-                <td className="px-4 py-3 text-right text-sm text-gray-700">{book.priceFormatted}</td>
+                <td className="px-4 py-3 text-sm text-gray-700">
+                  {book.availableFormats.length ? book.availableFormats.join(", ") : "—"}
+                </td>
+                <td className="px-4 py-3 text-sm text-gray-700">
+                  {book.availableLanguages.length
+                    ? book.availableLanguages.map((language) => getBookLanguageLabel(language)).join(", ")
+                    : "—"}
+                </td>
+                <td className="px-4 py-3 text-right text-sm text-gray-700">{book.stockQuantity}</td>
+                <td className="px-4 py-3 text-right text-sm text-gray-700">
+                  <div className="inline-flex flex-col items-end text-xs text-gray-600">
+                    <span>Local (INR): {book.priceFormattedLocal}</span>
+                    <span>International (USD): {book.priceFormattedInternational}</span>
+                  </div>
+                </td>
                 <td className="px-4 py-3 text-right text-sm text-gray-500">
                   {new Date(book.updatedAt).toLocaleDateString()}
                 </td>
@@ -111,7 +128,7 @@ export function BookList({ books, onEdit, isRefreshing = false }: BookListProps)
             ))}
             {sortedBooks.length === 0 ? (
               <tr>
-                <td colSpan={6} className="px-4 py-6 text-center text-sm text-gray-500">
+                <td colSpan={9} className="px-4 py-6 text-center text-sm text-gray-500">
                   No books yet. Use the form above to add your first title.
                 </td>
               </tr>

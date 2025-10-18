@@ -26,15 +26,16 @@ export default function CartPage() {
           <section className="space-y-4">
             <ul className="space-y-4" aria-live="polite">
               {items.map((item) => (
-                <li key={item.book.slug} className="flex items-start justify-between gap-4 rounded-lg border border-gray-200 bg-white p-4">
+                <li key={item.book.id} className="flex items-start justify-between gap-4 rounded-lg border border-gray-200 bg-white p-4">
                   <div>
                     <p className="font-semibold text-gray-900">{item.book.title}</p>
                     <p className="text-sm text-gray-500">{item.book.author}</p>
                     <p className="text-xs text-gray-400">Quantity: {item.quantity}</p>
+                    <p className="text-sm text-gray-600">{item.book.priceFormattedLocal}</p>
                   </div>
                   <button
                     type="button"
-                    onClick={() => removeItem(item.book.slug)}
+                    onClick={() => removeItem(item.book.id)}
                     className="rounded bg-red-50 px-3 py-1 text-xs font-semibold text-red-600 transition hover:bg-red-100"
                     aria-label={`Remove ${item.book.title} from cart`}
                   >

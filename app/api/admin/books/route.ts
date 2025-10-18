@@ -7,22 +7,21 @@ import { toAdminBook } from "@/lib/data/transformers";
 import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
 import type { BookRowWithCategory, Database } from "@/lib/types";
 
+const bookLanguages = z.enum(["arabic", "urdu", "roman_urdu", "english", "hindi"]);
+
 const bookSchema = z.object({
   id: z.string().uuid().optional(),
   title: z.string().min(3),
-  slug: z.string().min(3),
   author: z.string().min(3),
-  publisher: z.string().optional(),
-  format: z.string().min(2),
+  availableFormats: z.array(z.string().min(1)).min(1),
+  availableLanguages: z.array(bookLanguages).min(1),
   pageCount: z.number().int().positive(),
-  language: z.string().min(2),
-  isbn: z.string().optional(),
-  priceCents: z.number().int().min(0),
-  summary: z.string().min(10),
+  stockQuantity: z.number().int().min(0),
+  priceLocalInr: z.number().min(0),
+  priceInternationalUsd: z.number().min(0),
   description: z.string().min(20),
   categoryId: z.string().uuid(),
   coverPath: z.string().nullable().optional(),
-  highlights: z.array(z.string().min(2)).max(10).optional(),
   isFeatured: z.boolean().optional()
 });
 
@@ -49,19 +48,16 @@ export async function POST(request: NextRequest) {
 
   const payload: Database["public"]["Tables"]["books"]["Insert"] = {
     title: input.title,
-    slug: input.slug,
     author: input.author,
-    publisher: input.publisher ?? null,
-    format: input.format,
+    available_formats: input.availableFormats,
+    available_languages: input.availableLanguages,
     page_count: input.pageCount,
-    language: input.language,
-    isbn: input.isbn ?? null,
-    price_cents: input.priceCents,
-    summary: input.summary,
+    stock_quantity: input.stockQuantity,
+    price_local_inr: input.priceLocalInr,
+    price_international_usd: input.priceInternationalUsd,
     description: input.description,
     category_id: input.categoryId,
     cover_path: input.coverPath ?? null,
-    highlights: input.highlights ?? [],
     is_featured: input.isFeatured ?? false
   };
 
@@ -104,19 +100,16 @@ export async function PUT(request: NextRequest) {
 
   const updatePayload: Database["public"]["Tables"]["books"]["Update"] = {
     title: input.title,
-    slug: input.slug,
     author: input.author,
-    publisher: input.publisher ?? null,
-    format: input.format,
+    available_formats: input.availableFormats,
+    available_languages: input.availableLanguages,
     page_count: input.pageCount,
-    language: input.language,
-    isbn: input.isbn ?? null,
-    price_cents: input.priceCents,
-    summary: input.summary,
+    stock_quantity: input.stockQuantity,
+    price_local_inr: input.priceLocalInr,
+    price_international_usd: input.priceInternationalUsd,
     description: input.description,
     category_id: input.categoryId,
     cover_path: input.coverPath ?? null,
-    highlights: input.highlights ?? [],
     is_featured: input.isFeatured ?? false
   };
 

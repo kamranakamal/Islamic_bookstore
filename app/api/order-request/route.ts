@@ -13,7 +13,7 @@ const orderSchema = z.object({
   items: z
     .array(
       z.object({
-        bookSlug: z.string().min(2),
+        bookId: z.string().uuid(),
         quantity: z.number().int().positive().max(50)
       })
     )
@@ -34,24 +34,22 @@ export async function POST(request: NextRequest) {
   const payload: OrderRequestPayload = parsed.data;
   const admin = getSupabaseAdmin();
 
-  const slugs = payload.items.map((item) => item.bookSlug);
+  const bookIds = payload.items.map((item) => item.bookId);
   const { data: books, error: bookError } = await admin
     .from("books")
-    .select("id, slug, title")
-    .in("slug", slugs);
+    .select("id, title")
+    .in("id", bookIds);
 
   if (bookError) {
     console.error("Failed to load books for order", bookError);
     return NextResponse.json({ error: "Unable to process order", code: "ORDER_FETCH_ERROR" }, { status: 500 });
   }
 
-  const bookBySlug = new Map<string, { id: string; slug: string; title: string }>(
-    (books ?? []).map((book) => [book.slug, book])
-  );
+  const bookById = new Map<string, { id: string; title: string }>((books ?? []).map((book) => [book.id, book]));
   const orderItems = payload.items.map((item) => {
-    const book = bookBySlug.get(item.bookSlug);
+    const book = bookById.get(item.bookId);
     if (!book) {
-      throw new Error(`Unknown book: ${item.bookSlug}`);
+      throw new Error(`Unknown book: ${item.bookId}`);
     }
     return {
       book_id: book.id,

@@ -162,7 +162,7 @@ export default async function HomePage() {
                     <p className="text-sm text-gray-500">{highlight.description}</p>
                   </div>
                   <Link
-                    href={`/books/${highlight.book.slug}`}
+                    href={`/books/${highlight.book.id}`}
                     className="inline-flex items-center text-sm font-semibold text-primary transition hover:text-primary/80"
                   >
                     View details →

@@ -8,9 +8,14 @@ import type {
   SearchResult
 } from "@/lib/types";
 
-const formatCurrency = new Intl.NumberFormat("en-GB", {
+const formatLocalCurrency = new Intl.NumberFormat("en-IN", {
   style: "currency",
-  currency: "GBP"
+  currency: "INR"
+});
+
+const formatInternationalCurrency = new Intl.NumberFormat("en-US", {
+  style: "currency",
+  currency: "USD"
 });
 
 function buildCoverUrl(path: string | null): string {
@@ -25,16 +30,17 @@ function buildCoverUrl(path: string | null): string {
 export function toBookSummary(row: BookRowWithCategory): BookSummary {
   return {
     id: row.id,
-    slug: row.slug,
     title: row.title,
     author: row.author,
-    summary: row.summary,
-    priceCents: row.price_cents,
-    priceFormatted: formatCurrency.format(row.price_cents / 100),
+    priceLocalInr: Number(row.price_local_inr ?? 0),
+    priceInternationalUsd: Number(row.price_international_usd ?? 0),
+    priceFormattedLocal: formatLocalCurrency.format(Number(row.price_local_inr ?? 0)),
+    priceFormattedInternational: formatInternationalCurrency.format(Number(row.price_international_usd ?? 0)),
     coverUrl: buildCoverUrl(row.cover_path),
     categoryName: row.categories?.name ?? "Uncategorised",
     categorySlug: row.categories?.slug ?? undefined,
-    isFeatured: row.is_featured
+    isFeatured: row.is_featured,
+    stockQuantity: row.stock_quantity
   };
 }
 
@@ -42,13 +48,10 @@ export function toBookDetail(row: BookRowWithCategory): BookDetail {
   const summary = toBookSummary(row);
   return {
     ...summary,
-    publisher: row.publisher,
-    format: row.format,
+    availableFormats: row.available_formats ?? [],
     pageCount: row.page_count,
-    language: row.language,
-    isbn: row.isbn,
-    description: row.description,
-    highlights: row.highlights
+    availableLanguages: row.available_languages ?? [],
+    description: row.description
   };
 }
 
@@ -56,22 +59,20 @@ export function toAdminBook(row: BookRowWithCategory): AdminBook {
   return {
     id: row.id,
     title: row.title,
-    slug: row.slug,
     author: row.author,
-    publisher: row.publisher,
-    format: row.format,
+    availableFormats: row.available_formats ?? [],
+    availableLanguages: row.available_languages ?? [],
     pageCount: row.page_count,
-    language: row.language,
-    isbn: row.isbn,
-    priceCents: row.price_cents,
-    priceFormatted: formatCurrency.format(row.price_cents / 100),
-    summary: row.summary,
+    stockQuantity: row.stock_quantity,
+    priceLocalInr: Number(row.price_local_inr ?? 0),
+    priceInternationalUsd: Number(row.price_international_usd ?? 0),
+    priceFormattedLocal: formatLocalCurrency.format(Number(row.price_local_inr ?? 0)),
+    priceFormattedInternational: formatInternationalCurrency.format(Number(row.price_international_usd ?? 0)),
     description: row.description,
     categoryId: row.category_id,
     categoryName: row.categories?.name ?? "Uncategorised",
     coverPath: row.cover_path,
     coverUrl: buildCoverUrl(row.cover_path),
-    highlights: row.highlights ?? [],
     isFeatured: row.is_featured,
     createdAt: row.created_at,
     updatedAt: row.updated_at

@@ -86,7 +86,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
               "@type": "ListItem",
               position: index + 1,
               name: book.title,
-              url: `${appUrl}/books/${book.slug}`
+              url: `${appUrl}/books/${book.id}`
             }))
           })
         }}

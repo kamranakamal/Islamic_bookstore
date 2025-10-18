@@ -15,24 +15,41 @@ export interface ProfileRow extends Record<string, unknown> {
   updated_at: string;
 }
 
+export type BookLanguage = "arabic" | "urdu" | "roman_urdu" | "english" | "hindi";
+
+export const BOOK_LANGUAGES: readonly BookLanguage[] = [
+  "arabic",
+  "urdu",
+  "roman_urdu",
+  "english",
+  "hindi"
+] as const;
+
+export const BOOK_LANGUAGE_LABEL: Record<BookLanguage, string> = {
+  arabic: "Arabic",
+  urdu: "Urdu",
+  roman_urdu: "Roman Urdu",
+  english: "English",
+  hindi: "Hindi"
+};
+
+export const getBookLanguageLabel = (language: BookLanguage): string => BOOK_LANGUAGE_LABEL[language];
+
 export interface BookRow extends Record<string, unknown> {
   id: string;
-  slug: string;
   title: string;
   author: string;
-  publisher: string | null;
-  format: string;
   page_count: number;
-  language: string;
-  isbn: string | null;
-  price_cents: number;
-  summary: string;
+  available_formats: string[];
+  available_languages: BookLanguage[];
+  stock_quantity: number;
+  price_local_inr: number;
+  price_international_usd: number;
   description: string;
   cover_path: string | null;
   category_id: string;
   is_featured: boolean;
   search_vector: string | null;
-  highlights: string[];
   created_at: string;
   updated_at: string;
 }
@@ -177,22 +194,20 @@ export interface AuditLogRow extends Record<string, unknown> {
 export interface AdminBook {
   id: string;
   title: string;
-  slug: string;
   author: string;
-  publisher: string | null;
-  format: string;
+  availableFormats: string[];
+  availableLanguages: BookLanguage[];
   pageCount: number;
-  language: string;
-  isbn: string | null;
-  priceCents: number;
-  priceFormatted: string;
-  summary: string;
+  stockQuantity: number;
+  priceLocalInr: number;
+  priceInternationalUsd: number;
+  priceFormattedLocal: string;
+  priceFormattedInternational: string;
   description: string;
   categoryId: string;
   categoryName: string;
   coverPath: string | null;
   coverUrl: string;
-  highlights: string[];
   isFeatured: boolean;
   createdAt: string;
   updatedAt: string;
@@ -205,26 +220,24 @@ export interface AdminBooksData {
 
 export interface BookSummary {
   id: string;
-  slug: string;
   title: string;
   author: string;
-  summary: string;
-  priceCents: number;
-  priceFormatted: string;
+  priceLocalInr: number;
+  priceInternationalUsd: number;
+  priceFormattedLocal: string;
+  priceFormattedInternational: string;
   coverUrl: string;
   categoryName: string;
   categorySlug?: string;
   isFeatured?: boolean;
+  stockQuantity: number;
 }
 
 export interface BookDetail extends BookSummary {
-  publisher: string | null;
-  format: string;
+  availableFormats: string[];
+  availableLanguages: BookLanguage[];
   pageCount: number;
-  language: string;
-  isbn: string | null;
   description: string;
-  highlights: string[];
 }
 
 export type BookRowWithCategory = BookRow & { categories: Pick<CategoryRow, "name" | "slug"> | null };
@@ -277,7 +290,7 @@ export interface OrderRequestPayload {
   institution?: string;
   message?: string;
   items: Array<{
-    bookSlug: string;
+    bookId: string;
     quantity: number;
   }>;
 }
@@ -285,19 +298,16 @@ export interface OrderRequestPayload {
 export interface CreateOrUpdateBookPayload {
   id?: string;
   title: string;
-  slug: string;
   author: string;
-  publisher?: string;
-  format: string;
+  availableFormats: string[];
+  availableLanguages: BookLanguage[];
   pageCount: number;
-  language: string;
-  isbn?: string;
-  priceCents: number;
-  summary: string;
+  stockQuantity: number;
+  priceLocalInr: number;
+  priceInternationalUsd: number;
   description: string;
   categoryId: string;
   coverPath?: string | null;
-  highlights?: string[];
   isFeatured?: boolean;
 }
 
@@ -321,11 +331,11 @@ export interface PageParams {
 }
 
 export interface CartBook {
-  slug: string;
+  id: string;
   title: string;
   author: string;
-  priceCents: number;
-  priceFormatted: string;
+  priceLocalInr: number;
+  priceFormattedLocal: string;
 }
 
 export interface CartItem {

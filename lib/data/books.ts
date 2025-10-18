@@ -4,12 +4,12 @@ import { getServerSupabaseClient } from "@/lib/authHelpers";
 import { toBookDetail, toBookSummary } from "@/lib/data/transformers";
 import type { BookDetail, BookRowWithCategory, BookSummary } from "@/lib/types";
 
-export const getBookBySlug = cache(async (slug: string): Promise<BookDetail | null> => {
+export const getBookById = cache(async (id: string): Promise<BookDetail | null> => {
   const supabase = getServerSupabaseClient();
   const { data } = await supabase
     .from("books")
     .select("*, categories(name, slug)")
-    .eq("slug", slug)
+    .eq("id", id)
     .maybeSingle();
 
   if (!data) return null;
@@ -27,17 +27,17 @@ export const listBooksByCategorySlug = cache(async (slug: string): Promise<BookS
   return (data ?? []).map((row) => toBookSummary(row as BookRowWithCategory));
 });
 
-export interface BookSlugRecord {
-  slug: string;
+export interface BookIdRecord {
+  id: string;
   updatedAt: string;
 }
 
-export const listBookSlugs = cache(async (): Promise<BookSlugRecord[]> => {
+export const listBookIds = cache(async (): Promise<BookIdRecord[]> => {
   const supabase = getServerSupabaseClient();
-  const { data } = await supabase.from("books").select("slug, updated_at");
-  const rows = (data ?? []) as Array<{ slug: string | null; updated_at: string | null }>;
+  const { data } = await supabase.from("books").select("id, updated_at");
+  const rows = (data ?? []) as Array<{ id: string | null; updated_at: string | null }>;
   return rows.map((row) => ({
-    slug: row.slug ?? "",
+    id: row.id ?? "",
     updatedAt: row.updated_at ?? ""
   }));
 });
