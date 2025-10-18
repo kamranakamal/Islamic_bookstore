@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { getBookBySlug } from "@/lib/data/books";
@@ -53,7 +54,7 @@ export default async function BookPage({ params }: PageParams) {
         "@type": "ListItem",
         position: 2,
         name: book.categoryName,
-        item: book.categorySlug ? `${appUrl}/categories/${book.categorySlug}` : undefined
+        item: book.categorySlug ? `${appUrl}/shop?category=${book.categorySlug}` : undefined
       },
       {
         "@type": "ListItem",
@@ -141,21 +142,21 @@ export default async function BookPage({ params }: PageParams) {
         <div className="space-y-2">
           <p className="text-sm text-gray-500">Price</p>
           <p className="text-2xl font-semibold text-primary">{book.priceFormatted}</p>
-          <p className="text-xs text-gray-500">Contact us for institutional discounts and bulk orders.</p>
+          <p className="text-xs text-gray-500">Contact us for institutional discounts and curated recommendations.</p>
         </div>
         <div className="space-y-3">
-          <a
-            href={`/order-request?book=${encodeURIComponent(book.slug)}`}
+          <Link
+            href={`/contact?book=${encodeURIComponent(book.slug)}`}
             className="block rounded bg-primary px-4 py-2 text-center text-sm font-semibold text-primary-foreground transition hover:bg-primary/90"
           >
-            Request this book
-          </a>
-          <a
+            Contact us about this book
+          </Link>
+          <Link
             href={`/cart?add=${encodeURIComponent(book.slug)}`}
             className="block rounded border border-primary px-4 py-2 text-center text-sm font-semibold text-primary hover:bg-primary/10"
           >
             Add to cart
-          </a>
+          </Link>
         </div>
         <section className="space-y-2 text-sm text-gray-600">
           <h3 className="font-semibold text-gray-800">Book details</h3>

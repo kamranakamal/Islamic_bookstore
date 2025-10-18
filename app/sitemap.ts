@@ -2,19 +2,14 @@ import type { MetadataRoute } from "next";
 
 import { appUrl } from "@/lib/config";
 import { listBookSlugs } from "@/lib/data/books";
-import { listCategorySummaries } from "@/lib/data/categories";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const [books, categories] = await Promise.all([listBookSlugs(), listCategorySummaries()]);
+  const books = await listBookSlugs();
 
   const now = new Date();
   const base: MetadataRoute.Sitemap = [
     {
       url: appUrl,
-      lastModified: now
-    },
-    {
-      url: `${appUrl}/order-request`,
       lastModified: now
     },
     {
@@ -32,10 +27,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     lastModified: new Date(book.updatedAt)
   }));
 
-  const categoryEntries = categories.map((category) => ({
-    url: `${appUrl}/categories/${category.slug}`,
-    lastModified: category.updatedAt ? new Date(category.updatedAt) : now
-  }));
-
-  return [...base, ...bookEntries, ...categoryEntries];
+  return [...base, ...bookEntries];
 }

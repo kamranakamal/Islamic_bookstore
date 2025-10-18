@@ -11,7 +11,7 @@ export default function CartPage() {
     <div className="space-y-10">
       <header className="space-y-2">
         <h1 className="text-3xl font-semibold text-gray-900">Your reading list</h1>
-        <p className="text-gray-600">Review your selected titles before submitting a manual order request.</p>
+  <p className="text-gray-600">Review your selected titles. Our team can finalise payment and fulfilment details with you directly.</p>
       </header>
 
       {items.length === 0 ? (
@@ -58,14 +58,13 @@ export default function CartPage() {
               <p className="text-2xl font-semibold text-primary">{subtotal}</p>
             </div>
             <p className="text-sm text-gray-600">
-              We process manual payments within 24 hours. Complete the order request form to confirm your purchase and
-              receive collection or delivery options.
+              Share these selections with the team and we’ll confirm availability, pricing, and delivery or collection options within one working day.
             </p>
             <Link
-              href="/order-request"
+              href="/contact"
               className="block rounded bg-primary px-4 py-2 text-center text-sm font-semibold text-primary-foreground"
             >
-              Proceed to order request
+              Contact us to complete order
             </Link>
           </aside>
         </div>

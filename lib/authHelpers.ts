@@ -53,7 +53,7 @@ export async function getSessionUser(): Promise<SessionUser | null> {
 export async function requireAdminUser(): Promise<SessionUser> {
   const maybeUser = await getSessionUser();
   if (!maybeUser) {
-    redirect("/order-request");
+    redirect("/");
   }
   const user = maybeUser as SessionUser;
   if (user.role !== "admin") {
