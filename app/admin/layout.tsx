@@ -10,8 +10,10 @@ export const metadata = {
   }
 };
 
+export const dynamic = "force-dynamic";
+
 export default async function AdminLayout({ children }: { children: ReactNode }) {
-  const user = await requireAdminUser();
+  const user = await requireAdminUser({ redirectTo: "/admin" });
 
   return (
     <div className="grid gap-6 lg:grid-cols-[220px,1fr]">

@@ -1,16 +1,16 @@
 "use client";
 
-import { createBrowserSupabaseClient } from "@supabase/auth-helpers-nextjs";
+import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 
 import type { Database } from "@/lib/types";
 
-type BrowserClient = ReturnType<typeof createBrowserSupabaseClient<Database>>;
+type BrowserClient = ReturnType<typeof createClientComponentClient<Database>>;
 
 let client: BrowserClient | null = null;
 
 export function getSupabaseClient(): BrowserClient {
   if (!client) {
-    client = createBrowserSupabaseClient<Database>();
+    client = createClientComponentClient<Database>();
   }
   return client;
 }

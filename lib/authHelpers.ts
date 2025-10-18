@@ -16,6 +16,10 @@ export type SessionUser = {
   role: ProfileRow["role"];
 };
 
+export type RequireAdminOptions = {
+  redirectTo?: string;
+};
+
 export function getServerSupabaseClient() {
   return createServerComponentClient<Database>({ cookies });
 }
@@ -34,30 +38,36 @@ export async function getSessionUser(): Promise<SessionUser | null> {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("id, email, display_name, role")
+    .select("id, email, role")
     .eq("auth_user_id", user.id)
     .maybeSingle();
 
-  const typedProfile = profile as ProfileRow | null;
+  const typedProfile = profile as Pick<ProfileRow, "id" | "email" | "role"> | null;
 
   if (!typedProfile) return null;
 
   return {
     id: typedProfile.id,
     email: typedProfile.email,
-    displayName: typedProfile.display_name,
+    displayName: null,
     role: typedProfile.role
   };
 }
 
-export async function requireAdminUser(): Promise<SessionUser> {
+export async function requireAdminUser(options: RequireAdminOptions = {}): Promise<SessionUser> {
+  const redirectTo = options.redirectTo ?? "/admin";
+  const loginPath = redirectTo
+    ? `/adminlogin?redirect=${encodeURIComponent(redirectTo)}`
+    : "/adminlogin";
+
   const maybeUser = await getSessionUser();
+  
   if (!maybeUser) {
-    redirect("/");
+    redirect(loginPath);
   }
   const user = maybeUser as SessionUser;
   if (user.role !== "admin") {
-    redirect("/");
+    redirect(loginPath);
   }
   return user;
 }
