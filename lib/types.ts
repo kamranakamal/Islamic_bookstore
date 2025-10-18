@@ -3,6 +3,7 @@ import type { GenericRelationship, GenericSchema, GenericTable } from "@supabase
 export type Json = string | number | boolean | null | { [key: string]: Json } | Json[];
 
 export type UserRole = "admin" | "member";
+export type MessageStatus = "new" | "in_progress" | "resolved" | "archived";
 
 export interface ProfileRow extends Record<string, unknown> {
   id: string;
@@ -42,6 +43,107 @@ export interface CategoryRow extends Record<string, unknown> {
   name: string;
   description: string;
   created_at: string;
+  updated_at: string;
+}
+
+export interface SitePageRow extends Record<string, unknown> {
+  id: string;
+  slug: string;
+  title: string;
+  hero_eyebrow: string | null;
+  hero_title: string | null;
+  hero_description: string | null;
+  body: string;
+  metadata: Json;
+  published: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface PageSectionRow extends Record<string, unknown> {
+  id: string;
+  page_id: string;
+  identifier: string;
+  type: string;
+  heading: string | null;
+  body: string | null;
+  position: number;
+  metadata: Json;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ContactMessageRow extends Record<string, unknown> {
+  id: string;
+  name: string;
+  email: string;
+  phone: string | null;
+  subject: string | null;
+  message: string;
+  status: MessageStatus;
+  admin_notes: string | null;
+  responded_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface FaqEntryRow extends Record<string, unknown> {
+  id: string;
+  question: string;
+  answer: string;
+  category: string | null;
+  position: number;
+  published: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface BlogPostRow extends Record<string, unknown> {
+  id: string;
+  slug: string;
+  title: string;
+  excerpt: string | null;
+  body: string;
+  cover_image: string | null;
+  author_name: string | null;
+  tags: string[];
+  metadata: Json;
+  published: boolean;
+  published_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface MessageRow extends Record<string, unknown> {
+  id: string;
+  contact_message_id: string | null;
+  sender_profile_id: string | null;
+  sender_name: string | null;
+  sender_email: string | null;
+  direction: "incoming" | "outgoing";
+  subject: string | null;
+  body: string;
+  attachments: Json;
+  metadata: Json;
+  sent_at: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface BulkOrderRequestRow extends Record<string, unknown> {
+  id: string;
+  organization_name: string;
+  contact_name: string;
+  contact_email: string;
+  contact_phone: string | null;
+  location: string | null;
+  quantity_estimate: number | null;
+  budget_range: string | null;
+  notes: string | null;
+  requested_titles: Json;
+  status: "pending" | "reviewing" | "quoted" | "completed" | "cancelled";
+  metadata: Json;
+  submitted_at: string;
   updated_at: string;
 }
 
@@ -139,6 +241,29 @@ export interface CategorySummary {
 
 export interface CategoryWithBooks extends CategorySummary {
   books: BookSummary[];
+}
+
+export interface SitePage {
+  id: string;
+  slug: string;
+  title: string;
+  heroEyebrow?: string | null;
+  heroTitle?: string | null;
+  heroDescription?: string | null;
+  body: string;
+  metadata: Json;
+  published: boolean;
+  sections: PageSection[];
+}
+
+export interface PageSection {
+  id: string;
+  identifier: string;
+  type: string;
+  heading?: string | null;
+  body?: string | null;
+  position: number;
+  metadata: Json;
 }
 
 export interface SearchResult extends BookSummary {
@@ -259,12 +384,77 @@ type PublicDatabaseSchema = GenericSchema & {
       Omit<AuditLogRow, "id" | "created_at"> & { id?: string; created_at?: string },
       Partial<AuditLogRow>
     >;
+    site_pages: TableDefinition<
+      SitePageRow,
+      Omit<SitePageRow, "id" | "created_at" | "updated_at"> & {
+        id?: string;
+        created_at?: string;
+        updated_at?: string;
+      },
+      Partial<SitePageRow>
+    >;
+    page_sections: TableDefinition<
+      PageSectionRow,
+      Omit<PageSectionRow, "id" | "created_at" | "updated_at"> & {
+        id?: string;
+        created_at?: string;
+        updated_at?: string;
+      },
+      Partial<PageSectionRow>
+    >;
+    contact_messages: TableDefinition<
+      ContactMessageRow,
+      Omit<ContactMessageRow, "id" | "created_at" | "updated_at"> & {
+        id?: string;
+        created_at?: string;
+        updated_at?: string;
+      },
+      Partial<ContactMessageRow>
+    >;
+    faq_entries: TableDefinition<
+      FaqEntryRow,
+      Omit<FaqEntryRow, "id" | "created_at" | "updated_at"> & {
+        id?: string;
+        created_at?: string;
+        updated_at?: string;
+      },
+      Partial<FaqEntryRow>
+    >;
+    blog_posts: TableDefinition<
+      BlogPostRow,
+      Omit<BlogPostRow, "id" | "created_at" | "updated_at"> & {
+        id?: string;
+        created_at?: string;
+        updated_at?: string;
+      },
+      Partial<BlogPostRow>
+    >;
+    messages: TableDefinition<
+      MessageRow,
+      Omit<MessageRow, "id" | "created_at" | "updated_at"> & {
+        id?: string;
+        created_at?: string;
+        updated_at?: string;
+      },
+      Partial<MessageRow>
+    >;
+    bulk_order_requests: TableDefinition<
+      BulkOrderRequestRow,
+      Omit<BulkOrderRequestRow, "id" | "submitted_at" | "updated_at"> & {
+        id?: string;
+        submitted_at?: string;
+        updated_at?: string;
+      },
+      Partial<BulkOrderRequestRow>
+    >;
   };
   Views: Record<string, never>;
   Functions: Record<string, never>;
   Enums: {
     order_status: OrderRow["status"];
     user_role: UserRole;
+    message_status: MessageStatus;
+    bulk_order_status: BulkOrderRequestRow["status"];
   };
   CompositeTypes: Record<string, never>;
 };
@@ -312,4 +502,78 @@ export interface AdminAnalyticsSnapshot {
   totalOrdersPending: number;
   totalUsers: number;
   mostRequestedTitles: Array<{ title: string; count: number }>;
+}
+
+export interface AdminContactMessage {
+  id: string;
+  name: string;
+  email: string;
+  phone: string | null;
+  subject: string | null;
+  message: string;
+  status: MessageStatus;
+  adminNotes: string | null;
+  respondedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface AdminFaqEntry {
+  id: string;
+  question: string;
+  answer: string;
+  category: string | null;
+  position: number;
+  published: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface AdminBlogPost {
+  id: string;
+  slug: string;
+  title: string;
+  excerpt: string | null;
+  body: string;
+  coverImage: string | null;
+  authorName: string | null;
+  tags: string[];
+  metadata: Json;
+  published: boolean;
+  publishedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface AdminBulkOrderRequest {
+  id: string;
+  organizationName: string;
+  contactName: string;
+  contactEmail: string;
+  contactPhone: string | null;
+  location: string | null;
+  quantityEstimate: number | null;
+  budgetRange: string | null;
+  notes: string | null;
+  requestedTitles: string[];
+  status: BulkOrderRequestRow["status"];
+  metadata: Json;
+  submittedAt: string;
+  updatedAt: string;
+}
+
+export interface AdminMessageThreadMessage {
+  id: string;
+  direction: "incoming" | "outgoing";
+  subject: string | null;
+  body: string;
+  sentAt: string;
+  senderName: string | null;
+  senderEmail: string | null;
+  attachments: Json;
+}
+
+export interface AdminMessageThread {
+  contactMessage: AdminContactMessage;
+  messages: AdminMessageThreadMessage[];
 }

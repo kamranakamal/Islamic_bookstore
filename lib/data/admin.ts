@@ -2,11 +2,21 @@ import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
 import { toAdminBook } from "@/lib/data/transformers";
 import type {
   AdminAnalyticsSnapshot,
+  AdminBlogPost,
   AdminBooksData,
+  AdminBulkOrderRequest,
+  AdminContactMessage,
+  AdminFaqEntry,
+  AdminMessageThread,
   AdminOrder,
   AdminUserSummary,
+  BlogPostRow,
   BookRowWithCategory,
+  BulkOrderRequestRow,
   CategorySummary,
+  ContactMessageRow,
+  FaqEntryRow,
+  MessageRow,
   OrderRow,
   ProfileRow
 } from "@/lib/types";
@@ -122,5 +132,152 @@ export async function getAdminAnalytics(): Promise<AdminAnalyticsSnapshot> {
     totalOrdersPending: totalOrdersPending ?? 0,
     totalUsers: totalUsers ?? 0,
     mostRequestedTitles
+  };
+}
+
+export async function getAdminMessages(): Promise<AdminContactMessage[]> {
+  const supabase = getSupabaseAdmin();
+  const { data } = await supabase
+    .from("contact_messages")
+    .select("*")
+    .order("created_at", { ascending: false });
+
+  const rows = (data ?? []) as ContactMessageRow[];
+
+  return rows.map((row) => ({
+    id: row.id,
+    name: row.name,
+    email: row.email,
+    phone: row.phone,
+    subject: row.subject,
+    message: row.message,
+    status: row.status,
+    adminNotes: row.admin_notes,
+    respondedAt: row.responded_at,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at
+  }));
+}
+
+export async function getAdminFaqEntries(): Promise<AdminFaqEntry[]> {
+  const supabase = getSupabaseAdmin();
+  const { data } = await supabase
+    .from("faq_entries")
+    .select("*")
+    .order("position", { ascending: true })
+    .order("created_at", { ascending: true });
+
+  const rows = (data ?? []) as FaqEntryRow[];
+
+  return rows.map((row) => ({
+    id: row.id,
+    question: row.question,
+    answer: row.answer,
+    category: row.category,
+    position: row.position,
+    published: row.published,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at
+  }));
+}
+
+export async function getAdminBlogPosts(): Promise<AdminBlogPost[]> {
+  const supabase = getSupabaseAdmin();
+  const { data } = await supabase
+    .from("blog_posts")
+    .select("*")
+    .order("published_at", { ascending: false, nullsFirst: false })
+    .order("updated_at", { ascending: false });
+
+  const rows = (data ?? []) as BlogPostRow[];
+
+  return rows.map((row) => ({
+    id: row.id,
+    slug: row.slug,
+    title: row.title,
+    excerpt: row.excerpt,
+    body: row.body,
+    coverImage: row.cover_image,
+    authorName: row.author_name,
+    tags: row.tags ?? [],
+    metadata: row.metadata ?? {},
+    published: row.published,
+    publishedAt: row.published_at,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at
+  }));
+}
+
+export async function getAdminBulkOrderRequests(): Promise<AdminBulkOrderRequest[]> {
+  const supabase = getSupabaseAdmin();
+  const { data } = await supabase
+    .from("bulk_order_requests")
+    .select("*")
+    .order("submitted_at", { ascending: false });
+
+  const rows = (data ?? []) as BulkOrderRequestRow[];
+
+  return rows.map((row) => ({
+    id: row.id,
+    organizationName: row.organization_name,
+    contactName: row.contact_name,
+    contactEmail: row.contact_email,
+    contactPhone: row.contact_phone,
+    location: row.location,
+    quantityEstimate: row.quantity_estimate,
+    budgetRange: row.budget_range,
+    notes: row.notes,
+    requestedTitles: Array.isArray(row.requested_titles) ? (row.requested_titles as string[]) : [],
+    status: row.status,
+    metadata: row.metadata ?? {},
+    submittedAt: row.submitted_at,
+    updatedAt: row.updated_at
+  }));
+}
+
+export async function getAdminMessageThread(id: string): Promise<AdminMessageThread | null> {
+  const supabase = getSupabaseAdmin();
+  const [{ data: contact }, { data: messages }] = await Promise.all([
+    supabase.from("contact_messages").select("*").eq("id", id).maybeSingle(),
+    supabase
+      .from("messages")
+      .select("*")
+      .eq("contact_message_id", id)
+      .order("sent_at", { ascending: true })
+  ]);
+
+  const contactRow = contact as ContactMessageRow | null;
+  const messageRows = (messages ?? []) as MessageRow[];
+
+  if (!contactRow) {
+    return null;
+  }
+
+  const contactMessage: AdminContactMessage = {
+    id: contactRow.id,
+    name: contactRow.name,
+    email: contactRow.email,
+    phone: contactRow.phone,
+    subject: contactRow.subject,
+    message: contactRow.message,
+    status: contactRow.status,
+    adminNotes: contactRow.admin_notes,
+    respondedAt: contactRow.responded_at,
+    createdAt: contactRow.created_at,
+    updatedAt: contactRow.updated_at
+  };
+
+  return {
+    contactMessage,
+    messages: messageRows.map((row) => ({
+      id: row.id,
+      direction: row.direction,
+      subject: row.subject,
+      body: row.body,
+      sentAt: row.sent_at,
+      senderName: row.sender_name,
+      senderEmail: row.sender_email,
+      attachments: row.attachments ?? []
+    }))
   };
 }

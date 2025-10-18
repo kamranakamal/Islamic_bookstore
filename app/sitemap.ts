@@ -17,6 +17,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       lastModified: now
     },
     {
+      url: `${appUrl}/bulk-order`,
+      lastModified: now
+    },
+    {
       url: `${appUrl}/search`,
       lastModified: now
     }

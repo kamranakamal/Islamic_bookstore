@@ -1,46 +1,45 @@
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 
 import { Breadcrumbs } from "@/components/site/Breadcrumbs";
 import { PageHero } from "@/components/site/PageHero";
+import { getSitePage } from "@/lib/data/pages";
 
 export const metadata: Metadata = {
   title: "Blog · Maktab Muhammadiya",
   description: "Insights, reading guides, and reflections on cultivating a life anchored in knowledge."
 };
 
-const placeholders = [
-  {
-    title: "Reading Qur’anic Commentary with Intention",
-    summary: "A practical roadmap for approaching tafsir works with structure and humility."
-  },
-  {
-    title: "Inside the Maktab: How We Vet Each Title",
-    summary: "Peek into our review process and the scholarly advisors who help us maintain trust."
-  },
-  {
-    title: "Building a Home Library",
-    summary: "Suggestions for families designing learning spaces nourished by sacred knowledge."
-  }
-];
+export const revalidate = 60;
 
-export default function BlogPage() {
+export default async function BlogPage() {
+  const page = await getSitePage("blog");
+
+  if (!page) {
+    notFound();
+  }
+
+  const articles = page.sections.filter((section) => section.type === "article").sort((a, b) => a.position - b.position);
+
   return (
     <div className="space-y-10">
       <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Blog" }]} />
       <PageHero
-        eyebrow="Knowledge Notes"
-        title="Articles and reflections from the Maktab team."
-        description="Stay connected with curated reading plans, event recaps, and guidance from our editorial board."
+        eyebrow={page.heroEyebrow ?? undefined}
+        title={page.heroTitle ?? page.title}
+        description={page.heroDescription ?? undefined}
       />
-      <section className="grid gap-6 md:grid-cols-3">
-        {placeholders.map((post) => (
-          <article key={post.title} className="space-y-3 rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-            <h2 className="text-lg font-semibold text-gray-900">{post.title}</h2>
-            <p className="text-gray-700">{post.summary}</p>
-            <p className="text-sm text-gray-500">Publishing calendar coming soon.</p>
-          </article>
-        ))}
-      </section>
+      {articles.length ? (
+        <section className="grid gap-6 md:grid-cols-3">
+          {articles.map((section) => (
+            <article key={section.id} className="space-y-3 rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+              <h2 className="text-lg font-semibold text-gray-900">{section.heading}</h2>
+              <p className="text-gray-700">{section.body}</p>
+              <p className="text-sm text-gray-500">Publishing calendar coming soon.</p>
+            </article>
+          ))}
+        </section>
+      ) : null}
     </div>
   );
 }
