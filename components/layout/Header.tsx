@@ -97,14 +97,17 @@ export function Header() {
 
       {isMenuOpen ? (
         <div className="lg:hidden" role="dialog" aria-modal="true">
-          <div className="fixed inset-0 z-40 bg-gray-900/40 backdrop-blur-sm" onClick={() => setIsMenuOpen(false)} />
+          <div className="fixed inset-0 z-40 bg-gray-900/50 backdrop-blur-sm" onClick={() => setIsMenuOpen(false)} />
           <nav
             id="mobile-nav"
             aria-label="Mobile navigation"
-            className="fixed inset-y-0 right-0 z-50 w-72 max-w-[85vw] overflow-y-auto border-l border-white/60 bg-white/90 px-6 py-8 shadow-xl shadow-amber-100/40 backdrop-blur supports-[backdrop-filter]:bg-white/80"
+            className="fixed inset-0 z-50 flex flex-col bg-white/95 px-6 pb-8 pt-8 shadow-xl shadow-primary/10 backdrop-blur-lg transition-transform duration-200 ease-out [padding-top:calc(env(safe-area-inset-top)+1.75rem)] supports-[backdrop-filter]:bg-white/85"
           >
-            <div className="mb-6 flex items-center justify-between">
-              <span className="text-sm font-semibold text-gray-900">Maktab Muhammadiya</span>
+            <div className="mb-6 flex items-center justify-between gap-4">
+              <div>
+                <p className="text-sm font-semibold text-gray-900">Maktab Muhammadiya</p>
+                <p className="text-xs text-gray-500">Explore our library catalogue</p>
+              </div>
               <button
                 type="button"
                 className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-white/70 bg-white/80 text-gray-600 transition hover:border-primary hover:bg-primary/10 hover:text-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
@@ -114,33 +117,51 @@ export function Header() {
                 <IconClose className="h-4 w-4" />
               </button>
             </div>
-            <ul className="space-y-2 text-sm font-medium text-gray-700">
-              {navItems.map(({ href, label, Icon }) => {
-                const isActive = href === "/" ? pathname === "/" : pathname.startsWith(href);
-                return (
-                  <li key={href}>
-                    <Link
-                      href={href}
-                      className={clsx(
-                        "flex items-center justify-between rounded-xl border px-3 py-3 transition-all focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary",
-                        isActive
-                          ? "border-primary bg-primary/15 text-primary"
-                          : "border-white/70 bg-white/80 text-gray-600 hover:border-primary/70 hover:bg-primary/10 hover:text-primary"
-                      )}
-                      aria-current={isActive ? "page" : undefined}
-                    >
-                      <span className="flex items-center gap-3">
-                        <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-primary">
-                          <Icon className="h-4 w-4" aria-hidden="true" />
+            <div className="flex-1 overflow-y-auto">
+              <ul className="space-y-3 text-base font-medium text-gray-700">
+                {navItems.map(({ href, label, Icon }) => {
+                  const isActive = href === "/" ? pathname === "/" : pathname.startsWith(href);
+                  return (
+                    <li key={href}>
+                      <Link
+                        href={href}
+                        className={clsx(
+                          "flex items-center justify-between rounded-2xl border px-4 py-4 transition-all focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary",
+                          isActive
+                            ? "border-primary bg-primary/10 text-primary shadow-sm shadow-primary/20"
+                            : "border-white/70 bg-white text-gray-600 hover:border-primary/70 hover:bg-primary/10 hover:text-primary"
+                        )}
+                        aria-current={isActive ? "page" : undefined}
+                      >
+                        <span className="flex items-center gap-3">
+                          <span className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-primary/10 text-primary">
+                            <Icon className="h-4 w-4" aria-hidden="true" />
+                          </span>
+                          {label}
                         </span>
-                        {label}
-                      </span>
-                      <span aria-hidden="true" className="text-xs text-gray-400">→</span>
-                    </Link>
-                  </li>
-                );
-              })}
-            </ul>
+                        <span aria-hidden="true" className="text-sm text-gray-400">→</span>
+                      </Link>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+            <div className="mt-6 grid gap-3 text-sm font-semibold">
+              <Link
+                href="/cart"
+                className="inline-flex items-center justify-center gap-2 rounded-full bg-primary px-4 py-3 text-primary-foreground transition hover:-translate-y-0.5 hover:bg-primary/90"
+              >
+                <span aria-hidden="true">🛍️</span>
+                View cart
+              </Link>
+              <Link
+                href="/bulk-order"
+                className="inline-flex items-center justify-center gap-2 rounded-full border border-primary px-4 py-3 text-primary transition hover:-translate-y-0.5 hover:bg-primary/10"
+              >
+                <span aria-hidden="true">🤝</span>
+                Bulk order assistance
+              </Link>
+            </div>
           </nav>
         </div>
       ) : null}

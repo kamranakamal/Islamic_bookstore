@@ -8,6 +8,24 @@ try {
 
 const headers = async () => [
   {
+    source: "/api/:path*",
+    headers: [
+      {
+        key: "Cache-Control",
+        value: "private, no-store, max-age=0"
+      }
+    ]
+  },
+  {
+    source: "/admin/:path*",
+    headers: [
+      {
+        key: "Cache-Control",
+        value: "private, no-store, max-age=0"
+      }
+    ]
+  },
+  {
     source: "/:all*(js|css|svg|png|jpg|jpeg|gif|webp|ico)",
     headers: [
       {

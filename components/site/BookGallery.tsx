@@ -55,39 +55,52 @@ export function BookGallery({ title, images }: BookGalleryProps) {
   }, [galleryImages.length]);
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3 sm:space-y-4">
       <button
         type="button"
         onClick={openFullscreen}
-        className="group relative block aspect-[3/4] w-full overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+        className="group relative block aspect-[4/5] w-full overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm shadow-primary/5 transition hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-primary sm:aspect-[3/4]"
         aria-label={`Open fullscreen view for ${title}`}
       >
         <Image
           src={activeImage}
           alt={title}
           fill
-          sizes="(max-width: 1024px) 100vw, 400px"
-          className="object-cover transition duration-500 group-hover:scale-105"
+          sizes="(max-width: 1024px) 100vw, 420px"
+          className="object-cover transition duration-500 group-hover:scale-[1.03]"
         />
+        <span className="pointer-events-none absolute inset-x-0 bottom-0 flex items-center justify-between bg-gradient-to-t from-black/70 via-black/20 to-transparent px-3 py-2 text-xs font-medium text-white/90">
+          <span>{title}</span>
+          <span className="inline-flex items-center gap-1 rounded-full bg-white/15 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide">
+            {activeIndex + 1}/{galleryImages.length}
+          </span>
+        </span>
       </button>
 
-      <div className="flex gap-3 overflow-x-auto pb-2">
-        {galleryImages.map((src, index) => {
-          const isActive = index === activeIndex;
-          return (
-            <button
-              type="button"
-              key={src + index}
-              onClick={() => goToImage(index)}
-              className={`relative h-20 w-16 flex-shrink-0 overflow-hidden rounded border transition ${
-                isActive ? "border-primary ring-2 ring-primary" : "border-gray-200 hover:border-primary/60"
-              }`}
-              aria-label={`View image ${index + 1} of ${galleryImages.length}`}
-            >
-              <Image src={src} alt={`Thumbnail ${index + 1} for ${title}`} fill sizes="80px" className="object-cover" />
-            </button>
-          );
-        })}
+      <div className="relative">
+        <div className="pointer-events-none absolute inset-y-0 left-0 w-6 bg-gradient-to-r from-white via-white/80 to-transparent" aria-hidden="true" />
+        <div className="pointer-events-none absolute inset-y-0 right-0 w-6 bg-gradient-to-l from-white via-white/80 to-transparent" aria-hidden="true" />
+        <div
+          className="flex gap-3 overflow-x-auto pb-2 pt-1 snap-x snap-mandatory scroll-pl-6 pr-6"
+          style={{ WebkitOverflowScrolling: "touch" }}
+        >
+          {galleryImages.map((src, index) => {
+            const isActive = index === activeIndex;
+            return (
+              <button
+                type="button"
+                key={src + index}
+                onClick={() => goToImage(index)}
+                className={`relative h-20 w-16 flex-shrink-0 overflow-hidden rounded-xl border bg-white transition focus:outline-none focus-visible:ring-2 focus-visible:ring-primary sm:h-24 sm:w-18 snap-center ${
+                  isActive ? "border-primary ring-2 ring-primary" : "border-gray-200 hover:border-primary/60"
+                }`}
+                aria-label={`View image ${index + 1} of ${galleryImages.length}`}
+              >
+                <Image src={src} alt={`Thumbnail ${index + 1} for ${title}`} fill sizes="96px" className="object-cover" />
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       {isFullscreen ? (
