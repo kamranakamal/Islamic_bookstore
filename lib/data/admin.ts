@@ -11,6 +11,7 @@ import type {
   AdminOrder,
   AdminUserSummary,
   BlogPostRow,
+  BookLanguage,
   BookRowWithCategory,
   BulkOrderRequestRow,
   CategorySummary,
@@ -98,40 +99,107 @@ export async function getAdminUsers(): Promise<AdminUserSummary[]> {
 export async function getAdminAnalytics(): Promise<AdminAnalyticsSnapshot> {
   const supabase = getSupabaseAdmin();
 
-  const [{ count: totalBooks }, { count: totalOrdersPending }, { count: totalUsers }] = await Promise.all([
-    supabase.from("books").select("id", { count: "exact", head: true }),
-    supabase.from("orders").select("id", { count: "exact", head: true }).eq("status", "pending"),
+  const [booksResponse, ordersResponse, userCountResponse] = await Promise.all([
+    supabase
+      .from("books")
+      .select("id, title, created_at, is_featured, available_languages, price_local_inr, categories(name, slug)")
+      .order("created_at", { ascending: false }),
+    supabase.from("orders").select("id, status, items, created_at").order("created_at", { ascending: false }),
     supabase.from("profiles").select("id", { count: "exact", head: true })
   ]);
 
-  const [{ data: bookLookup }, { data: recentOrders }] = await Promise.all([
-    supabase.from("books").select("id, title"),
-    supabase.from("orders").select("items").order("created_at", { ascending: false }).limit(50)
-  ]);
+  const bookRows = (booksResponse.data ?? []) as BookRowWithCategory[];
+  type OrderForAnalytics = Pick<OrderRow, "status" | "items" | "created_at"> & { id: string };
+  const orderRows = (ordersResponse.data ?? []) as OrderForAnalytics[];
+  const totalUsers = userCountResponse.count ?? 0;
 
-  const titleById = new Map<string, string>(
-    ((bookLookup ?? []) as Array<{ id: string; title: string }>).map((book) => [book.id, book.title])
-  );
-  const aggregated = new Map<string, number>();
+  const thirtyDaysAgo = new Date();
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-  for (const order of (recentOrders ?? []) as Array<{ items: OrderRow["items"] }>) {
-    for (const item of order.items ?? []) {
-      const title = titleById.get(item.book_id);
-      if (!title) continue;
-      aggregated.set(title, (aggregated.get(title) ?? 0) + item.quantity);
+  const newBooksLast30Days = bookRows.filter((book) => new Date(book.created_at) >= thirtyDaysAgo).length;
+  const featuredBooks = bookRows.filter((book) => book.is_featured).length;
+
+  const booksByCategoryMap = new Map<string, number>();
+  for (const book of bookRows) {
+    const categoryName = book.categories?.name ?? "Uncategorized";
+    booksByCategoryMap.set(categoryName, (booksByCategoryMap.get(categoryName) ?? 0) + 1);
+  }
+  const booksByCategory = Array.from(booksByCategoryMap.entries())
+    .map(([category, count]) => ({ category, count }))
+    .sort((a, b) => b.count - a.count);
+
+  const booksByLanguageMap = new Map<BookLanguage, number>();
+  for (const book of bookRows) {
+    for (const language of book.available_languages ?? []) {
+      booksByLanguageMap.set(language, (booksByLanguageMap.get(language) ?? 0) + 1);
+    }
+  }
+  const booksByLanguage = Array.from(booksByLanguageMap.entries())
+    .map(([language, count]) => ({ language, count }))
+    .sort((a, b) => b.count - a.count);
+
+  const totalOrders = orderRows.length;
+  const ordersByStatusMap = new Map<OrderRow["status"], number>();
+  let totalOrderItems = 0;
+
+  const bookTitleById = new Map<string, string>();
+  const bookPriceById = new Map<string, number>();
+  for (const book of bookRows) {
+    bookTitleById.set(book.id, book.title);
+    bookPriceById.set(book.id, book.price_local_inr ?? 0);
+  }
+
+  const aggregatedTitles = new Map<string, number>();
+  let estimatedLocalRevenue = 0;
+
+  for (const order of orderRows) {
+    ordersByStatusMap.set(order.status, (ordersByStatusMap.get(order.status) ?? 0) + 1);
+    const items = order.items ?? [];
+    for (const item of items) {
+      totalOrderItems += item.quantity;
+      const title = bookTitleById.get(item.book_id);
+      if (title) {
+        aggregatedTitles.set(title, (aggregatedTitles.get(title) ?? 0) + item.quantity);
+      }
+
+      if (order.status !== "cancelled") {
+        const price = bookPriceById.get(item.book_id) ?? 0;
+        estimatedLocalRevenue += price * item.quantity;
+      }
     }
   }
 
-  const mostRequestedTitles = Array.from(aggregated.entries())
+  const ordersByStatus = Array.from(ordersByStatusMap.entries())
+    .map(([status, count]) => ({ status, count }))
+    .sort((a, b) => b.count - a.count);
+
+  const mostRequestedTitles = Array.from(aggregatedTitles.entries())
     .sort((a, b) => b[1] - a[1])
     .slice(0, 5)
     .map(([title, count]) => ({ title, count }));
 
+  const recentBooks = bookRows.slice(0, 5).map((book) => ({
+    id: book.id,
+    title: book.title,
+    createdAt: book.created_at,
+    category: book.categories?.name ?? null,
+    isFeatured: book.is_featured
+  }));
+
   return {
-    totalBooks: totalBooks ?? 0,
-    totalOrdersPending: totalOrdersPending ?? 0,
-    totalUsers: totalUsers ?? 0,
-    mostRequestedTitles
+    totalBooks: bookRows.length,
+    newBooksLast30Days,
+    featuredBooks,
+    booksByCategory,
+    booksByLanguage,
+    totalOrders,
+    totalOrdersPending: ordersByStatusMap.get("pending") ?? 0,
+    ordersByStatus,
+    totalOrderItems,
+    estimatedLocalRevenue,
+    totalUsers,
+    mostRequestedTitles,
+    recentBooks
   };
 }
 

@@ -528,9 +528,18 @@ export interface AdminUserSummary {
 
 export interface AdminAnalyticsSnapshot {
   totalBooks: number;
+  newBooksLast30Days: number;
+  featuredBooks: number;
+  booksByCategory: Array<{ category: string; count: number }>;
+  booksByLanguage: Array<{ language: BookLanguage; count: number }>;
+  totalOrders: number;
   totalOrdersPending: number;
+  ordersByStatus: Array<{ status: OrderRow["status"]; count: number }>;
+  totalOrderItems: number;
+  estimatedLocalRevenue: number;
   totalUsers: number;
   mostRequestedTitles: Array<{ title: string; count: number }>;
+  recentBooks: Array<{ id: string; title: string; createdAt: string; category: string | null; isFeatured: boolean }>;
 }
 
 export interface AdminContactMessage {
