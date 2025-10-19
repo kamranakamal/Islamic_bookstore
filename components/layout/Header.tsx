@@ -22,6 +22,11 @@ export function Header() {
   const pathname = usePathname();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
+  const headerClasses = clsx(
+    "sticky top-0 border-b border-white/60 backdrop-blur supports-[backdrop-filter]:bg-white/65 transition-shadow",
+    isMenuOpen ? "z-40 bg-white shadow-lg shadow-primary/10" : "z-50 bg-white/80 shadow-sm"
+  );
+
   useEffect(() => {
     if (!isMenuOpen) return;
     const onKeyDown = (event: KeyboardEvent) => {
@@ -43,16 +48,16 @@ export function Header() {
   }, [pathname]);
 
   return (
-    <header className="sticky top-0 z-50 border-b border-white/60 bg-white/80 shadow-sm backdrop-blur supports-[backdrop-filter]:bg-white/65">
-      <div className="mx-auto flex w-full max-w-7xl items-center justify-between gap-4 px-3 py-3 sm:px-5 lg:px-8">
+    <header className={headerClasses}>
+      <div className="mx-auto flex w-full max-w-7xl items-center justify-between gap-4 px-3 py-2.5 sm:px-5 lg:px-8">
         <Link
           href="/"
-          className="inline-flex items-center gap-3 rounded-full bg-gradient-to-r from-primary to-primary/80 px-3 py-1.5 text-sm font-semibold text-primary-foreground shadow-sm shadow-primary/20 transition hover:shadow-md md:px-4 md:text-base"
+          className="inline-flex items-center gap-2.5 rounded-full bg-gradient-to-r from-primary to-primary/85 px-3 py-1.5 text-sm font-semibold text-primary-foreground shadow-sm shadow-primary/20 transition hover:shadow-md sm:px-4 sm:text-base"
           aria-label="Maktab Muhammadiya home"
         >
-          <span aria-hidden="true" className="h-2 w-2 rounded-full bg-white/90" />
-          <span className="font-semibold">Maktab Muhammadiya</span>
-          <span aria-hidden="true" className="hidden text-sm font-semibold tracking-[0.6em] text-white/90 md:inline">
+          <span aria-hidden="true" className="hidden h-2 w-2 rounded-full bg-white/90 sm:block" />
+          <span className="font-semibold leading-none">Maktab Muhammadiya</span>
+          <span aria-hidden="true" className="hidden text-sm font-semibold tracking-[0.55em] text-white/90 md:inline">
             المكتبة
           </span>
         </Link>
@@ -97,11 +102,11 @@ export function Header() {
 
       {isMenuOpen ? (
         <div className="lg:hidden" role="dialog" aria-modal="true">
-          <div className="fixed inset-0 z-40 bg-gray-900/50 backdrop-blur-sm" onClick={() => setIsMenuOpen(false)} />
+          <div className="fixed inset-0 z-[60] bg-gray-950/40 backdrop-blur-sm" onClick={() => setIsMenuOpen(false)} />
           <nav
             id="mobile-nav"
             aria-label="Mobile navigation"
-            className="fixed inset-0 z-50 flex flex-col bg-white/95 px-6 pb-8 pt-8 shadow-xl shadow-primary/10 backdrop-blur-lg transition-transform duration-200 ease-out [padding-top:calc(env(safe-area-inset-top)+1.75rem)] supports-[backdrop-filter]:bg-white/85"
+            className="fixed inset-y-0 right-0 z-[70] flex h-[100dvh] w-full max-w-sm flex-col rounded-l-3xl border-l border-white/70 bg-white px-6 pb-8 pt-8 shadow-xl shadow-primary/15 transition-transform duration-200 ease-out [padding-top:calc(env(safe-area-inset-top)+1.75rem)] supports-[backdrop-filter]:bg-white/90 sm:max-w-md"
           >
             <div className="mb-6 flex items-center justify-between gap-4">
               <div>

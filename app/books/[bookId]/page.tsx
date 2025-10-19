@@ -145,8 +145,91 @@ export default async function BookPage({ params }: BookPageParams) {
     }
   ];
 
+  const pricingSummary = (
+    <div className="space-y-3">
+      <div className="flex items-center justify-between gap-3 text-sm">
+        <p className="text-[13px] font-medium uppercase tracking-wide text-gray-500">Local price</p>
+        <span
+          className={clsx(
+            "inline-flex items-center rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-wide",
+            isInStock ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-800"
+          )}
+        >
+          {isInStock ? "Available" : "Waitlist"}
+        </span>
+      </div>
+      <p className="text-2xl font-semibold text-primary sm:text-3xl">{book.priceFormattedLocal}</p>
+      <p className="text-xs text-gray-500">
+        International customers:
+        <span className="ml-1 font-medium text-gray-600">{book.priceFormattedInternational}</span>
+      </p>
+    </div>
+  );
+
+  const actionButtons = (
+    <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-1">
+      <Link
+        href={`/cart?add=${encodeURIComponent(book.id)}`}
+        className="inline-flex items-center justify-center gap-2 rounded-full bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground transition hover:-translate-y-0.5 hover:bg-primary/90"
+      >
+        <span aria-hidden="true">🛒</span>
+        Add to cart
+      </Link>
+      <Link
+        href={`/contact?book=${encodeURIComponent(book.id)}`}
+        className="inline-flex items-center justify-center gap-2 rounded-full border border-primary px-4 py-3 text-sm font-semibold text-primary transition hover:-translate-y-0.5 hover:bg-primary/10"
+      >
+        <span aria-hidden="true">✉️</span>
+        Contact us about this title
+      </Link>
+    </div>
+  );
+
+  const detailList = (
+    <section className="space-y-4 text-sm text-gray-600">
+      <h3 className="text-base font-semibold text-gray-900">Book details</h3>
+      <dl className="space-y-3">
+        <div className="flex items-start justify-between gap-4">
+          <dt className="text-gray-500">Formats</dt>
+          <dd className="max-w-[60%] text-right text-gray-700 sm:max-w-[70%]">{formatList}</dd>
+        </div>
+        <div className="flex items-start justify-between gap-4">
+          <dt className="text-gray-500">Pages</dt>
+          <dd className="text-gray-700">{book.pageCount}</dd>
+        </div>
+        <div className="flex items-start justify-between gap-4">
+          <dt className="text-gray-500">Languages</dt>
+          <dd className="max-w-[60%] text-right text-gray-700 sm:max-w-[70%]">{languageList}</dd>
+        </div>
+        <div className="flex items-start justify-between gap-4">
+          <dt className="text-gray-500">Stock</dt>
+          <dd className="text-gray-700">{book.stockQuantity}</dd>
+        </div>
+      </dl>
+    </section>
+  );
+
+  const assuranceList = (
+    <section className="rounded-xl bg-gray-50 px-4 py-3 text-sm text-gray-600">
+      <ul className="space-y-2">
+        <li className="flex items-start gap-2">
+          <span aria-hidden="true" className="mt-0.5 text-primary">•</span>
+          <span>Secure packaging keeps every copy protected during delivery.</span>
+        </li>
+        <li className="flex items-start gap-2">
+          <span aria-hidden="true" className="mt-0.5 text-primary">•</span>
+          <span>Ask about tailored bundles and pricing for schools or institutions.</span>
+        </li>
+        <li className="flex items-start gap-2">
+          <span aria-hidden="true" className="mt-0.5 text-primary">•</span>
+          <span>Have questions? Our team typically responds within one business day.</span>
+        </li>
+      </ul>
+    </section>
+  );
+
   return (
-    <div className="mx-auto w-full max-w-6xl px-3 py-6 sm:px-4 md:px-6 lg:px-8 lg:py-10">
+    <div className="mx-auto w-full max-w-6xl px-3 py-5 sm:px-4 md:px-6 lg:px-8 lg:py-8">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbList) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(bookJsonLd) }} />
       <div className="mb-6 flex items-center gap-3 text-sm text-gray-500">
@@ -158,8 +241,14 @@ export default async function BookPage({ params }: BookPageParams) {
         </span>
         <span className="hidden sm:inline">{book.categoryName}</span>
       </div>
-      <div className="grid gap-8 lg:grid-cols-[minmax(0,1.6fr)_minmax(280px,1fr)] xl:gap-12">
-        <article className="space-y-6 lg:space-y-8">
+      <section className="lg:hidden">
+        <div className="space-y-4 rounded-2xl border border-gray-200 bg-white/90 p-5 shadow-sm shadow-primary/10">
+          {pricingSummary}
+          {actionButtons}
+        </div>
+      </section>
+      <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1.6fr)_minmax(280px,1fr)] lg:gap-10">
+        <article className="order-2 space-y-6 lg:order-1 lg:space-y-8">
           <BookGallery title={book.title} images={book.galleryUrls} />
 
           <section className="space-y-4">
@@ -183,19 +272,11 @@ export default async function BookPage({ params }: BookPageParams) {
             </div>
           </section>
 
-          <section aria-label="Key book information" className="relative">
-            <div className="pointer-events-none absolute -left-3 top-0 h-full w-6 bg-gradient-to-r from-white to-transparent sm:hidden" aria-hidden="true" />
-            <div className="pointer-events-none absolute -right-3 top-0 h-full w-6 bg-gradient-to-l from-white to-transparent sm:hidden" aria-hidden="true" />
-            <div
-              className="flex gap-4 overflow-x-auto rounded-2xl border border-gray-200 bg-white px-4 py-4 shadow-sm sm:grid sm:grid-cols-2 sm:gap-6 sm:overflow-visible sm:px-6"
-              style={{ WebkitOverflowScrolling: "touch" }}
-            >
+          <section aria-label="Key book information">
+            <div className="grid grid-cols-2 gap-3 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm md:grid-cols-4 lg:p-6">
               {highlightCards.map(({ label, value, helper }) => (
-                <div
-                  key={label}
-                  className="min-w-[160px] shrink-0 rounded-xl border border-gray-100 bg-gray-50/80 px-4 py-3 text-sm text-gray-600 sm:min-w-0 sm:bg-transparent sm:text-gray-700"
-                >
-                  <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">{label}</p>
+                <div key={label} className="rounded-xl border border-gray-100 bg-gray-50/80 px-4 py-3 text-sm text-gray-600">
+                  <p className="text-[11px] font-semibold uppercase tracking-wide text-gray-500">{label}</p>
                   <p className="mt-1 text-base font-semibold text-gray-900">{value}</p>
                   <p className="text-xs text-gray-500">{helper}</p>
                 </div>
@@ -220,80 +301,11 @@ export default async function BookPage({ params }: BookPageParams) {
           </section>
         </article>
 
-        <aside className="flex flex-col gap-6 rounded-2xl border border-gray-200 bg-white/90 p-6 shadow-lg shadow-primary/10 lg:sticky lg:top-28">
-          <div className="space-y-3">
-            <div className="flex items-center justify-between gap-3">
-              <p className="text-sm text-gray-500">Local price (INR)</p>
-              <span
-                className={clsx(
-                  "inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold",
-                  isInStock ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-800"
-                )}
-              >
-                {isInStock ? "Available" : "Waitlist"}
-              </span>
-            </div>
-            <p className="text-3xl font-semibold text-primary">{book.priceFormattedLocal}</p>
-            <p className="text-xs text-gray-500">
-              International customers: <span className="font-medium text-gray-600">{book.priceFormattedInternational}</span>
-            </p>
-          </div>
-
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
-            <Link
-              href={`/cart?add=${encodeURIComponent(book.id)}`}
-              className="inline-flex items-center justify-center gap-2 rounded-full bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground transition hover:-translate-y-0.5 hover:bg-primary/90"
-            >
-              <span aria-hidden="true">🛒</span>
-              Add to cart
-            </Link>
-            <Link
-              href={`/contact?book=${encodeURIComponent(book.id)}`}
-              className="inline-flex items-center justify-center gap-2 rounded-full border border-primary px-4 py-3 text-sm font-semibold text-primary transition hover:-translate-y-0.5 hover:bg-primary/10"
-            >
-              <span aria-hidden="true">✉️</span>
-              Contact us about this title
-            </Link>
-          </div>
-
-          <section className="space-y-4 text-sm text-gray-600">
-            <h3 className="text-base font-semibold text-gray-900">Book details</h3>
-            <dl className="space-y-3">
-              <div className="flex items-start justify-between gap-4">
-                <dt className="text-gray-500">Formats</dt>
-                <dd className="max-w-[60%] text-right text-gray-700 sm:max-w-[70%]">{formatList}</dd>
-              </div>
-              <div className="flex items-start justify-between gap-4">
-                <dt className="text-gray-500">Pages</dt>
-                <dd className="text-gray-700">{book.pageCount}</dd>
-              </div>
-              <div className="flex items-start justify-between gap-4">
-                <dt className="text-gray-500">Languages</dt>
-                <dd className="max-w-[60%] text-right text-gray-700 sm:max-w-[70%]">{languageList}</dd>
-              </div>
-              <div className="flex items-start justify-between gap-4">
-                <dt className="text-gray-500">Stock</dt>
-                <dd className="text-gray-700">{book.stockQuantity}</dd>
-              </div>
-            </dl>
-          </section>
-
-          <section className="rounded-xl bg-gray-50 px-4 py-3 text-sm text-gray-600">
-            <ul className="space-y-2">
-              <li className="flex items-start gap-2">
-                <span aria-hidden="true" className="mt-0.5 text-primary">•</span>
-                <span>Secure packaging keeps every copy protected during delivery.</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span aria-hidden="true" className="mt-0.5 text-primary">•</span>
-                <span>Ask about tailored bundles and pricing for schools or institutions.</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span aria-hidden="true" className="mt-0.5 text-primary">•</span>
-                <span>Have questions? Our team typically responds within one business day.</span>
-              </li>
-            </ul>
-          </section>
+        <aside className="order-1 hidden lg:sticky lg:top-24 lg:flex lg:flex-col lg:gap-6 lg:rounded-2xl lg:border lg:border-gray-200 lg:bg-white/90 lg:p-6 lg:shadow-lg lg:shadow-primary/10">
+          {pricingSummary}
+          {actionButtons}
+          {detailList}
+          {assuranceList}
         </aside>
       </div>
     </div>
