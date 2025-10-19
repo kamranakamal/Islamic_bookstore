@@ -56,6 +56,30 @@ export async function getAdminBooksData(): Promise<AdminBooksData> {
   };
 }
 
+export async function getAdminCategories(): Promise<CategorySummary[]> {
+  const supabase = getSupabaseAdmin();
+  const { data } = await supabase
+    .from("categories")
+    .select("id, slug, name, description, updated_at")
+    .order("name", { ascending: true });
+
+  const rows = (data ?? []) as Array<{
+    id: string;
+    slug: string;
+    name: string;
+    description: string;
+    updated_at: string;
+  }>;
+
+  return rows.map((row) => ({
+    id: row.id,
+    slug: row.slug,
+    name: row.name,
+    description: row.description ?? "",
+    updatedAt: row.updated_at
+  } satisfies CategorySummary));
+}
+
 export async function getAdminOrders(): Promise<AdminOrder[]> {
   const supabase = getSupabaseAdmin();
   const { data } = await supabase
