@@ -175,12 +175,15 @@ export function BookEditor({ categories, book, onCancel, onSuccess }: BookEditor
     [getValues, setValue]
   );
 
-  const uploadImageFile = async (file: File): Promise<string> => {
+  type StorageBucketAlias = "cover" | "gallery";
+
+  const uploadImageFile = async (file: File, bucket: StorageBucketAlias): Promise<string> => {
     const params = new URLSearchParams({
       fileName: file.name,
       fileType: file.type,
       fileSize: String(file.size)
     });
+    params.set("bucket", bucket);
     const response = await fetch(`/api/admin/upload-url?${params.toString()}`);
     const payload = await response.json();
     if (!response.ok) {
@@ -258,7 +261,7 @@ export function BookEditor({ categories, book, onCancel, onSuccess }: BookEditor
     setError(null);
 
     try {
-      const path = await uploadImageFile(file);
+  const path = await uploadImageFile(file, "cover");
       setValue("coverPath", path, { shouldDirty: true });
       const gallery = getValues("galleryPaths") ?? [];
       if (!gallery.includes(path)) {
@@ -282,7 +285,7 @@ export function BookEditor({ categories, book, onCancel, onSuccess }: BookEditor
     try {
       const uploadedPaths: string[] = [];
       for (const file of Array.from(files)) {
-        const path = await uploadImageFile(file);
+  const path = await uploadImageFile(file, "gallery");
         uploadedPaths.push(path);
       }
 
