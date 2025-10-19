@@ -14,6 +14,8 @@ interface BookListProps {
 export function BookList({ books, onEdit, isRefreshing = false }: BookListProps) {
   const queryClient = useQueryClient();
   const [selectedBookId, setSelectedBookId] = useState<string | null>(null);
+  const [page, setPage] = useState(1);
+  const pageSize = 10;
 
   useEffect(() => {
     if (!selectedBookId) return;
@@ -41,13 +43,28 @@ export function BookList({ books, onEdit, isRefreshing = false }: BookListProps)
     return books.slice().sort((a: AdminBook, b: AdminBook) => a.title.localeCompare(b.title));
   }, [books]);
 
+  const totalBooks = sortedBooks.length;
+  const totalPages = Math.max(1, Math.ceil(totalBooks / pageSize));
+  const currentPage = Math.min(page, totalPages);
+  const startIndex = (currentPage - 1) * pageSize;
+  const endIndex = Math.min(startIndex + pageSize, totalBooks);
+  const paginatedBooks = sortedBooks.slice(startIndex, startIndex + pageSize);
+
+  useEffect(() => {
+    setPage((current) => Math.min(current, totalPages));
+  }, [totalPages]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [totalBooks]);
+
   return (
     <section className="rounded-lg border border-gray-200 bg-white shadow-sm">
       <header className="flex items-center justify-between px-6 py-4">
         <div>
           <h2 className="text-lg font-semibold text-gray-900">Current catalog</h2>
           <p className="text-sm text-gray-600">
-            {sortedBooks.length} published titles
+            {totalBooks} published title{totalBooks === 1 ? "" : "s"}
             {isRefreshing ? <span className="ml-2 text-xs text-gray-400">Refreshing…</span> : null}
           </p>
         </div>
@@ -68,7 +85,7 @@ export function BookList({ books, onEdit, isRefreshing = false }: BookListProps)
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200 bg-white">
-            {sortedBooks.map((book: AdminBook) => (
+            {paginatedBooks.map((book: AdminBook) => (
               <tr key={book.id} className="hover:bg-gray-50">
                 <td className="px-4 py-3 text-sm font-medium text-gray-900">
                   <div className="flex items-center gap-3">
@@ -131,16 +148,44 @@ export function BookList({ books, onEdit, isRefreshing = false }: BookListProps)
                 </td>
               </tr>
             ))}
-            {sortedBooks.length === 0 ? (
+            {paginatedBooks.length === 0 ? (
               <tr>
                 <td colSpan={9} className="px-4 py-6 text-center text-sm text-gray-500">
-                  No books yet. Use the form above to add your first title.
+                  No books yet. Switch to the compose tab to add your first title.
                 </td>
               </tr>
             ) : null}
           </tbody>
         </table>
       </div>
+      {totalBooks > 0 ? (
+        <div className="flex flex-wrap items-center justify-between gap-3 border-t border-gray-200 px-6 py-4 text-sm text-gray-600">
+          <p>
+            Showing {startIndex + 1}–{endIndex} of {totalBooks} books
+          </p>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              className="rounded border border-gray-300 px-3 py-1 text-xs font-semibold text-gray-700 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-60"
+              onClick={() => setPage((current) => Math.max(1, current - 1))}
+              disabled={currentPage === 1}
+            >
+              Previous
+            </button>
+            <span className="self-center text-xs text-gray-500">
+              Page {currentPage} of {totalPages}
+            </span>
+            <button
+              type="button"
+              className="rounded border border-gray-300 px-3 py-1 text-xs font-semibold text-gray-700 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-60"
+              onClick={() => setPage((current) => Math.min(totalPages, current + 1))}
+              disabled={currentPage >= totalPages}
+            >
+              Next
+            </button>
+          </div>
+        </div>
+      ) : null}
       {selectedBookId ? (
         <div className="border-t border-gray-200 bg-gray-50 px-6 py-4">
           <div className="flex items-center justify-between">

@@ -1,7 +1,6 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import clsx from "clsx";
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 
 import type { AdminBlogPost, CreateOrUpdateBlogPostPayload, Json } from "@/lib/types";
@@ -86,6 +85,9 @@ export function BlogManager({ posts }: BlogManagerProps) {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [draft, setDraft] = useState<DraftBlogPost>(() => createDefaultDraft());
   const [formError, setFormError] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<"compose" | "manage">("compose");
+  const [page, setPage] = useState(1);
+  const pageSize = 10;
 
   const blogQuery = useQuery<AdminBlogPost[]>({
     queryKey: ["admin-blog"],
@@ -104,6 +106,24 @@ export function BlogManager({ posts }: BlogManagerProps) {
     const list = blogQuery.data ?? posts;
     return [...list].sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
   }, [blogQuery.data, posts]);
+
+  const totalPosts = sortedPosts.length;
+  const totalPages = Math.max(1, Math.ceil(totalPosts / pageSize));
+  const currentPage = Math.min(page, totalPages);
+  const startIndex = (currentPage - 1) * pageSize;
+  const endIndex = Math.min(startIndex + pageSize, totalPosts);
+  const paginatedPosts = sortedPosts.slice(startIndex, startIndex + pageSize);
+  const isRefreshing = blogQuery.isFetching;
+
+  useEffect(() => {
+    setPage((current) => Math.min(current, totalPages));
+  }, [totalPages]);
+
+  useEffect(() => {
+    if (activeTab === "manage") {
+      setPage(1);
+    }
+  }, [activeTab]);
 
   useEffect(() => {
     if (!selectedId) {
@@ -259,57 +279,75 @@ export function BlogManager({ posts }: BlogManagerProps) {
     setDraft((prev) => ({ ...prev, slug: generated }));
   };
 
+  const confirmAndDelete = (id: string) => {
+    if (typeof window !== "undefined" && !window.confirm("Delete this post?")) {
+      return;
+    }
+    setFormError(null);
+    deleteMutation.mutate(id);
+  };
+
   return (
-    <div className="grid gap-6 lg:grid-cols-[280px,1fr]">
-      <section className="space-y-4 rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
-        <div className="flex items-center justify-between">
-          <h2 className="text-sm font-semibold text-gray-900">Posts</h2>
-          <button
-            type="button"
-            onClick={resetDraft}
-            className="text-xs font-semibold text-primary hover:underline"
-            disabled={isBusy}
-          >
-            New
-          </button>
-        </div>
-        <ul className="space-y-2">
-          {sortedPosts.map((post) => (
-            <li key={post.id}>
+    <div className="space-y-6">
+      <div className="flex gap-2 rounded-full border border-gray-200 bg-gray-100 p-1 text-sm font-semibold text-gray-600 shadow-sm">
+        <button
+          type="button"
+          className={`flex-1 rounded-full px-4 py-2 text-center transition ${
+            activeTab === "compose" ? "bg-white text-primary shadow" : "hover:text-primary"
+          }`}
+          onClick={() => setActiveTab("compose")}
+        >
+          Compose
+        </button>
+        <button
+          type="button"
+          className={`flex-1 rounded-full px-4 py-2 text-center transition ${
+            activeTab === "manage" ? "bg-white text-primary shadow" : "hover:text-primary"
+          }`}
+          onClick={() => setActiveTab("manage")}
+        >
+          Manage posts
+        </button>
+      </div>
+
+      {activeTab === "compose" ? (
+        <section className="space-y-4 rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+          <header className="flex flex-wrap items-center justify-between gap-3">
+            <div className="space-y-1">
+              <h2 className="text-lg font-semibold text-gray-900">
+                {selectedId ? "Edit blog post" : "Create a new blog post"}
+              </h2>
+              <p className="text-sm text-gray-600">
+                Draft and schedule reflections, announcements, and knowledge pieces for the public blog.
+              </p>
+              {selectedId ? (
+                <p className="text-xs text-gray-500">
+                  Editing: <span className="font-medium text-gray-700">{draft.title || "Untitled"}</span>
+                </p>
+              ) : null}
+            </div>
+            <div className="flex gap-2">
               <button
                 type="button"
-                onClick={() => setSelectedId(post.id)}
-                className={clsx(
-                  "w-full rounded border px-3 py-2 text-left text-sm transition",
-                  selectedId === post.id
-                    ? "border-primary bg-primary/10 text-primary"
-                    : "border-gray-200 text-gray-700 hover:border-primary/60"
-                )}
+                onClick={() => {
+                  resetDraft();
+                  setActiveTab("compose");
+                }}
+                className="rounded border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-50"
+                disabled={isBusy}
               >
-                <span className="block font-semibold">{post.title}</span>
-                <span className="text-xs text-gray-500">
-                  {post.slug} · {post.published ? "Published" : "Draft"}
-                </span>
+                New post
               </button>
-            </li>
-          ))}
-          {sortedPosts.length === 0 ? (
-            <li className="rounded border border-dashed border-gray-200 px-3 py-6 text-center text-xs text-gray-500">
-              No blog posts yet.
-            </li>
-          ) : null}
-        </ul>
-      </section>
-      <section className="space-y-4 rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-        <header className="space-y-1">
-          <h2 className="text-lg font-semibold text-gray-900">
-            {selectedId ? "Edit post" : "Create a new post"}
-          </h2>
-          <p className="text-sm text-gray-600">
-            Draft and schedule reflections, announcements, and knowledge pieces for the public blog.
-          </p>
-        </header>
-        <form className="space-y-4" onSubmit={handleSubmit}>
+              <button
+                type="button"
+                onClick={() => setActiveTab("manage")}
+                className="rounded border border-primary px-4 py-2 text-sm font-semibold text-primary transition hover:bg-primary/10"
+              >
+                View posts
+              </button>
+            </div>
+          </header>
+          <form className="space-y-4" onSubmit={handleSubmit}>
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
               <label htmlFor="blog-title" className="text-sm font-semibold text-gray-900">
@@ -480,13 +518,7 @@ export function BlogManager({ posts }: BlogManagerProps) {
             {selectedId ? (
               <button
                 type="button"
-                onClick={() => {
-                  if (typeof window !== "undefined" && !window.confirm("Delete this post?")) {
-                    return;
-                  }
-                  setFormError(null);
-                  deleteMutation.mutate(selectedId);
-                }}
+                  onClick={() => confirmAndDelete(selectedId)}
                 className="rounded border border-red-200 px-4 py-2 text-sm font-semibold text-red-600 transition hover:bg-red-50 disabled:cursor-not-allowed"
                 disabled={isBusy}
               >
@@ -503,7 +535,131 @@ export function BlogManager({ posts }: BlogManagerProps) {
             </button>
           </div>
         </form>
-      </section>
+        </section>
+      ) : (
+        <section className="space-y-4 rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+          <header className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h2 className="text-lg font-semibold text-gray-900">Existing posts</h2>
+              <p className="text-sm text-gray-600">
+                {totalPosts} post{totalPosts === 1 ? "" : "s"} total
+                {isRefreshing ? <span className="ml-2 text-xs text-gray-400">Refreshing…</span> : null}
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                resetDraft();
+                setActiveTab("compose");
+              }}
+              className="rounded border border-primary px-4 py-2 text-sm font-semibold text-primary transition hover:bg-primary/10"
+            >
+              New post
+            </button>
+          </header>
+          {totalPosts === 0 ? (
+            <div className="rounded border border-dashed border-gray-200 px-4 py-10 text-center text-sm text-gray-500">
+              No blog posts yet. Create your first story from the compose tab.
+            </div>
+          ) : (
+            <>
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200 text-sm">
+                  <thead className="bg-gray-50 text-xs font-semibold uppercase tracking-wide text-gray-500">
+                    <tr>
+                      <th className="px-4 py-3 text-left">Title</th>
+                      <th className="px-4 py-3 text-left">Slug</th>
+                      <th className="px-4 py-3 text-left">Status</th>
+                      <th className="px-4 py-3 text-left">Updated</th>
+                      <th className="px-4 py-3 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100 bg-white text-sm text-gray-700">
+                    {paginatedPosts.map((post) => (
+                      <tr key={post.id} className="hover:bg-gray-50">
+                        <td className="px-4 py-3 font-semibold text-gray-900">
+                          <div className="flex flex-col">
+                            <span>{post.title}</span>
+                            <span className="text-xs text-gray-500">
+                              {post.tags.length ? post.tags.join(", ") : "No tags"}
+                            </span>
+                          </div>
+                        </td>
+                        <td className="px-4 py-3 text-sm text-gray-600">{post.slug}</td>
+                        <td className="px-4 py-3">
+                          <span
+                            className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wide ${
+                              post.published ? "bg-emerald-50 text-emerald-700" : "bg-amber-50 text-amber-700"
+                            }`}
+                          >
+                            {post.published ? "Published" : "Draft"}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3 text-sm text-gray-600">
+                          {new Date(post.updatedAt).toLocaleString("en-GB", {
+                            day: "numeric",
+                            month: "short",
+                            year: "numeric",
+                            hour: "2-digit",
+                            minute: "2-digit"
+                          })}
+                        </td>
+                        <td className="px-4 py-3 text-right">
+                          <div className="flex justify-end gap-2">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setSelectedId(post.id);
+                                setActiveTab("compose");
+                              }}
+                              className="rounded border border-gray-300 px-3 py-1 text-xs font-semibold text-gray-700 transition hover:bg-gray-100"
+                            >
+                              Edit
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => confirmAndDelete(post.id)}
+                              className="rounded border border-red-200 px-3 py-1 text-xs font-semibold text-red-600 transition hover:bg-red-50"
+                            >
+                              Delete
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <footer className="flex flex-wrap items-center justify-between gap-3 border-t border-gray-200 pt-4 text-sm text-gray-600">
+                <p>
+                  Showing {totalPosts === 0 ? 0 : startIndex + 1}–{endIndex} of {totalPosts} posts
+                </p>
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    className="rounded border border-gray-300 px-3 py-1 text-xs font-semibold text-gray-700 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-60"
+                    onClick={() => setPage((current) => Math.max(1, current - 1))}
+                    disabled={currentPage === 1}
+                  >
+                    Previous
+                  </button>
+                  <span className="self-center text-xs text-gray-500">
+                    Page {currentPage} of {totalPages}
+                  </span>
+                  <button
+                    type="button"
+                    className="rounded border border-gray-300 px-3 py-1 text-xs font-semibold text-gray-700 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-60"
+                    onClick={() => setPage((current) => Math.min(totalPages, current + 1))}
+                    disabled={currentPage >= totalPages}
+                  >
+                    Next
+                  </button>
+                </div>
+              </footer>
+            </>
+          )}
+        </section>
+      )}
     </div>
   );
 }

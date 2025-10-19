@@ -121,7 +121,7 @@ export async function getAdminAnalytics(): Promise<AdminAnalyticsSnapshot> {
 
   const booksByCategoryMap = new Map<string, number>();
   for (const book of bookRows) {
-    const categoryName = book.categories?.name ?? "Uncategorized";
+  const categoryName = book.categories?.name ?? "Uncategorised";
     booksByCategoryMap.set(categoryName, (booksByCategoryMap.get(categoryName) ?? 0) + 1);
   }
   const booksByCategory = Array.from(booksByCategoryMap.entries())
@@ -182,7 +182,7 @@ export async function getAdminAnalytics(): Promise<AdminAnalyticsSnapshot> {
     id: book.id,
     title: book.title,
     createdAt: book.created_at,
-    category: book.categories?.name ?? null,
+    category: book.categories?.name ?? "Uncategorised",
     isFeatured: book.is_featured
   }));
 

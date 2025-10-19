@@ -14,6 +14,7 @@ interface BooksManagerProps {
 
 export function BooksManager({ books, categories }: BooksManagerProps) {
   const [selectedBook, setSelectedBook] = useState<AdminBook | null>(null);
+  const [activeTab, setActiveTab] = useState<"compose" | "manage">("compose");
 
   const booksQuery = useQuery({
     queryKey: ["admin-books"],
@@ -41,22 +42,70 @@ export function BooksManager({ books, categories }: BooksManagerProps) {
     }
   }, [booksData, selectedBook]);
 
+  const handleEditBook = (book: AdminBook) => {
+    setSelectedBook(book);
+    setActiveTab("compose");
+  };
+
+  const handleCreateBook = () => {
+    setSelectedBook(null);
+    setActiveTab("compose");
+  };
+
   return (
-    <div className="space-y-8">
-      <BookEditor
-        categories={categoriesData}
-        book={selectedBook}
-        onCancel={() => setSelectedBook(null)}
-        onSuccess={(updated) =>
-          setSelectedBook((previous) => {
-            if (!previous) {
-              return null;
-            }
-            return updated;
-          })
-        }
-      />
-      <BookList books={booksData} onEdit={setSelectedBook} isRefreshing={booksQuery.isFetching} />
+    <div className="space-y-6">
+      <div className="flex gap-2 rounded-full border border-gray-200 bg-gray-100 p-1 text-sm font-semibold text-gray-600 shadow-sm">
+        <button
+          type="button"
+          className={`flex-1 rounded-full px-4 py-2 text-center transition ${
+            activeTab === "compose" ? "bg-white text-primary shadow" : "hover:text-primary"
+          }`}
+          onClick={() => setActiveTab("compose")}
+        >
+          Compose
+        </button>
+        <button
+          type="button"
+          className={`flex-1 rounded-full px-4 py-2 text-center transition ${
+            activeTab === "manage" ? "bg-white text-primary shadow" : "hover:text-primary"
+          }`}
+          onClick={() => setActiveTab("manage")}
+        >
+          Manage catalog
+        </button>
+      </div>
+
+      {activeTab === "compose" ? (
+        <BookEditor
+          categories={categoriesData}
+          book={selectedBook}
+          onCancel={() => setSelectedBook(null)}
+          onSuccess={(updated) => {
+            setSelectedBook(updated);
+            setActiveTab("manage");
+          }}
+        />
+      ) : (
+        <div className="space-y-4">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h2 className="text-lg font-semibold text-gray-900">Existing books</h2>
+              <p className="text-sm text-gray-600">
+                Review and curate the catalog
+                {booksQuery.isFetching ? <span className="ml-2 text-xs text-gray-400">Refreshing…</span> : null}
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={handleCreateBook}
+              className="rounded border border-primary px-4 py-2 text-sm font-semibold text-primary transition hover:bg-primary/10"
+            >
+              New book
+            </button>
+          </div>
+          <BookList books={booksData} onEdit={handleEditBook} isRefreshing={booksQuery.isFetching} />
+        </div>
+      )}
     </div>
   );
 }
