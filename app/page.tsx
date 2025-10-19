@@ -40,30 +40,6 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function HomePage() {
   const { featuredBooks, latestBooks, categories } = await getHomepageData();
-  const heroFeatured = featuredBooks[0];
-  const heroArrival = latestBooks[0];
-  const heroHighlights = [
-    heroFeatured && {
-      id: "featured",
-      label: "Featured pick",
-      badgeClass: "bg-primary/10 text-primary",
-      book: heroFeatured,
-      description: "Curated for depth and reliability"
-    },
-    heroArrival && {
-      id: "arrival",
-      label: "New arrival",
-      badgeClass: "bg-emerald-100 text-emerald-700",
-      book: heroArrival,
-      description: "Freshly added to our shelves"
-    }
-  ].filter(Boolean) as Array<{
-    id: string;
-    label: string;
-    badgeClass: string;
-    description: string;
-    book: (typeof featuredBooks)[number];
-  }>;
 
   return (
     <div className="space-y-16">
@@ -107,8 +83,8 @@ export default async function HomePage() {
         >
           العلم
         </figure>
-        <div className="grid gap-8 lg:grid-cols-[1.1fr,0.9fr] lg:gap-10">
-          <div className="space-y-6">
+        <div className="flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between lg:gap-12">
+          <div className="space-y-6 lg:max-w-2xl">
             <p className="text-xs font-semibold uppercase tracking-[0.3em] text-primary sm:text-sm">Preserving knowledge</p>
             <h1 id="hero-heading" className="text-2xl font-semibold tracking-tight text-gray-900 sm:text-3xl md:text-4xl">
               Primary sources. Reliable scholarship. A curated bookstore for seekers of authentic knowledge.
@@ -140,72 +116,15 @@ export default async function HomePage() {
                 <span aria-hidden="true">→</span>
               </Link>
             </div>
-            <div className="rounded-2xl border border-white/70 bg-white/90 p-4 shadow-lg shadow-primary/5 ring-1 ring-white/60 backdrop-blur-sm">
-              <label htmlFor="hero-search" className="block text-xs font-semibold uppercase tracking-widest text-gray-500">
-                Search the catalogue
-              </label>
-              <div className="mt-2">
+          </div>
+          <div className="w-full lg:max-w-xl">
+            <div className="w-full rounded-3xl border border-white/70 bg-white/95 p-6 shadow-lg shadow-primary/10 ring-1 ring-white/60 backdrop-blur-sm">
+              <p className="text-xs font-semibold uppercase tracking-[0.4em] text-gray-500">Search the catalogue</p>
+              <div className="mt-3">
                 <SearchForm />
               </div>
             </div>
           </div>
-          <aside className="space-y-4">
-            {heroHighlights.length > 0 ? (
-              heroHighlights.map((highlight) => (
-                <article
-                  key={highlight.id}
-                  className="space-y-4 rounded-3xl border border-white/70 bg-white/90 p-6 shadow-md shadow-primary/10 backdrop-blur-sm"
-                >
-                  <span
-                    className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ${highlight.badgeClass}`}
-                  >
-                    {highlight.label}
-                  </span>
-                  <div className="space-y-3 text-center">
-                    <h2 className="text-lg font-semibold text-gray-900">
-                      <Link
-                        href={`/books/${highlight.book.id}`}
-                        className="focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
-                      >
-                        {highlight.book.title}
-                      </Link>
-                    </h2>
-                    <p className="text-base font-semibold text-primary">{highlight.book.priceFormattedLocal}</p>
-                    <p className="text-sm text-gray-500">{highlight.book.author}</p>
-                    <p className="text-xs text-gray-500">{highlight.description}</p>
-                  </div>
-                  <div className="flex justify-center">
-                    <Link
-                      href={`/books/${highlight.book.id}`}
-                      className="inline-flex items-center gap-2 rounded-full border border-primary px-4 py-2 text-sm font-semibold text-primary transition hover:-translate-y-0.5 hover:bg-primary/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
-                    >
-                      View details
-                      <span aria-hidden="true">→</span>
-                    </Link>
-                  </div>
-                </article>
-              ))
-            ) : (
-              <article className="space-y-3 rounded-2xl border border-white/70 bg-white/85 p-6 shadow-md shadow-primary/10 backdrop-blur-sm">
-                <span className="inline-flex items-center rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.3em] text-primary">
-                  Curated selection
-                </span>
-                <div className="space-y-2">
-                  <h2 className="text-lg font-semibold text-gray-900">Catalog highlights</h2>
-                  <p className="text-sm text-gray-600">
-                    Stay tuned — featured titles and new arrivals appear here as soon as they’re published.
-                  </p>
-                </div>
-                <Link
-                  href="/shop"
-                  className="inline-flex items-center gap-2 text-sm font-semibold text-primary transition hover:text-primary/80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
-                >
-                  <span>Browse all books</span>
-                  <span aria-hidden="true">→</span>
-                </Link>
-              </article>
-            )}
-          </aside>
         </div>
       </section>
 
