@@ -569,6 +569,21 @@ export interface AdminBlogPost {
   updatedAt: string;
 }
 
+export interface BlogPostSummary {
+  id: string;
+  slug: string;
+  title: string;
+  excerpt?: string | null;
+  coverUrl: string;
+  authorName?: string | null;
+  tags: string[];
+  publishedAt?: string | null;
+}
+
+export interface BlogPostDetail extends BlogPostSummary {
+  body: string;
+}
+
 export interface AdminBulkOrderRequest {
   id: string;
   organizationName: string;

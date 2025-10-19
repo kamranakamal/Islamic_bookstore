@@ -1,7 +1,9 @@
 import type {
   AdminBlogPost,
   AdminBook,
+  BlogPostDetail,
   BlogPostRow,
+  BlogPostSummary,
   BookDetail,
   BookRowWithCategory,
   BookSummary,
@@ -117,5 +119,25 @@ export function toAdminBlogPost(row: BlogPostRow): AdminBlogPost {
     publishedAt: row.published_at,
     createdAt: row.created_at,
     updatedAt: row.updated_at
+  };
+}
+
+export function toBlogPostSummary(row: BlogPostRow): BlogPostSummary {
+  return {
+    id: row.id,
+    slug: row.slug,
+    title: row.title,
+    excerpt: row.excerpt ?? undefined,
+    coverUrl: buildCoverUrl(row.cover_image),
+    authorName: row.author_name ?? undefined,
+    tags: Array.isArray(row.tags) ? row.tags : [],
+    publishedAt: row.published_at ?? undefined
+  };
+}
+
+export function toBlogPostDetail(row: BlogPostRow): BlogPostDetail {
+  return {
+    ...toBlogPostSummary(row),
+    body: row.body
   };
 }

@@ -1,8 +1,7 @@
 ## TODO List
 
 ### Database & Validation
-- [ ] Validate blog table schema in Supabase
-- [ ] Test database connections and queries
+- [ ] Populate all tables with sample data and start using supabase database instead of hardcoded data in the website 
 
 ### Content Review
 - [ ] Audit all pages for content accuracy
