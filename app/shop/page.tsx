@@ -186,7 +186,7 @@ export default async function ShopPage({ searchParams }: ShopPageProps) {
               No books found. Adjust your filters or <Link href="/contact" className="text-primary underline">contact the team</Link> for specific titles.
             </div>
           ) : (
-            <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
+            <div className="grid grid-cols-2 gap-4 sm:grid-cols-2 sm:gap-6 xl:grid-cols-3">
               {catalog.books.map((book) => (
                 <BookCard key={book.id} book={book} />
               ))}

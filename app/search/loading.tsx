@@ -10,7 +10,7 @@ export default function SearchLoading() {
         <Skeleton className="h-8 w-64" />
         <Skeleton className="h-4 w-80" />
       </header>
-      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3 xl:grid-cols-4">
         {Array.from({ length: 8 }).map((_, index) => (
           <BookCardSkeleton key={index} />
         ))}

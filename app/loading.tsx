@@ -30,7 +30,7 @@ export default function RootLoading() {
           <Skeleton className="h-7 w-48" />
           <Skeleton className="h-6 w-24 rounded-full" />
         </div>
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3 xl:grid-cols-4">
           {Array.from({ length: 8 }).map((_, index) => (
             <BookCardSkeleton key={index} />
           ))}

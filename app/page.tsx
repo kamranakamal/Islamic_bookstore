@@ -147,9 +147,11 @@ export default async function HomePage() {
             </span>
           </Link>
         </header>
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {featuredBooks.map((book) => (
-            <BookCard key={book.id} book={book} />
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3 xl:grid-cols-4">
+          {featuredBooks.map((book, index) => (
+            <div key={book.id} className={index >= 4 ? "hidden h-full sm:block" : "block h-full"}>
+              <BookCard book={book} />
+            </div>
           ))}
         </div>
       </section>
@@ -173,9 +175,11 @@ export default async function HomePage() {
             </span>
           </Link>
         </header>
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {latestBooks.map((book) => (
-            <BookCard key={book.id} book={book} />
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3 xl:grid-cols-4">
+          {latestBooks.map((book, index) => (
+            <div key={book.id} className={index >= 4 ? "hidden h-full sm:block" : "block h-full"}>
+              <BookCard book={book} />
+            </div>
           ))}
         </div>
       </section>
@@ -188,7 +192,7 @@ export default async function HomePage() {
         <h2 id="categories-heading" className="text-2xl font-semibold text-gray-900">
           Browse by category
         </h2>
-        <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" aria-label="Book categories">
+  <ul className="grid grid-cols-2 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" aria-label="Book categories">
           {categories.map((category) => (
             <li key={category.slug}>
               <Link
