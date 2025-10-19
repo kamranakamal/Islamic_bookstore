@@ -49,19 +49,19 @@ export function Header() {
 
   return (
     <header className={headerClasses}>
-      <div className="mx-auto flex w-full max-w-7xl items-center justify-between gap-4 px-3 py-2.5 sm:px-5 lg:px-8">
+      <div className="mx-auto flex w-full max-w-7xl items-center gap-3 px-3 py-2.5 sm:gap-4 sm:px-5 lg:px-8">
         <Link
           href="/"
-          className="inline-flex items-center gap-2.5 rounded-full bg-gradient-to-r from-primary to-primary/85 px-3 py-1.5 text-sm font-semibold text-primary-foreground shadow-sm shadow-primary/20 transition hover:shadow-md sm:px-4 sm:text-base"
+          className="flex min-w-0 items-center gap-2.5 rounded-full bg-gradient-to-r from-primary to-primary/85 px-3 py-1.5 text-sm font-semibold text-primary-foreground shadow-sm shadow-primary/20 transition hover:shadow-md sm:px-4 sm:text-base"
           aria-label="Maktab Muhammadiya home"
         >
-          <span aria-hidden="true" className="hidden h-2 w-2 rounded-full bg-white/90 sm:block" />
-          <span className="font-semibold leading-none">Maktab Muhammadiya</span>
-          <span aria-hidden="true" className="hidden text-sm font-semibold tracking-[0.55em] text-white/90 md:inline">
+          <span aria-hidden="true" className="hidden h-2 w-2 shrink-0 rounded-full bg-white/90 sm:block" />
+          <span className="truncate font-semibold leading-none">Maktab Muhammadiya</span>
+          <span aria-hidden="true" className="hidden shrink-0 text-sm font-semibold tracking-[0.55em] text-white/90 md:inline">
             المكتبة
           </span>
         </Link>
-        <nav aria-label="Main navigation" className="hidden lg:block">
+        <nav aria-label="Main navigation" className="ml-auto hidden lg:block">
           <ul className="flex items-center gap-3 text-sm font-medium text-gray-700">
             {navItems.map(({ href, label, Icon }) => {
               const isActive = href === "/" ? pathname === "/" : pathname.startsWith(href);
@@ -89,7 +89,7 @@ export function Header() {
         </nav>
         <button
           type="button"
-          className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-white/70 bg-white/70 text-gray-600 shadow-sm transition hover:border-primary/70 hover:bg-primary/10 hover:text-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary lg:hidden"
+          className="ml-auto inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-white/70 bg-white/70 text-gray-600 shadow-sm transition hover:border-primary/70 hover:bg-primary/10 hover:text-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary lg:hidden"
           onClick={() => setIsMenuOpen((prev) => !prev)}
           aria-expanded={isMenuOpen}
           aria-controls="mobile-nav"
