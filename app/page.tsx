@@ -149,7 +149,7 @@ export default async function HomePage() {
         </header>
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3 xl:grid-cols-4">
           {featuredBooks.map((book, index) => (
-            <div key={book.id} className={index >= 4 ? "hidden h-full sm:block" : "block h-full"}>
+            <div key={book.id} className={index >= 8 ? "hidden h-full sm:block" : "block h-full"}>
               <BookCard book={book} />
             </div>
           ))}
@@ -177,7 +177,7 @@ export default async function HomePage() {
         </header>
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3 xl:grid-cols-4">
           {latestBooks.map((book, index) => (
-            <div key={book.id} className={index >= 4 ? "hidden h-full sm:block" : "block h-full"}>
+            <div key={book.id} className={index >= 8 ? "hidden h-full sm:block" : "block h-full"}>
               <BookCard book={book} />
             </div>
           ))}

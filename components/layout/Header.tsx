@@ -150,22 +150,6 @@ export function Header() {
                 })}
               </ul>
             </div>
-            <div className="mt-6 grid gap-3 text-sm font-semibold">
-              <Link
-                href="/cart"
-                className="inline-flex items-center justify-center gap-2 rounded-full bg-primary px-4 py-3 text-primary-foreground transition hover:-translate-y-0.5 hover:bg-primary/90"
-              >
-                <span aria-hidden="true">🛍️</span>
-                View cart
-              </Link>
-              <Link
-                href="/bulk-order"
-                className="inline-flex items-center justify-center gap-2 rounded-full border border-primary px-4 py-3 text-primary transition hover:-translate-y-0.5 hover:bg-primary/10"
-              >
-                <span aria-hidden="true">🤝</span>
-                Bulk order assistance
-              </Link>
-            </div>
           </nav>
         </div>
       ) : null}
