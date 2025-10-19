@@ -1,5 +1,4 @@
 import dynamic from "next/dynamic";
-import Image from "next/image";
 import type { Metadata } from "next";
 import Link from "next/link";
 
@@ -162,23 +161,7 @@ export default async function HomePage() {
                   >
                     {highlight.label}
                   </span>
-                  <Link
-                    href={`/books/${highlight.book.id}`}
-                    className="group relative block overflow-hidden rounded-2xl"
-                    aria-label={`View details for ${highlight.book.title}`}
-                  >
-                    <div className="relative aspect-[3/4] w-full overflow-hidden rounded-2xl">
-                      <Image
-                        src={highlight.book.coverUrl}
-                        alt={highlight.book.title}
-                        fill
-                        sizes="(max-width: 1024px) 60vw, 320px"
-                        className="object-cover transition duration-300 group-hover:scale-[1.04]"
-                        priority={false}
-                      />
-                    </div>
-                  </Link>
-                  <div className="space-y-2 text-center">
+                  <div className="space-y-3 text-center">
                     <h2 className="text-lg font-semibold text-gray-900">
                       <Link
                         href={`/books/${highlight.book.id}`}
