@@ -96,20 +96,20 @@ export default async function HomePage() {
           })
         }}
       />
-      <section className="relative overflow-hidden rounded-3xl border border-primary/20 bg-gradient-to-r from-primary/5 via-amber-50 to-white p-10 shadow-sm">
+  <section className="relative overflow-hidden rounded-3xl border border-primary/20 bg-gradient-to-r from-primary/5 via-amber-50 to-white p-6 shadow-sm sm:p-10">
         <figure
           aria-hidden="true"
           className="pointer-events-none absolute -right-10 top-1/2 hidden -translate-y-1/2 rotate-6 text-[220px] font-extrabold leading-none text-primary/5 xl:block"
         >
           العلم
         </figure>
-        <div className="grid gap-10 lg:grid-cols-[1.1fr,0.9fr]">
+        <div className="grid gap-8 lg:grid-cols-[1.1fr,0.9fr] lg:gap-10">
           <div className="space-y-6">
-            <p className="text-sm font-semibold uppercase tracking-widest text-primary">Preserving knowledge</p>
-            <h1 className="text-3xl font-semibold tracking-tight text-gray-900 md:text-4xl">
+            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-primary sm:text-sm">Preserving knowledge</p>
+            <h1 className="text-2xl font-semibold tracking-tight text-gray-900 sm:text-3xl md:text-4xl">
               Primary sources. Reliable scholarship. A curated bookstore for seekers of authentic knowledge.
             </h1>
-            <p className="text-lg text-gray-600">
+            <p className="text-base text-gray-600 sm:text-lg">
               Explore classical and contemporary works vetted by students of knowledge. Build libraries that honour the
               Qur’an and authentic Sunnah with confidence.
             </p>
@@ -193,7 +193,7 @@ export default async function HomePage() {
       </section>
 
       <section className="space-y-6">
-        <header className="flex items-center justify-between">
+        <header className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <h2 className="text-2xl font-semibold text-gray-900">Featured titles</h2>
           <Link className="text-sm font-semibold text-primary" href="/shop?sort=popularity">
             View all
@@ -207,7 +207,7 @@ export default async function HomePage() {
       </section>
 
       <section className="space-y-6">
-        <header className="flex items-center justify-between">
+        <header className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <h2 className="text-2xl font-semibold text-gray-900">Latest arrivals</h2>
           <Link className="text-sm font-semibold text-primary" href="/shop?sort=newest">
             Browse more

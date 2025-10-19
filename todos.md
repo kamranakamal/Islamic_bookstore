@@ -1,11 +1,12 @@
 ## TODO List
 
-### Improvements
+### Improvements and bug fixes
 - [x] add a whatsapp and a email and a message link to respond to the messages from the admin panel use icons 
+- [ ] email button does not working in admin message pages and sometimes messages doent load from the database instantly it takes to refresh so make it fast
 
 
 ### UI/UX Improvements
-- [ ] Implement responsive design for mobile devices
+- [x] Implement responsive design for mobile devices
 - [ ] Optimize layout for tablets and desktop
 - [ ] Enhance visual appeal with modern design patterns
 - [ ] Improve accessibility compliance
