@@ -22,6 +22,7 @@ const bookSchema = z.object({
   description: z.string().min(20),
   categoryId: z.string().uuid(),
   coverPath: z.string().nullable().optional(),
+  galleryPaths: z.array(z.string().min(1)).optional().default([]),
   isFeatured: z.boolean().optional()
 });
 
@@ -58,6 +59,7 @@ export async function POST(request: NextRequest) {
     description: input.description,
     category_id: input.categoryId,
     cover_path: input.coverPath ?? null,
+    gallery_paths: input.galleryPaths,
     is_featured: input.isFeatured ?? false
   };
 
@@ -110,6 +112,7 @@ export async function PUT(request: NextRequest) {
     description: input.description,
     category_id: input.categoryId,
     cover_path: input.coverPath ?? null,
+    gallery_paths: input.galleryPaths,
     is_featured: input.isFeatured ?? false
   };
 

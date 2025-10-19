@@ -47,6 +47,7 @@ export interface BookRow extends Record<string, unknown> {
   price_international_usd: number;
   description: string;
   cover_path: string | null;
+  gallery_paths: string[];
   category_id: string;
   is_featured: boolean;
   search_vector: string | null;
@@ -208,6 +209,8 @@ export interface AdminBook {
   categoryName: string;
   coverPath: string | null;
   coverUrl: string;
+  galleryPaths: string[];
+  galleryUrls: string[];
   isFeatured: boolean;
   createdAt: string;
   updatedAt: string;
@@ -227,6 +230,7 @@ export interface BookSummary {
   priceFormattedLocal: string;
   priceFormattedInternational: string;
   coverUrl: string;
+  galleryUrls: string[];
   categoryName: string;
   categorySlug?: string;
   isFeatured?: boolean;
@@ -308,6 +312,7 @@ export interface CreateOrUpdateBookPayload {
   description: string;
   categoryId: string;
   coverPath?: string | null;
+  galleryPaths?: string[];
   isFeatured?: boolean;
 }
 

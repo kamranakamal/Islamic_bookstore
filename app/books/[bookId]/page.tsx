@@ -1,10 +1,10 @@
-import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { getBookById } from "@/lib/data/books";
 import { appUrl, organization } from "@/lib/config";
 import { getBookLanguageLabel } from "@/lib/types";
+import { BookGallery } from "@/components/site/BookGallery";
 
 interface BookPageParams {
   params: {
@@ -20,6 +20,11 @@ export async function generateMetadata({ params }: BookPageParams) {
 
   const canonical = `${appUrl}/books/${params.bookId}`;
   const description = book.description.slice(0, 180);
+  const metadataImages = book.galleryUrls.length
+    ? book.galleryUrls
+    : book.coverUrl
+      ? [book.coverUrl]
+      : [];
 
   return {
     title: book.title,
@@ -27,7 +32,7 @@ export async function generateMetadata({ params }: BookPageParams) {
     openGraph: {
       title: book.title,
       description,
-      images: book.coverUrl ? [book.coverUrl] : []
+      images: metadataImages
     },
     alternates: {
       canonical
@@ -35,7 +40,8 @@ export async function generateMetadata({ params }: BookPageParams) {
     twitter: {
       card: "summary_large_image",
       title: book.title,
-      description
+      description,
+      images: metadataImages.length ? metadataImages : undefined
     }
   };
 }
@@ -72,6 +78,12 @@ export default async function BookPage({ params }: BookPageParams) {
     ]
   };
 
+  const structuredImage = book.galleryUrls.length
+    ? book.galleryUrls
+    : book.coverUrl
+      ? [book.coverUrl]
+      : undefined;
+
   const bookJsonLd = {
     "@context": "https://schema.org",
     "@type": "Book",
@@ -79,7 +91,7 @@ export default async function BookPage({ params }: BookPageParams) {
     author: book.author,
     inLanguage: book.availableLanguages.map((language) => getBookLanguageLabel(language)).join(", ") || undefined,
     numberOfPages: book.pageCount,
-    image: book.coverUrl ?? undefined,
+    image: structuredImage,
     description: book.description,
     offers: [
       {
@@ -114,21 +126,7 @@ export default async function BookPage({ params }: BookPageParams) {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbList) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(bookJsonLd) }} />
       <article className="space-y-6">
-        <div className="relative aspect-[3/4] w-full overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm lg:max-w-sm">
-          {book.coverUrl ? (
-            <Image
-              src={book.coverUrl}
-              alt={book.title}
-              fill
-              sizes="(max-width: 1024px) 100vw, 400px"
-              className="object-cover"
-            />
-          ) : (
-            <div className="flex h-full items-center justify-center bg-gray-100 text-sm text-gray-500">
-              Cover coming soon
-            </div>
-          )}
-        </div>
+        <BookGallery title={book.title} images={book.galleryUrls} />
 
         <section className="space-y-3">
           <h1 className="text-3xl font-semibold text-gray-900">{book.title}</h1>

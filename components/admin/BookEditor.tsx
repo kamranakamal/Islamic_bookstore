@@ -6,6 +6,7 @@ import { useCallback, useEffect, useMemo, useState, type ChangeEvent } from "rea
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import clsx from "clsx";
+import Image from "next/image";
 
 import { getSupabaseClient } from "@/lib/supabaseClient";
 import {
@@ -22,6 +23,14 @@ const LANGUAGE_OPTIONS = BOOK_LANGUAGES.map((value) => ({ value, label: getBookL
 
 const DEFAULT_FORMAT_OPTIONS = ["Hardcover", "Paperback", "Softcover", "Digital", "Audio"] as const;
 
+const buildPublicImageUrl = (path: string): string => {
+  const baseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  if (!baseUrl) return "/logo.svg";
+  const normalizedBase = baseUrl.replace(/\/$/, "");
+  const separator = path.includes("?") ? "&" : "?";
+  return `${normalizedBase}/storage/v1/object/public/${path}${separator}width=400&quality=80`;
+};
+
 const formSchema = z.object({
   title: z.string().min(3),
   author: z.string().min(3),
@@ -36,6 +45,7 @@ const formSchema = z.object({
   description: z.string().min(20),
   categoryId: z.string().uuid(),
   coverPath: z.string().optional(),
+  galleryPaths: z.array(z.string().min(1)).default([]),
   isFeatured: z.boolean().optional()
 });
 
@@ -53,6 +63,7 @@ const mapBookToFormValues = (book: AdminBook, fallbackCategoryId: string): FormV
   description: book.description,
   categoryId: book.categoryId ?? fallbackCategoryId,
   coverPath: book.coverPath ?? "",
+  galleryPaths: book.galleryPaths ?? [],
   isFeatured: book.isFeatured ?? false
 });
 
@@ -68,6 +79,7 @@ export function BookEditor({ categories, book, onCancel, onSuccess }: BookEditor
   const [status, setStatus] = useState<"idle" | "saving" | "error" | "success">("idle");
   const [error, setError] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [galleryUploading, setGalleryUploading] = useState(false);
 
   const hasCategories = categories.length > 0;
   const defaultCategoryId = categories[0]?.id ?? "";
@@ -95,6 +107,7 @@ export function BookEditor({ categories, book, onCancel, onSuccess }: BookEditor
       description: "",
       categoryId: defaultCategoryId,
       coverPath: "",
+      galleryPaths: [],
       isFeatured: false
     }),
     [defaultCategoryId]
@@ -116,15 +129,19 @@ export function BookEditor({ categories, book, onCancel, onSuccess }: BookEditor
   useEffect(() => {
     register("availableFormats");
     register("availableLanguages");
+    register("galleryPaths");
   }, [register]);
 
   const coverPathValue = watch("coverPath");
+  const titleValue = watch("title") ?? book?.title ?? "";
+  const galleryPaths = watch("galleryPaths") ?? [];
   const selectedFormats = watch("availableFormats") ?? [];
   const selectedLanguages = watch("availableLanguages") ?? [];
-  const disableSubmit = status === "saving" || uploading || !hasCategories;
+  const disableSubmit = status === "saving" || uploading || galleryUploading || !hasCategories;
 
   const isEditing = Boolean(book);
   const currentCoverUrl = book?.coverUrl ?? null;
+  const coverPreviewUrl = coverPathValue?.length ? buildPublicImageUrl(coverPathValue) : currentCoverUrl;
 
   useEffect(() => {
     if (book) {
@@ -158,6 +175,33 @@ export function BookEditor({ categories, book, onCancel, onSuccess }: BookEditor
     [getValues, setValue]
   );
 
+  const uploadImageFile = async (file: File): Promise<string> => {
+    const params = new URLSearchParams({
+      fileName: file.name,
+      fileType: file.type,
+      fileSize: String(file.size)
+    });
+    const response = await fetch(`/api/admin/upload-url?${params.toString()}`);
+    const payload = await response.json();
+    if (!response.ok) {
+      throw new Error((payload as { error?: string })?.error ?? "Failed to prepare upload");
+    }
+    const data = payload as UploadUrlResponse;
+
+    const supabase = getSupabaseClient();
+    const { error: uploadError } = await supabase.storage
+      .from(data.bucket)
+      .uploadToSignedUrl(data.path, data.token, file, {
+        upsert: true
+      });
+
+    if (uploadError) {
+      throw new Error((uploadError as { message?: string })?.message ?? "Failed to upload image");
+    }
+
+    return `${data.bucket}/${data.path}`;
+  };
+
   const onSubmit = async (values: FormValues) => {
     setStatus("saving");
     setError(null);
@@ -175,6 +219,7 @@ export function BookEditor({ categories, book, onCancel, onSuccess }: BookEditor
       description: values.description.trim(),
       categoryId: values.categoryId,
       coverPath: values.coverPath?.length ? values.coverPath : null,
+      galleryPaths: values.galleryPaths ?? [],
       isFeatured: values.isFeatured ?? false
     };
 
@@ -213,36 +258,87 @@ export function BookEditor({ categories, book, onCancel, onSuccess }: BookEditor
     setError(null);
 
     try {
-      const params = new URLSearchParams({
-        fileName: file.name,
-        fileType: file.type,
-        fileSize: String(file.size)
-      });
-      const response = await fetch(`/api/admin/upload-url?${params.toString()}`);
-      const payload = await response.json();
-      if (!response.ok) {
-        throw new Error((payload as { error?: string })?.error ?? "Failed to prepare upload");
+      const path = await uploadImageFile(file);
+      setValue("coverPath", path, { shouldDirty: true });
+      const gallery = getValues("galleryPaths") ?? [];
+      if (!gallery.includes(path)) {
+        setValue("galleryPaths", [path, ...gallery], { shouldDirty: true, shouldValidate: true });
       }
-      const data = payload as UploadUrlResponse;
-
-      const supabase = getSupabaseClient();
-      const { error: uploadError } = await supabase.storage
-        .from(data.bucket)
-        .uploadToSignedUrl(data.path, data.token, file, {
-          upsert: true
-        });
-
-      if (uploadError) {
-        throw uploadError;
-      }
-
-      setValue("coverPath", `${data.bucket}/${data.path}`, { shouldDirty: true });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to upload cover");
     } finally {
       setUploading(false);
+      event.target.value = "";
     }
   };
+
+  const handleGalleryUpload = async (event: ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (!files?.length) return;
+
+    setGalleryUploading(true);
+    setError(null);
+
+    try {
+      const uploadedPaths: string[] = [];
+      for (const file of Array.from(files)) {
+        const path = await uploadImageFile(file);
+        uploadedPaths.push(path);
+      }
+
+      const current = getValues("galleryPaths") ?? [];
+      const merged = [...current];
+      for (const path of uploadedPaths) {
+        if (!merged.includes(path)) {
+          merged.push(path);
+        }
+      }
+
+      setValue("galleryPaths", merged, { shouldDirty: true, shouldValidate: true });
+
+      if (!getValues("coverPath") && uploadedPaths[0]) {
+        setValue("coverPath", uploadedPaths[0], { shouldDirty: true });
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to upload gallery images");
+    } finally {
+      setGalleryUploading(false);
+      event.target.value = "";
+    }
+  };
+
+  const removeGalleryImage = useCallback(
+    (index: number) => {
+      const current = getValues("galleryPaths") ?? [];
+      if (!current[index]) return;
+      const [removed] = current.splice(index, 1);
+      setValue("galleryPaths", [...current], { shouldDirty: true, shouldValidate: true });
+      if (removed && removed === getValues("coverPath")) {
+        setValue("coverPath", current[0] ?? "", { shouldDirty: true });
+      }
+    },
+    [getValues, setValue]
+  );
+
+  const moveGalleryImage = useCallback(
+    (index: number, direction: -1 | 1) => {
+      const current = getValues("galleryPaths") ?? [];
+      const targetIndex = index + direction;
+      if (targetIndex < 0 || targetIndex >= current.length) return;
+      const next = [...current];
+      const [moved] = next.splice(index, 1);
+      next.splice(targetIndex, 0, moved);
+      setValue("galleryPaths", next, { shouldDirty: true, shouldValidate: true });
+    },
+    [getValues, setValue]
+  );
+
+  const setCoverFromGallery = useCallback(
+    (path: string) => {
+      setValue("coverPath", path, { shouldDirty: true });
+    },
+    [setValue]
+  );
 
   return (
     <section className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
@@ -456,7 +552,7 @@ export function BookEditor({ categories, book, onCancel, onSuccess }: BookEditor
 
         <div>
           <label className="mb-1 block text-sm font-medium text-gray-700" htmlFor="cover">
-            Cover image
+            Primary cover image
           </label>
           <input
             id="cover"
@@ -465,25 +561,138 @@ export function BookEditor({ categories, book, onCancel, onSuccess }: BookEditor
             onChange={handleCoverChange}
             className="block w-full text-sm text-gray-600 file:mr-3 file:rounded file:border file:border-gray-300 file:bg-white file:px-3 file:py-2 file:text-sm file:font-medium file:text-gray-700 hover:file:bg-gray-100"
           />
-          <p className="mt-1 text-xs text-gray-500">Accepted formats: JPG, PNG. Max size 5MB.</p>
+          <p className="mt-1 text-xs text-gray-500">
+            This image appears across the storefront and is added to the gallery automatically. Accepted formats: JPG, PNG.
+          </p>
           {uploading ? <p className="text-xs text-gray-500">Uploading…</p> : null}
-          {coverPathValue ? (
-            <p className="mt-1 text-xs text-green-600">Cover uploaded ({coverPathValue})</p>
-          ) : currentCoverUrl ? (
-            <p className="mt-1 text-xs text-gray-500">
-              Current cover: {" "}
-              <a
-                href={currentCoverUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="font-medium text-primary hover:underline"
-              >
-                Preview image
-              </a>
-              {book?.coverPath ? ` (${book.coverPath})` : null}
-            </p>
-          ) : null}
+          {coverPreviewUrl ? (
+            <div className="mt-3 flex items-center gap-4">
+              <div className="relative h-24 w-20 overflow-hidden rounded border border-gray-200 bg-white shadow-sm">
+                <Image
+                  src={coverPreviewUrl}
+                  alt={`Current cover preview for ${titleValue || "book"}`}
+                  fill
+                  sizes="120px"
+                  className="object-cover"
+                />
+              </div>
+              <div className="text-xs text-gray-600">
+                <p className="font-medium text-gray-700">Current cover preview</p>
+                {coverPathValue ? (
+                  <p className="mt-0.5 break-all">Stored at: {coverPathValue}</p>
+                ) : book?.coverPath ? (
+                  <p className="mt-0.5 break-all">Stored at: {book.coverPath}</p>
+                ) : null}
+                <a
+                  href={coverPreviewUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="mt-1 inline-flex text-primary hover:underline"
+                >
+                  Open full preview
+                </a>
+              </div>
+            </div>
+          ) : (
+            <p className="mt-2 text-xs text-gray-500">No cover uploaded yet.</p>
+          )}
           {errors.coverPath ? <p className="mt-1 text-xs text-red-600">{errors.coverPath.message}</p> : null}
+        </div>
+
+        <div className="md:col-span-2">
+          <label className="mb-1 block text-sm font-medium text-gray-700" htmlFor="gallery">
+            Gallery images
+          </label>
+          <input
+            id="gallery"
+            type="file"
+            accept="image/*"
+            multiple
+            onChange={handleGalleryUpload}
+            className="block w-full text-sm text-gray-600 file:mr-3 file:rounded file:border file:border-gray-300 file:bg-white file:px-3 file:py-2 file:text-sm file:font-medium file:text-gray-700 hover:file:bg-gray-100"
+          />
+          <p className="mt-1 text-xs text-gray-500">
+            Upload additional images to showcase different angles or spreads. Use the buttons below each image to reorder or set the primary cover.
+          </p>
+          {galleryUploading ? <p className="mt-1 text-xs text-gray-500">Uploading gallery images…</p> : null}
+          {galleryPaths.length ? (
+            <ul className="mt-3 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+              {galleryPaths.map((path, index) => {
+                const url = buildPublicImageUrl(path);
+                const isCoverImage = coverPathValue === path;
+                return (
+                  <li
+                    key={`${path}-${index}`}
+                    className="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm"
+                  >
+                    <div className="relative aspect-[3/4] w-full bg-gray-50">
+                      <Image src={url} alt={`Gallery image ${index + 1} for ${titleValue || "book"}`} fill sizes="280px" className="object-cover" />
+                    </div>
+                    <div className="flex items-center justify-between px-3 py-2 text-xs">
+                      <span
+                        className={clsx(
+                          "rounded-full px-2 py-0.5 font-medium",
+                          isCoverImage ? "bg-primary/10 text-primary" : "bg-gray-100 text-gray-600"
+                        )}
+                      >
+                        {isCoverImage ? "Primary cover" : `Image ${index + 1}`}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => removeGalleryImage(index)}
+                        className="text-gray-500 transition hover:text-red-600"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                    <div className="flex flex-wrap gap-2 px-3 pb-3 text-xs">
+                      <button
+                        type="button"
+                        disabled={index === 0}
+                        onClick={() => moveGalleryImage(index, -1)}
+                        className={clsx(
+                          "rounded border px-2 py-1 transition",
+                          index === 0
+                            ? "cursor-not-allowed border-gray-200 text-gray-300"
+                            : "border-gray-300 text-gray-600 hover:border-primary hover:text-primary"
+                        )}
+                      >
+                        Move left
+                      </button>
+                      <button
+                        type="button"
+                        disabled={index === galleryPaths.length - 1}
+                        onClick={() => moveGalleryImage(index, 1)}
+                        className={clsx(
+                          "rounded border px-2 py-1 transition",
+                          index === galleryPaths.length - 1
+                            ? "cursor-not-allowed border-gray-200 text-gray-300"
+                            : "border-gray-300 text-gray-600 hover:border-primary hover:text-primary"
+                        )}
+                      >
+                        Move right
+                      </button>
+                      <button
+                        type="button"
+                        disabled={isCoverImage}
+                        onClick={() => setCoverFromGallery(path)}
+                        className={clsx(
+                          "rounded border px-2 py-1 transition",
+                          isCoverImage
+                            ? "cursor-not-allowed border-primary bg-primary/10 text-primary"
+                            : "border-gray-300 text-gray-600 hover:border-primary hover:text-primary"
+                        )}
+                      >
+                        Set as cover
+                      </button>
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+          ) : (
+            <p className="mt-2 text-xs text-gray-500">No gallery images yet. Upload images above to build a visual set.</p>
+          )}
         </div>
 
         <div>

@@ -31,7 +31,33 @@ function buildCoverUrl(path: string | null): string {
   return `${normalizedBase}/storage/v1/object/public/${path}${separator}width=600&quality=80`;
 }
 
+function buildGalleryUrls(paths: string[] | null | undefined, fallbackPath: string | null): string[] {
+  const urls: string[] = [];
+  const append = (path: string | null) => {
+    if (!path) return;
+    const url = buildCoverUrl(path);
+    if (!urls.includes(url)) {
+      urls.push(url);
+    }
+  };
+
+  if (Array.isArray(paths)) {
+    for (const path of paths) {
+      append(path);
+    }
+  }
+
+  append(fallbackPath);
+
+  if (!urls.length) {
+    urls.push("/logo.svg");
+  }
+
+  return urls;
+}
+
 export function toBookSummary(row: BookRowWithCategory): BookSummary {
+  const galleryUrls = buildGalleryUrls(row.gallery_paths, row.cover_path);
   return {
     id: row.id,
     title: row.title,
@@ -40,7 +66,8 @@ export function toBookSummary(row: BookRowWithCategory): BookSummary {
     priceInternationalUsd: Number(row.price_international_usd ?? 0),
     priceFormattedLocal: formatLocalCurrency.format(Number(row.price_local_inr ?? 0)),
     priceFormattedInternational: formatInternationalCurrency.format(Number(row.price_international_usd ?? 0)),
-    coverUrl: buildCoverUrl(row.cover_path),
+    coverUrl: galleryUrls[0] ?? "/logo.svg",
+    galleryUrls,
     categoryName: row.categories?.name ?? "Uncategorised",
     categorySlug: row.categories?.slug ?? undefined,
     isFeatured: row.is_featured,
@@ -60,6 +87,7 @@ export function toBookDetail(row: BookRowWithCategory): BookDetail {
 }
 
 export function toAdminBook(row: BookRowWithCategory): AdminBook {
+  const galleryUrls = buildGalleryUrls(row.gallery_paths, row.cover_path);
   return {
     id: row.id,
     title: row.title,
@@ -77,6 +105,8 @@ export function toAdminBook(row: BookRowWithCategory): AdminBook {
     categoryName: row.categories?.name ?? "Uncategorised",
     coverPath: row.cover_path,
     coverUrl: buildCoverUrl(row.cover_path),
+    galleryPaths: Array.isArray(row.gallery_paths) ? row.gallery_paths : [],
+    galleryUrls,
     isFeatured: row.is_featured,
     createdAt: row.created_at,
     updatedAt: row.updated_at

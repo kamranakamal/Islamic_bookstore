@@ -80,6 +80,11 @@ export function BookList({ books, onEdit, isRefreshing = false }: BookListProps)
                     <div>
                       <p>{book.title}</p>
                       <p className="text-xs text-gray-500">{book.priceFormattedLocal}</p>
+                      <p className="text-[11px] text-gray-400">
+                        {book.galleryPaths.length ? `${book.galleryPaths.length} gallery image${
+                          book.galleryPaths.length > 1 ? "s" : ""
+                        }` : "No gallery images"}
+                      </p>
                     </div>
                   </div>
                 </td>
