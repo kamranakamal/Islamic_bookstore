@@ -56,12 +56,27 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
   } = await supabase.auth.getSession();
 
   return (
-    <html lang="en" className="bg-gray-50">
-      <body className="min-h-screen bg-gray-50 text-gray-900">
+    <html lang="en" className="h-full">
+      <body className="relative min-h-screen bg-transparent text-gray-900">
+        <a href="#main-content" className="skip-link">
+          Skip to main content
+        </a>
+        <div aria-hidden="true" className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
+          <div className="absolute left-1/2 top-[-18rem] h-[32rem] w-[32rem] -translate-x-1/2 rounded-full bg-primary/20 blur-[140px]" />
+          <div className="absolute right-[-12rem] top-[35%] h-[28rem] w-[28rem] rounded-full bg-amber-200/40 blur-[160px]" />
+          <div className="absolute bottom-[-14rem] left-[-8rem] h-[24rem] w-[26rem] rounded-full bg-sky-200/35 blur-[160px]" />
+        </div>
         <Providers serverSession={session}>
-          <Header />
-          <main className="mx-auto min-h-[calc(100vh-180px)] w-full max-w-7xl px-3 py-8 sm:px-5 sm:py-10 lg:px-8">{children}</main>
-          <Footer />
+          <div className="flex min-h-screen flex-col">
+            <Header />
+            <main
+              id="main-content"
+              className="relative mx-auto mt-8 w-full max-w-7xl flex-1 rounded-[2.5rem] border border-white/70 bg-white/80 px-4 py-8 shadow-xl shadow-amber-100/40 backdrop-blur-sm sm:px-6 sm:py-10 lg:px-10"
+            >
+              {children}
+            </main>
+            <Footer />
+          </div>
         </Providers>
       </body>
     </html>

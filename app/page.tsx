@@ -96,17 +96,21 @@ export default async function HomePage() {
           })
         }}
       />
-  <section className="relative overflow-hidden rounded-3xl border border-primary/20 bg-gradient-to-r from-primary/5 via-amber-50 to-white p-6 shadow-sm sm:p-10">
+      <section
+        className="relative overflow-hidden rounded-[2.5rem] border border-white/70 bg-gradient-to-r from-primary/10 via-white/95 to-amber-50/60 p-6 shadow-xl shadow-primary/10 backdrop-blur-sm sm:p-10"
+        role="region"
+        aria-labelledby="hero-heading"
+      >
         <figure
           aria-hidden="true"
-          className="pointer-events-none absolute -right-10 top-1/2 hidden -translate-y-1/2 rotate-6 text-[220px] font-extrabold leading-none text-primary/5 xl:block"
+          className="pointer-events-none absolute -right-16 top-1/2 hidden -translate-y-1/2 rotate-6 text-[220px] font-extrabold leading-none text-primary/10 opacity-70 xl:block"
         >
           العلم
         </figure>
         <div className="grid gap-8 lg:grid-cols-[1.1fr,0.9fr] lg:gap-10">
           <div className="space-y-6">
             <p className="text-xs font-semibold uppercase tracking-[0.3em] text-primary sm:text-sm">Preserving knowledge</p>
-            <h1 className="text-2xl font-semibold tracking-tight text-gray-900 sm:text-3xl md:text-4xl">
+            <h1 id="hero-heading" className="text-2xl font-semibold tracking-tight text-gray-900 sm:text-3xl md:text-4xl">
               Primary sources. Reliable scholarship. A curated bookstore for seekers of authentic knowledge.
             </h1>
             <p className="text-base text-gray-600 sm:text-lg">
@@ -116,24 +120,27 @@ export default async function HomePage() {
             <div className="flex flex-wrap gap-3">
               <Link
                 href="/shop"
-                className="rounded bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90"
+                className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-sm shadow-primary/30 transition-all hover:-translate-y-0.5 hover:bg-primary/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
               >
                 Explore catalog
+                <span aria-hidden="true">→</span>
               </Link>
               <Link
                 href="/shop?sort=newest"
-                className="rounded border border-primary px-4 py-2 text-sm font-semibold text-primary hover:bg-primary/10"
+                className="inline-flex items-center gap-2 rounded-full border border-primary/70 px-5 py-2.5 text-sm font-semibold text-primary transition-all hover:-translate-y-0.5 hover:border-primary hover:bg-primary/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
               >
                 See latest arrivals
+                <span aria-hidden="true">↗</span>
               </Link>
               <Link
                 href="/contact"
-                className="rounded border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700 transition hover:border-primary hover:text-primary"
+                className="inline-flex items-center gap-2 rounded-full border border-white/70 bg-white/60 px-5 py-2.5 text-sm font-semibold text-gray-700 transition-all hover:-translate-y-0.5 hover:border-primary/70 hover:text-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
               >
                 Talk to the team
+                <span aria-hidden="true">→</span>
               </Link>
             </div>
-            <div className="rounded-xl border border-white/60 bg-white/80 p-4 shadow-sm backdrop-blur">
+            <div className="rounded-2xl border border-white/70 bg-white/90 p-4 shadow-lg shadow-primary/5 ring-1 ring-white/60 backdrop-blur-sm">
               <label htmlFor="hero-search" className="block text-xs font-semibold uppercase tracking-widest text-gray-500">
                 Search the catalogue
               </label>
@@ -147,7 +154,7 @@ export default async function HomePage() {
               heroHighlights.map((highlight) => (
                 <article
                   key={highlight.id}
-                  className="space-y-3 rounded-xl border border-gray-200 bg-white p-6 shadow-lg shadow-primary/5"
+                  className="space-y-3 rounded-2xl border border-white/70 bg-white/85 p-6 shadow-md shadow-primary/10 backdrop-blur-sm"
                 >
                   <span
                     className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ${highlight.badgeClass}`}
@@ -163,15 +170,16 @@ export default async function HomePage() {
                   </div>
                   <Link
                     href={`/books/${highlight.book.id}`}
-                    className="inline-flex items-center text-sm font-semibold text-primary transition hover:text-primary/80"
+                    className="inline-flex items-center gap-2 text-sm font-semibold text-primary transition hover:text-primary/80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
                   >
-                    View details →
+                    <span>View details</span>
+                    <span aria-hidden="true">→</span>
                   </Link>
                 </article>
               ))
             ) : (
-              <article className="space-y-3 rounded-xl border border-gray-200 bg-white p-6 shadow-lg shadow-primary/5">
-                <span className="inline-flex items-center rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
+              <article className="space-y-3 rounded-2xl border border-white/70 bg-white/85 p-6 shadow-md shadow-primary/10 backdrop-blur-sm">
+                <span className="inline-flex items-center rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.3em] text-primary">
                   Curated selection
                 </span>
                 <div className="space-y-2">
@@ -182,9 +190,10 @@ export default async function HomePage() {
                 </div>
                 <Link
                   href="/shop"
-                  className="inline-flex items-center text-sm font-semibold text-primary transition hover:text-primary/80"
+                  className="inline-flex items-center gap-2 text-sm font-semibold text-primary transition hover:text-primary/80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
                 >
-                  Browse all books →
+                  <span>Browse all books</span>
+                  <span aria-hidden="true">→</span>
                 </Link>
               </article>
             )}
@@ -192,44 +201,77 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <section className="space-y-6">
+      <section
+        className="space-y-6 rounded-[2.25rem] border border-white/70 bg-white/85 p-6 shadow-md shadow-amber-100/40 backdrop-blur-sm sm:p-8"
+        role="region"
+        aria-labelledby="featured-heading"
+      >
         <header className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <h2 className="text-2xl font-semibold text-gray-900">Featured titles</h2>
-          <Link className="text-sm font-semibold text-primary" href="/shop?sort=popularity">
-            View all
+          <h2 id="featured-heading" className="text-2xl font-semibold text-gray-900">
+            Featured titles
+          </h2>
+          <Link
+            className="inline-flex items-center gap-2 text-sm font-semibold text-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+            href="/shop?sort=popularity"
+          >
+            <span className="inline-flex items-center gap-2">
+              View all
+              <span aria-hidden="true">→</span>
+            </span>
           </Link>
         </header>
-  <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {featuredBooks.map((book) => (
             <BookCard key={book.id} book={book} />
           ))}
         </div>
       </section>
 
-      <section className="space-y-6">
+      <section
+        className="space-y-6 rounded-[2.25rem] border border-white/70 bg-white/85 p-6 shadow-md shadow-amber-100/40 backdrop-blur-sm sm:p-8"
+        role="region"
+        aria-labelledby="latest-heading"
+      >
         <header className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <h2 className="text-2xl font-semibold text-gray-900">Latest arrivals</h2>
-          <Link className="text-sm font-semibold text-primary" href="/shop?sort=newest">
-            Browse more
+          <h2 id="latest-heading" className="text-2xl font-semibold text-gray-900">
+            Latest arrivals
+          </h2>
+          <Link
+            className="inline-flex items-center gap-2 text-sm font-semibold text-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+            href="/shop?sort=newest"
+          >
+            <span className="inline-flex items-center gap-2">
+              Browse more
+              <span aria-hidden="true">↗</span>
+            </span>
           </Link>
         </header>
-  <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {latestBooks.map((book) => (
             <BookCard key={book.id} book={book} />
           ))}
         </div>
       </section>
 
-      <section className="space-y-4">
-        <h2 className="text-2xl font-semibold text-gray-900">Browse by category</h2>
-  <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" aria-label="Book categories">
+      <section
+        className="space-y-4 rounded-[2.25rem] border border-white/70 bg-white/85 p-6 shadow-md shadow-amber-100/40 backdrop-blur-sm sm:p-8"
+        role="region"
+        aria-labelledby="categories-heading"
+      >
+        <h2 id="categories-heading" className="text-2xl font-semibold text-gray-900">
+          Browse by category
+        </h2>
+        <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" aria-label="Book categories">
           {categories.map((category) => (
             <li key={category.slug}>
               <Link
                 href={`/shop?category=${category.slug}`}
-                className="inline-flex items-center rounded-full border border-gray-300 px-4 py-2 text-sm text-gray-700 transition hover:border-primary hover:text-primary"
+                className="inline-flex items-center gap-2 rounded-full border border-white/70 bg-white/70 px-4 py-2 text-sm font-medium text-gray-700 transition-all hover:-translate-y-0.5 hover:border-primary/70 hover:bg-primary/10 hover:text-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
               >
-                {category.name}
+                <span>{category.name}</span>
+                <span aria-hidden="true" className="text-xs text-primary/70">
+                  →
+                </span>
               </Link>
             </li>
           ))}

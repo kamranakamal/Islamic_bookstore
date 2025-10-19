@@ -5,5 +5,14 @@ interface SkeletonProps {
 }
 
 export function Skeleton({ className }: SkeletonProps) {
-  return <div className={clsx("animate-pulse rounded-md bg-gray-200", className)} />;
+  return (
+    <div
+      role="presentation"
+      aria-hidden="true"
+      className={clsx(
+        "animate-pulse rounded-xl bg-slate-200/70 ring-1 ring-inset ring-white/60",
+        className
+      )}
+    />
+  );
 }

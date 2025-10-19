@@ -9,8 +9,13 @@ interface BookCardProps {
 }
 
 export function BookCard({ book }: BookCardProps) {
+  const titleId = `book-${book.id}-title`;
+
   return (
-    <article className="group flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white/90 shadow-sm backdrop-blur transition hover:-translate-y-1 hover:shadow-lg md:flex-row">
+    <article
+      className="group flex flex-col overflow-hidden rounded-2xl border border-white/70 bg-white/85 shadow-sm ring-1 ring-white/60 backdrop-blur transition-all hover:-translate-y-1 hover:shadow-xl hover:ring-primary/40 md:flex-row"
+      aria-labelledby={titleId}
+    >
       <Link
         href={`/books/${book.id}`}
         className="relative h-56 w-full md:h-auto md:w-48 lg:w-56"
@@ -27,9 +32,13 @@ export function BookCard({ book }: BookCardProps) {
       </Link>
       <div className="flex flex-1 flex-col gap-3 p-5 md:gap-4 md:p-6">
         <div className="space-y-1.5">
-          <Link href={`/books/${book.id}`} className="text-lg font-semibold leading-tight text-gray-900 md:text-xl">
-            {book.title}
-          </Link>
+          <h3 className="text-lg font-semibold leading-tight text-gray-900 md:text-xl">
+            <Link href={`/books/${book.id}`} className="focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary">
+              <span id={titleId} className="underline-offset-4 transition group-hover:underline">
+                {book.title}
+              </span>
+            </Link>
+          </h3>
           <p className="text-sm text-gray-500 md:text-base">{book.author}</p>
         </div>
   {/* Metadata row keeps tablet/desktop cards informative without overwhelming the layout. */}

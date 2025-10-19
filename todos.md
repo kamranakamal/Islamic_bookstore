@@ -16,7 +16,8 @@
 
 ### E-commerce Features
 - [ ] Design and implement checkout page
-- [ ] Integrate payment gateway (Stripe/PayPal) and a free upi payment system and a upi app redirect and send whatsapp screenshot to confirm
+- [ ] Integrate payment gateway Stripe for international customers and a free upi payment system and a upi app redirect which is used by sending  whatsapp screenshot to confirm payment status 
+
 - [ ] Add cart functionality
 - [ ] Implement order confirmation system
 
