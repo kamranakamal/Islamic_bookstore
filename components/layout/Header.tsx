@@ -8,7 +8,6 @@ import clsx from "clsx";
 const navItems: Array<{ href: string; label: string; Icon: (props: SVGProps<SVGSVGElement>) => JSX.Element }> = [
   { href: "/", label: "Home", Icon: IconHome },
   { href: "/shop", label: "Shop", Icon: IconLibrary },
-  { href: "/authors", label: "Authors", Icon: IconFeather },
   { href: "/blog", label: "Blog", Icon: IconScroll },
   { href: "/about", label: "About", Icon: IconSparkle },
   { href: "/contact", label: "Contact", Icon: IconMail },
@@ -209,16 +208,6 @@ function IconLibrary(props: SVGProps<SVGSVGElement>) {
   );
 }
 
-function IconFeather(props: SVGProps<SVGSVGElement>) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" {...props}>
-      <path d="M20 3a10 10 0 00-10 10v8l5-4" />
-      <path d="M9 13l11-11" />
-      <path d="M3 21l6-6" />
-    </svg>
-  );
-}
-
 function IconScroll(props: SVGProps<SVGSVGElement>) {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" {...props}>
@@ -233,12 +222,13 @@ function IconScroll(props: SVGProps<SVGSVGElement>) {
 function IconSparkle(props: SVGProps<SVGSVGElement>) {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" {...props}>
-      <path d="M12 3l1.6 3.6L17 8.2l-3 2.8.7 4.2L12 13.8 9.3 15.2l.7-4.2-3-2.8 3.4-1.6z" />
-      <path d="M5 19h.01" />
-      <path d="M19 19h.01" />
+      <path d="M12 2l1.5 4.5L18 8l-4.5 1.5L12 14l-1.5-4.5L6 8l4.5-1.5z" />
+      <path d="M5 19l1-2 1 2 2 1-2 1-1 2-1-2-2-1z" />
+      <path d="M17 16l.75-1.5L19 14l-1.25-.5L17 12l-.75 1.5L15 14l1.25.5z" />
     </svg>
   );
 }
+
 
 function IconMail(props: SVGProps<SVGSVGElement>) {
   return (
