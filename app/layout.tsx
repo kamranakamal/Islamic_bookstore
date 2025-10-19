@@ -60,7 +60,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
       <body className="min-h-screen bg-gray-50 text-gray-900">
         <Providers serverSession={session}>
           <Header />
-          <main className="mx-auto min-h-[calc(100vh-180px)] max-w-6xl px-3 py-8 sm:px-4 sm:py-10">{children}</main>
+          <main className="mx-auto min-h-[calc(100vh-180px)] w-full max-w-7xl px-3 py-8 sm:px-5 sm:py-10 lg:px-8">{children}</main>
           <Footer />
         </Providers>
       </body>

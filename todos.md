@@ -3,6 +3,7 @@
 ### Improvements and bug fixes
 - [x] add a whatsapp and a email and a message link to respond to the messages from the admin panel use icons 
 - [ ] email button does not working in admin message pages and sometimes messages doent load from the database instantly it takes to refresh so make it fast
+- [ ] enhance the mobile design make it look professional and make books compact for smartphone and menu buttton does not working in the smartphone so fix these 
 
 
 ### UI/UX Improvements

@@ -199,7 +199,7 @@ export default async function HomePage() {
             View all
           </Link>
         </header>
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+  <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {featuredBooks.map((book) => (
             <BookCard key={book.id} book={book} />
           ))}
@@ -213,7 +213,7 @@ export default async function HomePage() {
             Browse more
           </Link>
         </header>
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+  <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {latestBooks.map((book) => (
             <BookCard key={book.id} book={book} />
           ))}
@@ -222,7 +222,7 @@ export default async function HomePage() {
 
       <section className="space-y-4">
         <h2 className="text-2xl font-semibold text-gray-900">Browse by category</h2>
-        <ul className="flex flex-wrap gap-3" aria-label="Book categories">
+  <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" aria-label="Book categories">
           {categories.map((category) => (
             <li key={category.slug}>
               <Link

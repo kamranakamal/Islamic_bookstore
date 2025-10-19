@@ -43,7 +43,7 @@ export function Header() {
 
   return (
     <header className="border-b border-gray-200 bg-white">
-      <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-4">
+  <div className="mx-auto flex w-full max-w-7xl items-center justify-between gap-4 px-4 py-4 sm:px-5 lg:px-8">
         <Link href="/" className="flex items-center gap-2" aria-label="Maktab Muhammadiya home">
           <span className="rounded bg-primary px-2 py-1 text-sm font-semibold text-primary-foreground md:text-base">
             Maktab Muhammadiya

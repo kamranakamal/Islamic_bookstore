@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import type { SVGProps } from "react";
 
 import type { AdminContactMessage, MessageStatus } from "@/lib/types";
+import { getSupabaseClient } from "@/lib/supabaseClient";
 
 interface MessagesManagerProps {
   messages: AdminContactMessage[];
@@ -45,7 +46,10 @@ export function MessagesManager({ messages }: MessagesManagerProps) {
       }
       return data.messages;
     },
-    initialData: messages
+    initialData: messages,
+    staleTime: 15_000,
+    refetchOnWindowFocus: "always",
+    refetchOnReconnect: "always"
   });
 
   useEffect(() => {
@@ -164,6 +168,29 @@ How can we assist you further?`;
     }
     deleteMutation.mutate(id);
   };
+
+  useEffect(() => {
+    const supabase = getSupabaseClient();
+    const channel = supabase
+      .channel("admin-contact-messages")
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "contact_messages"
+        },
+        () => {
+          // Real-time notification: gently refresh cached data so the inbox stays in sync without manual reloads.
+          queryClient.invalidateQueries({ queryKey: ["admin-messages"] });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [queryClient]);
 
   return (
     <section className="space-y-6">
@@ -308,10 +335,10 @@ function QuickActions({ message, buildEmailSubject, buildEmailBody, buildWhatsap
 
   const emailSubject = buildEmailSubject(message.subject ?? null);
   const emailBody = buildEmailBody(message.name, message.message);
-  const mailParams = new URLSearchParams();
-  mailParams.set("subject", emailSubject);
-  mailParams.set("body", emailBody);
-  const emailHref = `mailto:${message.email}?${mailParams.toString()}`;
+  // We lean on Gmail's compose endpoint so admins with Google accounts get a reliable modal with the message context prefilled.
+  const emailHref = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(
+    message.email
+  )}&su=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(emailBody)}`;
 
   const messageParams = new URLSearchParams();
   messageParams.set("body", `Assalamu alaykum ${firstName}, we received your message.`);

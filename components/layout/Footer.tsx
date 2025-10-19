@@ -61,7 +61,7 @@ export function Footer() {
 
   return (
     <footer className="border-t border-slate-800 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-slate-100">
-      <div className="mx-auto flex w-full max-w-6xl flex-col gap-10 px-4 py-12 sm:px-6 lg:px-8">
+      <div className="mx-auto flex w-full max-w-7xl flex-col gap-10 px-4 py-12 sm:px-6 lg:px-8 xl:px-12">
         <div className="flex flex-col gap-8 md:flex-row md:items-start md:justify-between">
           <div className="max-w-lg space-y-4">
             <p className="text-lg font-semibold tracking-tight text-white">Maktab Muhammadiya</p>
