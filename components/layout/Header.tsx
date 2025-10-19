@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, type SVGProps } from "react";
+import { useEffect, useId, useRef, useState, type SVGProps } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import clsx from "clsx";
@@ -20,6 +20,9 @@ const navItems: Array<{ href: string; label: string; Icon: (props: SVGProps<SVGS
 export function Header() {
   const pathname = usePathname();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const mobileTitleId = useId();
+  const mobileDescId = useId();
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
 
   const headerClasses = clsx(
     "sticky top-0 border-b border-white/60 backdrop-blur supports-[backdrop-filter]:bg-white/65 transition-shadow",
@@ -40,6 +43,11 @@ export function Header() {
   useEffect(() => {
     document.body.classList.toggle("overflow-hidden", isMenuOpen);
     return () => document.body.classList.remove("overflow-hidden");
+  }, [isMenuOpen]);
+
+  useEffect(() => {
+    if (!isMenuOpen) return;
+    closeButtonRef.current?.focus();
   }, [isMenuOpen]);
 
   useEffect(() => {
@@ -101,28 +109,39 @@ export function Header() {
 
       {isMenuOpen ? (
         <div className="lg:hidden" role="dialog" aria-modal="true">
-          <div className="fixed inset-0 z-[60] bg-gray-950/40 backdrop-blur-sm" onClick={() => setIsMenuOpen(false)} />
+          <div
+            className="fixed inset-0 z-[60] bg-gray-950/40 backdrop-blur-sm"
+            aria-hidden="true"
+            onClick={() => setIsMenuOpen(false)}
+          />
           <nav
             id="mobile-nav"
             aria-label="Mobile navigation"
-            className="fixed inset-y-0 right-0 z-[70] flex h-[100dvh] w-full max-w-sm flex-col rounded-l-3xl border-l border-white/70 bg-white px-6 pb-8 pt-8 shadow-xl shadow-primary/15 transition-transform duration-200 ease-out [padding-top:calc(env(safe-area-inset-top)+1.75rem)] supports-[backdrop-filter]:bg-white/90 sm:max-w-md"
+            aria-labelledby={mobileTitleId}
+            aria-describedby={mobileDescId}
+            className="fixed inset-y-0 right-0 z-[70] flex h-[100dvh] w-full max-w-sm flex-col rounded-l-3xl border-l border-white/70 bg-white px-5 pb-7 pt-7 shadow-xl shadow-primary/15 transition-transform duration-200 ease-out [padding-top:calc(env(safe-area-inset-top)+1.5rem)] supports-[backdrop-filter]:bg-white/90 sm:max-w-md"
           >
-            <div className="mb-6 flex items-center justify-between gap-4">
-              <div>
-                <p className="text-sm font-semibold text-gray-900">Maktab Muhammadiya</p>
-                <p className="text-xs text-gray-500">Explore our library catalogue</p>
+            <header className="mb-5 flex items-center justify-between gap-3 border-b border-white/60 pb-4">
+              <div className="space-y-1">
+                <p id={mobileTitleId} className="text-sm font-semibold text-gray-900">
+                  Navigate Maktab Muhammadiya
+                </p>
+                <p id={mobileDescId} className="text-xs text-gray-500">
+                  Quickly jump to catalogue sections or connect with the team.
+                </p>
               </div>
               <button
+                ref={closeButtonRef}
                 type="button"
-                className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-white/70 bg-white/80 text-gray-600 transition hover:border-primary hover:bg-primary/10 hover:text-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
+                className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-white/80 bg-white/90 text-gray-600 transition hover:border-primary hover:bg-primary/10 hover:text-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
                 onClick={() => setIsMenuOpen(false)}
-                aria-label="Close navigation menu"
               >
-                <IconClose className="h-4 w-4" />
+                <span className="sr-only">Close navigation menu</span>
+                <IconClose className="h-4 w-4" aria-hidden="true" />
               </button>
-            </div>
+            </header>
             <div className="flex-1 overflow-y-auto">
-              <ul className="space-y-3 text-base font-medium text-gray-700">
+              <ul className="space-y-2.5 text-sm font-medium text-gray-700">
                 {navItems.map(({ href, label, Icon }) => {
                   const isActive = href === "/" ? pathname === "/" : pathname.startsWith(href);
                   return (
@@ -130,7 +149,7 @@ export function Header() {
                       <Link
                         href={href}
                         className={clsx(
-                          "flex items-center justify-between rounded-2xl border px-4 py-4 transition-all focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary",
+                          "flex items-center justify-between rounded-2xl border px-3.5 py-3.5 transition-all focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary",
                           isActive
                             ? "border-primary bg-primary/10 text-primary shadow-sm shadow-primary/20"
                             : "border-white/70 bg-white text-gray-600 hover:border-primary/70 hover:bg-primary/10 hover:text-primary"
@@ -138,7 +157,7 @@ export function Header() {
                         aria-current={isActive ? "page" : undefined}
                       >
                         <span className="flex items-center gap-3">
-                          <span className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-primary/10 text-primary">
+                          <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-primary">
                             <Icon className="h-4 w-4" aria-hidden="true" />
                           </span>
                           {label}
