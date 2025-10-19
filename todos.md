@@ -1,7 +1,8 @@
 ## TODO List
 
-### Bugs to fix
-- [ ] fix messages are not being sent to admin panel when creating a message from messages page
+### Improvements
+- [x] add a whatsapp and a email and a message link to respond to the messages from the admin panel use icons 
+
 
 ### UI/UX Improvements
 - [ ] Implement responsive design for mobile devices
@@ -9,7 +10,7 @@
 - [ ] Enhance visual appeal with modern design patterns
 - [ ] Improve accessibility compliance
 - [ ] Add loading states and error handling
-- [x] add a beautiful footer and add instagram, whatsapp, phone, email icons and redirect to the respected apps use info.md for contact      details 
+- [ ] use icons and arabic calligraphy for Store title name to enhance its attractiveness
 
 ### E-commerce Features
 - [ ] Design and implement checkout page

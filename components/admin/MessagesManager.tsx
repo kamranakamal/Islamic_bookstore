@@ -2,6 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
+import type { SVGProps } from "react";
 
 import type { AdminContactMessage, MessageStatus } from "@/lib/types";
 
@@ -118,6 +119,31 @@ export function MessagesManager({ messages }: MessagesManagerProps) {
     [data]
   );
 
+  const getPrimaryName = (fullName: string) => {
+    const parts = fullName.trim().split(" ").filter(Boolean);
+    return parts.length ? parts[0] : fullName;
+  };
+
+  const buildEmailSubject = (subject: string | null) =>
+    subject && subject.trim().length ? `Re: ${subject.trim()}` : "Regarding your message to Maktab Muhammadiya";
+
+  const buildEmailBody = (name: string, originalMessage: string) =>
+    `Assalamu alaykum ${getPrimaryName(name)},
+
+JazakAllahu khayran for reaching out to Maktab Muhammadiya.
+
+> ${originalMessage.replace(/\r?\n/g, "\n> ")}
+
+`;
+
+  const buildWhatsappMessage = (name: string, originalMessage: string) =>
+    `Assalamu alaykum ${getPrimaryName(name)},
+
+We received your message:
+"${originalMessage}"
+
+How can we assist you further?`;
+
   const handleStatusChange = (id: string, status: MessageStatus) => {
     updateMutation.mutate({ id, status });
   };
@@ -211,6 +237,13 @@ export function MessagesManager({ messages }: MessagesManagerProps) {
                 </div>
               </div>
 
+              <QuickActions
+                message={message}
+                buildEmailSubject={buildEmailSubject}
+                buildEmailBody={buildEmailBody}
+                buildWhatsappMessage={buildWhatsappMessage}
+              />
+
               <div className="space-y-2 text-sm text-gray-700">
                 {message.subject ? <p className="font-medium text-gray-900">Subject: {message.subject}</p> : null}
                 <p className="whitespace-pre-line leading-relaxed">{message.message}</p>
@@ -258,5 +291,127 @@ export function MessagesManager({ messages }: MessagesManagerProps) {
         </ul>
       )}
     </section>
+  );
+}
+
+interface QuickActionsProps {
+  message: AdminContactMessage;
+  buildEmailSubject: (subject: string | null) => string;
+  buildEmailBody: (name: string, originalMessage: string) => string;
+  buildWhatsappMessage: (name: string, originalMessage: string) => string;
+}
+
+function QuickActions({ message, buildEmailSubject, buildEmailBody, buildWhatsappMessage }: QuickActionsProps) {
+  const normalizedPhone = message.phone ? message.phone.replace(/[^\d]/g, "") : null;
+  const hasPhone = Boolean(normalizedPhone && normalizedPhone.length >= 8);
+  const firstName = message.name.trim().split(/\s+/)[0] || message.name;
+
+  const emailSubject = buildEmailSubject(message.subject ?? null);
+  const emailBody = buildEmailBody(message.name, message.message);
+  const mailParams = new URLSearchParams();
+  mailParams.set("subject", emailSubject);
+  mailParams.set("body", emailBody);
+  const emailHref = `mailto:${message.email}?${mailParams.toString()}`;
+
+  const messageParams = new URLSearchParams();
+  messageParams.set("body", `Assalamu alaykum ${firstName}, we received your message.`);
+  const smsHref = hasPhone ? `sms:${normalizedPhone}?${messageParams.toString()}` : null;
+
+  const whatsappHref = hasPhone
+    ? `https://wa.me/${normalizedPhone}?text=${encodeURIComponent(buildWhatsappMessage(message.name, message.message))}`
+    : null;
+
+  const actions: ActionLinkProps[] = [
+    {
+      label: "Email",
+      description: `Reply to ${message.name} via email`,
+      href: emailHref,
+      Icon: IconMail
+    },
+    {
+      label: "Message",
+      description: `Send an SMS to ${message.name}`,
+      href: smsHref,
+      Icon: IconMessage
+    },
+    {
+      label: "WhatsApp",
+      description: hasPhone ? `Open WhatsApp chat with ${message.name}` : "WhatsApp number unavailable",
+      href: whatsappHref,
+      Icon: IconWhatsapp
+    }
+  ];
+
+  return (
+    <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
+      {actions.map((action) => (
+        <ActionLink key={action.label} {...action} />
+      ))}
+    </div>
+  );
+}
+
+interface ActionLinkProps {
+  label: string;
+  description: string;
+  href: string | null;
+  Icon: (props: SVGProps<SVGSVGElement>) => JSX.Element;
+}
+
+function ActionLink({ label, description, href, Icon }: ActionLinkProps) {
+  const className =
+    "group flex items-center gap-2 rounded border border-gray-200 bg-white px-3 py-2 font-medium text-gray-600 transition hover:border-primary/50 hover:bg-primary/5 hover:text-primary";
+
+  if (!href) {
+    return (
+      <span className={`${className} cursor-not-allowed opacity-60`} aria-label={`${description} (unavailable)`}>
+        <span className="flex h-6 w-6 items-center justify-center rounded bg-gray-100 text-gray-400">
+          <Icon className="h-3.5 w-3.5" aria-hidden="true" />
+        </span>
+        {label}
+      </span>
+    );
+  }
+
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      className={className}
+      aria-label={description}
+    >
+      <span className="flex h-6 w-6 items-center justify-center rounded bg-primary/10 text-primary transition group-hover:bg-primary group-hover:text-primary-foreground">
+        <Icon className="h-3.5 w-3.5" aria-hidden="true" />
+      </span>
+      {label}
+    </a>
+  );
+}
+
+function IconMail(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" {...props}>
+      <rect x="3" y="5" width="18" height="14" rx="2" />
+      <path d="M3 7l9 6 9-6" />
+    </svg>
+  );
+}
+
+function IconMessage(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" {...props}>
+      <path d="M21 15a2 2 0 01-2 2H9l-4 4v-4H5a2 2 0 01-2-2V7a2 2 0 012-2h14a2 2 0 012 2z" />
+      <path d="M7 9h10M7 13h6" />
+    </svg>
+  );
+}
+
+function IconWhatsapp(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" {...props}>
+      <path d="M3.8 20.2l1.1-4.1a7.5 7.5 0 111.4 1.4z" />
+      <path d="M14.8 13.4a2.8 2.8 0 01-1.3.4 2.9 2.9 0 01-1.4-.4c-.8-.5-1.5-1.1-2-1.9-.4-.7-.7-1.3-.6-1.7.1-.4.3-.8.7-1.1.2-.2.3-.3.3-.5.2-.3.2-.5.1-.8l-.5-1.3c-.1-.3-.4-.5-.7-.5-.3 0-.5.1-.8.3-.7.4-1.1 1.1-1.2 1.9-.1.8.3 1.9 1 3.2.7 1.2 1.6 2.3 2.7 3 1.1.7 2.1 1.1 3 1 .8-.1 1.4-.4 1.8-1.1.2-.2.3-.5.3-.8 0-.4-.2-.6-.5-.7l-1.3-.5c-.3-.1-.5-.1-.8.1-.1.1-.3.2-.4.3-.2.3-.5.6-.9.7" />
+    </svg>
   );
 }
