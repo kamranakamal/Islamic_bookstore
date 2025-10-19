@@ -46,14 +46,14 @@ export const getHomepageData = cache(async (): Promise<HomepageData> => {
       id: string;
       slug: string;
       name: string;
-      description: string;
+      description: string | null;
       updated_at: string | null;
-    } => Boolean(category.id && category.slug && category.name && category.description))
+    } => Boolean(category.id && category.slug && category.name))
     .map((category) => ({
       id: category.id,
       slug: category.slug,
       name: category.name,
-      description: category.description,
+      description: category.description ?? "",
       updatedAt: category.updated_at ?? undefined
     } satisfies CategorySummary));
 
