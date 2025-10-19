@@ -1,4 +1,5 @@
 import dynamic from "next/dynamic";
+import Image from "next/image";
 import type { Metadata } from "next";
 import Link from "next/link";
 
@@ -154,27 +155,51 @@ export default async function HomePage() {
               heroHighlights.map((highlight) => (
                 <article
                   key={highlight.id}
-                  className="space-y-3 rounded-2xl border border-white/70 bg-white/85 p-6 shadow-md shadow-primary/10 backdrop-blur-sm"
+                  className="space-y-4 rounded-3xl border border-white/70 bg-white/90 p-6 shadow-md shadow-primary/10 backdrop-blur-sm"
                 >
                   <span
                     className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ${highlight.badgeClass}`}
                   >
                     {highlight.label}
                   </span>
-                  <div className="space-y-2">
-                    <h2 className="text-lg font-semibold text-gray-900">{highlight.book.title}</h2>
-                    <p className="text-sm text-gray-600">
-                      {highlight.book.author} · {highlight.book.categoryName}
-                    </p>
-                    <p className="text-sm text-gray-500">{highlight.description}</p>
-                  </div>
                   <Link
                     href={`/books/${highlight.book.id}`}
-                    className="inline-flex items-center gap-2 text-sm font-semibold text-primary transition hover:text-primary/80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                    className="group relative block overflow-hidden rounded-2xl"
+                    aria-label={`View details for ${highlight.book.title}`}
                   >
-                    <span>View details</span>
-                    <span aria-hidden="true">→</span>
+                    <div className="relative aspect-[3/4] w-full overflow-hidden rounded-2xl">
+                      <Image
+                        src={highlight.book.coverUrl}
+                        alt={highlight.book.title}
+                        fill
+                        sizes="(max-width: 1024px) 60vw, 320px"
+                        className="object-cover transition duration-300 group-hover:scale-[1.04]"
+                        priority={false}
+                      />
+                    </div>
                   </Link>
+                  <div className="space-y-2 text-center">
+                    <h2 className="text-lg font-semibold text-gray-900">
+                      <Link
+                        href={`/books/${highlight.book.id}`}
+                        className="focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
+                      >
+                        {highlight.book.title}
+                      </Link>
+                    </h2>
+                    <p className="text-base font-semibold text-primary">{highlight.book.priceFormattedLocal}</p>
+                    <p className="text-sm text-gray-500">{highlight.book.author}</p>
+                    <p className="text-xs text-gray-500">{highlight.description}</p>
+                  </div>
+                  <div className="flex justify-center">
+                    <Link
+                      href={`/books/${highlight.book.id}`}
+                      className="inline-flex items-center gap-2 rounded-full border border-primary px-4 py-2 text-sm font-semibold text-primary transition hover:-translate-y-0.5 hover:bg-primary/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                    >
+                      View details
+                      <span aria-hidden="true">→</span>
+                    </Link>
+                  </div>
                 </article>
               ))
             ) : (

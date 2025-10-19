@@ -1,23 +1,10 @@
 ## TODO List
 
-### Improvements and bug fixes
-- [x] add a whatsapp and a email and a message link to respond to the messages from the admin panel use icons 
-- [ ] email button does not working in admin message pages and sometimes messages doent load from the database instantly it takes to refresh so make it fast
-- [ ] enhance the mobile design make it look professional and make books compact for smartphone and menu buttton does not working in the smartphone so fix these 
 
-
-### UI/UX Improvements
-- [x] Implement responsive design for mobile devices
-- [ ] Optimize layout for tablets and desktop
-- [ ] Enhance visual appeal with modern design patterns
-- [ ] Improve accessibility compliance
-- [ ] Add loading states and error handling
-- [ ] use icons and arabic calligraphy for Store title name to enhance its attractiveness
 
 ### E-commerce Features
 - [ ] Design and implement checkout page
 - [ ] Integrate payment gateway Stripe for international customers and a free upi payment system and a upi app redirect which is used by sending  whatsapp screenshot to confirm payment status 
-
 - [ ] Add cart functionality
 - [ ] Implement order confirmation system
 
