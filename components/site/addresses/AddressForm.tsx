@@ -123,6 +123,20 @@ export function AddressForm({ mode, defaultValues, onSubmit, onCancel, isSubmitt
         {errors.line2 ? <p className="mt-1 text-xs text-red-600">{errors.line2.message}</p> : null}
       </div>
 
+      <div>
+        <label htmlFor={`${mode}-landmark`} className="mb-1 block text-sm font-medium text-gray-700">
+          Landmark
+        </label>
+        <input
+          id={`${mode}-landmark`}
+          type="text"
+          placeholder="e.g., Near railway station, opposite school"
+          {...register("landmark")}
+          className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30"
+        />
+        {errors.landmark ? <p className="mt-1 text-xs text-red-600">{errors.landmark.message}</p> : null}
+      </div>
+
       <div className="grid gap-4 md:grid-cols-3">
         <div>
           <label htmlFor={`${mode}-state`} className="mb-1 block text-sm font-medium text-gray-700">

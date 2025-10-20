@@ -1,3 +1,6 @@
+"use client";
+
+import { useState } from "react";
 import type { AdminOrder } from "@/lib/types";
 
 interface OrdersListProps {
@@ -11,7 +14,65 @@ const STATUS_LABELS: Record<AdminOrder["status"], string> = {
   cancelled: "Cancelled"
 };
 
+function formatAddressForCopy(order: AdminOrder): string {
+  const lines: string[] = [];
+
+  // Name
+  if (order.shippingAddress?.fullName) {
+    lines.push(order.shippingAddress.fullName);
+  } else {
+    lines.push(order.fullName);
+  }
+
+  // Address
+  const address = order.shippingAddress;
+  if (address?.line1) {
+    lines.push(address.line1);
+    if (address.line2) lines.push(address.line2);
+  }
+
+  // Landmark
+  if (address?.landmark) {
+    lines.push(address.landmark);
+  }
+
+  // Pincode
+  if (address?.postalCode) {
+    lines.push(address.postalCode);
+  }
+
+  // Phone
+  if (address?.phone) {
+    lines.push(address.phone);
+  } else if (order.phone) {
+    lines.push(order.phone);
+  }
+
+  // Books with quantity
+  if (order.items && order.items.length > 0) {
+    const bookLines = order.items.map((item) => {
+      return `Book quantity: ${item.quantity}`;
+    });
+    lines.push(...bookLines);
+  }
+
+  return lines.filter(Boolean).join("\n");
+}
+
 export function OrdersList({ orders }: OrdersListProps) {
+  const [copiedId, setCopiedId] = useState<string | null>(null);
+
+  const handleCopyAddress = async (order: AdminOrder) => {
+    const text = formatAddressForCopy(order);
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopiedId(order.id);
+      setTimeout(() => setCopiedId((prev) => (prev === order.id ? null : prev)), 2500);
+    } catch (error) {
+      console.error("Failed to copy address", error);
+    }
+  };
+
   const sorted = orders.slice().sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
   if (!sorted.length) {
@@ -41,6 +102,7 @@ export function OrdersList({ orders }: OrdersListProps) {
               <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-gray-600">Items</th>
               <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-gray-600">Status</th>
               <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-gray-600">Requested</th>
+              <th className="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wide text-gray-600">Action</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200 bg-white">
@@ -68,6 +130,9 @@ export function OrdersList({ orders }: OrdersListProps) {
                           if (!locality && !code) return null;
                           return <p>{`${locality}${code ? ` ${code}` : ""}`.trim()}</p>;
                         })()}
+                        {order.shippingAddress.landmark ? (
+                          <p className="font-medium">Landmark: {order.shippingAddress.landmark}</p>
+                        ) : null}
                         {order.shippingAddress.country ? <p>{order.shippingAddress.country}</p> : null}
                         {order.shippingAddress.phone && order.shippingAddress.phone !== order.phone ? (
                           <p>Alt phone: {order.shippingAddress.phone}</p>
@@ -92,6 +157,15 @@ export function OrdersList({ orders }: OrdersListProps) {
                 </td>
                 <td className="px-4 py-3 text-right text-sm text-gray-500">
                   {new Date(order.createdAt).toLocaleDateString()}
+                </td>
+                <td className="px-4 py-3 text-center text-sm">
+                  <button
+                    type="button"
+                    onClick={() => handleCopyAddress(order)}
+                    className="inline-flex items-center rounded-full border border-primary px-3 py-1 text-xs font-semibold text-primary transition hover:-translate-y-0.5 hover:bg-primary/10"
+                  >
+                    {copiedId === order.id ? "✓ Copied" : "Copy address"}
+                  </button>
                 </td>
               </tr>
             ))}

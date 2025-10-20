@@ -209,6 +209,7 @@ export function CartPageClient({ bookToAdd, addStatus }: CartPageClientProps) {
                     return <p>{`${locality}${code ? ` ${code}` : ""}`.trim()}</p>;
                   })()}
                   <p>{shippingAddress.country ?? "India"}</p>
+                  {shippingAddress.landmark ? <p className="text-xs font-medium text-gray-600 italic">Landmark: {shippingAddress.landmark}</p> : null}
                   {shippingAddress.phone ? <p className="text-xs text-gray-500">Phone: {shippingAddress.phone}</p> : null}
                 </address>
               ) : (

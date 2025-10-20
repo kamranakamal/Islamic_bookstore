@@ -55,6 +55,7 @@ export async function POST(request: NextRequest) {
     state: input.state && input.state.trim().length ? input.state.trim() : null,
     postal_code: input.postalCode && input.postalCode.trim().length ? input.postalCode.trim() : null,
     country: input.country,
+    landmark: input.landmark,
     is_default: Boolean(input.isDefault)
   };
 

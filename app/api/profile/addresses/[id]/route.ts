@@ -39,6 +39,7 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
   if (updates.state !== undefined) normalized.state = updates.state && updates.state.trim().length ? updates.state.trim() : null;
   if (updates.postalCode !== undefined) normalized.postal_code = updates.postalCode && updates.postalCode.trim().length ? updates.postalCode.trim() : null;
   if (updates.country !== undefined) normalized.country = updates.country;
+  if (updates.landmark !== undefined) normalized.landmark = updates.landmark;
 
   const shouldSetDefault = updates.isDefault === true;
   const shouldRemoveDefault = updates.isDefault === false;

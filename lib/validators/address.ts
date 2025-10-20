@@ -15,6 +15,7 @@ export const userAddressInputSchema = z.object({
   state: z.string().trim().max(120, "Region is too long").optional().nullable(),
   postalCode: z.string().trim().max(20, "Postal code is too long").optional().nullable(),
   country: z.string().trim().min(2, "Country is required"),
+  landmark: z.string().trim().min(3, "Landmark is required"),
   isDefault: z.boolean().optional()
 });
 

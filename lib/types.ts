@@ -176,9 +176,10 @@ export interface ShippingAddressPayload {
   state?: string | null;
   postalCode?: string | null;
   country?: string | null;
+  landmark: string;
 }
 
-export interface ShippingAddressSnapshot extends Partial<ShippingAddressPayload> {}
+export type ShippingAddressSnapshot = Partial<ShippingAddressPayload>;
 
 export interface OrderRow extends Record<string, unknown> {
   id: string;
@@ -211,6 +212,7 @@ export interface UserAddressRow extends Record<string, unknown> {
   state: string | null;
   postal_code: string | null;
   country: string;
+  landmark: string;
   is_default: boolean;
   created_at: string;
   updated_at: string;
@@ -648,6 +650,7 @@ export interface UserAddress {
   state: string | null;
   postalCode: string | null;
   country: string;
+  landmark: string;
   isDefault: boolean;
   createdAt: string;
   updatedAt: string;

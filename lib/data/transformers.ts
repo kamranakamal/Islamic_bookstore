@@ -202,6 +202,7 @@ export function toUserAddress(row: UserAddressRow): UserAddress {
     state: row.state,
     postalCode: row.postal_code,
     country: row.country,
+    landmark: row.landmark,
     isDefault: row.is_default,
     createdAt: row.created_at,
     updatedAt: row.updated_at

@@ -43,7 +43,8 @@ function toShippingAddressPayload(address: UserAddress): ShippingAddressPayload 
     city: address.city,
     state: address.state,
     postalCode: address.postalCode,
-    country: address.country
+    country: address.country,
+    landmark: address.landmark
   } satisfies ShippingAddressPayload;
 }
 
@@ -193,6 +194,7 @@ export function SavedAddressesQuickSelect({ selectedId = null, onSelect }: Saved
                 {copiedId === address.id ? "Copied" : "Copy details"}
               </button>
             </div>
+            {address.landmark && <p className="mt-2 text-xs font-medium text-gray-600 italic">Landmark: {address.landmark}</p>}
           </li>
         ))}
       </ul>
