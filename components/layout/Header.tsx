@@ -2,8 +2,11 @@
 
 import { useEffect, useId, useRef, useState, type SVGProps } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import clsx from "clsx";
+
+import { getSupabaseClient } from "@/lib/supabaseClient";
+import type { SessionUser } from "@/lib/authHelpers";
 
 const navItems: Array<{ href: string; label: string; Icon: (props: SVGProps<SVGSVGElement>) => JSX.Element }> = [
   { href: "/", label: "Home", Icon: IconHome },
@@ -17,12 +20,35 @@ const navItems: Array<{ href: string; label: string; Icon: (props: SVGProps<SVGS
   { href: "/cart", label: "Cart", Icon: IconCart }
 ];
 
-export function Header() {
+interface HeaderProps {
+  sessionUser: SessionUser | null;
+}
+
+export function Header({ sessionUser }: HeaderProps) {
   const pathname = usePathname();
+  const router = useRouter();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isSigningOut, setIsSigningOut] = useState(false);
   const mobileTitleId = useId();
   const mobileDescId = useId();
   const closeButtonRef = useRef<HTMLButtonElement>(null);
+
+  const loginHref = pathname === "/login" ? "/login" : `/login?redirect=${encodeURIComponent(pathname)}`;
+
+  const handleSignOut = async () => {
+    if (isSigningOut) return;
+    try {
+      setIsSigningOut(true);
+      const supabase = getSupabaseClient();
+      await supabase.auth.signOut();
+      setIsMenuOpen(false);
+      router.refresh();
+    } catch (signOutError) {
+      console.error("Failed to sign out", signOutError);
+    } finally {
+      setIsSigningOut(false);
+    }
+  };
 
   const headerClasses = clsx(
     "sticky top-0 border-b border-white/60 backdrop-blur supports-[backdrop-filter]:bg-white/65 transition-shadow",
@@ -68,32 +94,56 @@ export function Header() {
             المكتبة
           </span>
         </Link>
-        <nav aria-label="Main navigation" className="ml-auto hidden lg:block">
-          <ul className="flex items-center gap-3 text-sm font-medium text-gray-700">
-            {navItems.map(({ href, label, Icon }) => {
-              const isActive = href === "/" ? pathname === "/" : pathname.startsWith(href);
-              return (
-                <li key={href}>
-                  <Link
-                    className={clsx(
-                      "rounded-full px-4 py-2 text-sm transition-all focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary",
-                      isActive
-                        ? "bg-primary text-primary-foreground shadow-sm shadow-primary/20"
-                        : "text-gray-600 hover:bg-primary/10 hover:text-primary"
-                    )}
-                    href={href}
-                    aria-current={isActive ? "page" : undefined}
-                  >
-                    <span className="mr-2 inline-flex h-5 w-5 items-center justify-center rounded-full bg-primary/10 text-primary">
-                      <Icon className="h-3.5 w-3.5" aria-hidden="true" />
-                    </span>
-                    {label}
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
-        </nav>
+        <div className="ml-auto hidden items-center gap-4 lg:flex">
+          <nav aria-label="Main navigation">
+            <ul className="flex items-center gap-3 text-sm font-medium text-gray-700">
+              {navItems.map(({ href, label, Icon }) => {
+                const isActive = href === "/" ? pathname === "/" : pathname.startsWith(href);
+                return (
+                  <li key={href}>
+                    <Link
+                      className={clsx(
+                        "rounded-full px-4 py-2 text-sm transition-all focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary",
+                        isActive
+                          ? "bg-primary text-primary-foreground shadow-sm shadow-primary/20"
+                          : "text-gray-600 hover:bg-primary/10 hover:text-primary"
+                      )}
+                      href={href}
+                      aria-current={isActive ? "page" : undefined}
+                    >
+                      <span className="mr-2 inline-flex h-5 w-5 items-center justify-center rounded-full bg-primary/10 text-primary">
+                        <Icon className="h-3.5 w-3.5" aria-hidden="true" />
+                      </span>
+                      {label}
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
+          </nav>
+          {sessionUser ? (
+            <div className="flex items-center gap-3">
+              <span className="max-w-[12rem] truncate text-sm font-semibold text-gray-700" title={sessionUser.email}>
+                {sessionUser.email}
+              </span>
+              <button
+                type="button"
+                onClick={handleSignOut}
+                disabled={isSigningOut}
+                className="inline-flex items-center justify-center rounded-full bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-75"
+              >
+                Sign out
+              </button>
+            </div>
+          ) : (
+            <Link
+              href={loginHref}
+              className="inline-flex items-center justify-center rounded-full border border-primary px-4 py-2 text-sm font-semibold text-primary transition hover:-translate-y-0.5 hover:bg-primary/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
+            >
+              Sign in
+            </Link>
+          )}
+        </div>
         <button
           type="button"
           className="ml-auto inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-white/70 bg-white/70 text-gray-600 shadow-sm transition hover:border-primary/70 hover:bg-primary/10 hover:text-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary lg:hidden"
@@ -168,6 +218,32 @@ export function Header() {
                   );
                 })}
               </ul>
+              <div className="mt-6 space-y-3">
+                {sessionUser ? (
+                  <>
+                    <div className="rounded-2xl border border-primary/40 bg-primary/5 px-4 py-3 text-sm text-primary">
+                      <p className="font-semibold">Signed in</p>
+                      <p className="truncate text-xs text-primary/80">{sessionUser.email}</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleSignOut}
+                      disabled={isSigningOut}
+                      className="w-full rounded-2xl bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-75"
+                    >
+                      Sign out
+                    </button>
+                  </>
+                ) : (
+                  <Link
+                    href={loginHref}
+                    onClick={() => setIsMenuOpen(false)}
+                    className="flex items-center justify-center rounded-2xl border border-primary px-4 py-3 text-sm font-semibold text-primary transition hover:-translate-y-0.5 hover:bg-primary/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
+                  >
+                    Sign in
+                  </Link>
+                )}
+              </div>
             </div>
           </nav>
         </div>

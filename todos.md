@@ -7,7 +7,6 @@
 
 ### Content & Newsletter
 - [ ] Add email newsletter subscription in the footer
-- [ ] Add category navigation in the footer
 
 ### Localization & UX
 - [ ] Implement automatic currency selection based on user location

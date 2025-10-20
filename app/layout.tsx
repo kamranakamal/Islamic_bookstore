@@ -10,6 +10,7 @@ import { Footer } from "@/components/layout/Footer";
 import { Header } from "@/components/layout/Header";
 import { Providers } from "@/components/providers";
 import { appUrl, organization } from "@/lib/config";
+import { getSessionUser } from "@/lib/authHelpers";
 import type { Database } from "@/lib/types";
 
 export const metadata: Metadata = {
@@ -54,6 +55,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
   const {
     data: { session }
   } = await supabase.auth.getSession();
+  const sessionUser = await getSessionUser();
 
   return (
     <html lang="en" className="h-full">
@@ -68,7 +70,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
         </div>
         <Providers serverSession={session}>
           <div className="flex min-h-screen flex-col">
-            <Header />
+            <Header sessionUser={sessionUser} />
             <main
               id="main-content"
               className="relative mx-auto mt-8 w-full max-w-7xl flex-1 rounded-[2.5rem] border border-white/70 bg-white/80 px-4 py-8 shadow-xl shadow-amber-100/40 backdrop-blur-sm sm:px-6 sm:py-10 lg:px-10"
