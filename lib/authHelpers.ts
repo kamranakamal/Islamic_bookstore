@@ -38,18 +38,18 @@ export async function getSessionUser(): Promise<SessionUser | null> {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("id, email, role")
+    .select("id, email, role, display_name")
     .eq("auth_user_id", user.id)
     .maybeSingle();
 
-  const typedProfile = profile as Pick<ProfileRow, "id" | "email" | "role"> | null;
+  const typedProfile = profile as Pick<ProfileRow, "id" | "email" | "role" | "display_name"> | null;
 
   if (!typedProfile) return null;
 
   return {
     id: typedProfile.id,
     email: typedProfile.email,
-    displayName: null,
+    displayName: typedProfile.display_name ?? null,
     role: typedProfile.role
   };
 }
