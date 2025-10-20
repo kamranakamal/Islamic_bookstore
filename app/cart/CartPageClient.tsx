@@ -17,7 +17,7 @@ interface CartPageClientProps {
 
 export function CartPageClient({ bookToAdd, addStatus }: CartPageClientProps) {
   const router = useRouter();
-  const { items, subtotal, removeItem, clear, addItem, isHydrated, isRemoteSynced } = useCart();
+  const { items, subtotal, removeItem, clear, addItem, setItemQuantity, isHydrated, isRemoteSynced } = useCart();
   const [recentlyAddedTitle, setRecentlyAddedTitle] = useState<string | null>(null);
   const [notFoundVisible, setNotFoundVisible] = useState(addStatus === "not-found");
   const processedAddIdRef = useRef<string | null>(null);
@@ -96,18 +96,41 @@ export function CartPageClient({ bookToAdd, addStatus }: CartPageClientProps) {
               {items.map((item) => (
                 <li
                   key={item.book.id}
-                  className="flex items-start justify-between gap-4 rounded-lg border border-gray-200 bg-white p-4"
+                  className="flex flex-col gap-4 rounded-lg border border-gray-200 bg-white p-4 sm:flex-row sm:items-start sm:justify-between"
                 >
-                  <div>
-                    <p className="font-semibold text-gray-900">{item.book.title}</p>
-                    <p className="text-sm text-gray-500">{item.book.author}</p>
-                    <p className="text-xs text-gray-400">Quantity: {item.quantity}</p>
+                  <div className="space-y-2">
+                    <div>
+                      <p className="font-semibold text-gray-900">{item.book.title}</p>
+                      <p className="text-sm text-gray-500">{item.book.author}</p>
+                    </div>
                     <p className="text-sm text-gray-600">{item.book.priceFormattedLocal}</p>
+                    <div className="flex items-center gap-3 text-sm text-gray-600">
+                      <span className="text-xs uppercase tracking-wide text-gray-500">Quantity</span>
+                      <div className="inline-flex items-center rounded-full border border-gray-200 bg-white">
+                        <button
+                          type="button"
+                          onClick={() => setItemQuantity(item.book.id, item.quantity - 1)}
+                          className="h-8 w-8 rounded-full text-lg leading-none text-gray-600 transition hover:bg-gray-100"
+                          aria-label={`Decrease quantity for ${item.book.title}`}
+                        >
+                          -
+                        </button>
+                        <span className="min-w-[2rem] text-center text-sm font-semibold text-gray-900">{item.quantity}</span>
+                        <button
+                          type="button"
+                          onClick={() => setItemQuantity(item.book.id, item.quantity + 1)}
+                          className="h-8 w-8 rounded-full text-lg leading-none text-gray-600 transition hover:bg-gray-100"
+                          aria-label={`Increase quantity for ${item.book.title}`}
+                        >
+                          +
+                        </button>
+                      </div>
+                    </div>
                   </div>
                   <button
                     type="button"
                     onClick={() => removeItem(item.book.id)}
-                    className="rounded bg-red-50 px-3 py-1 text-xs font-semibold text-red-600 transition hover:bg-red-100"
+                    className="inline-flex items-center justify-center rounded bg-red-50 px-3 py-1 text-xs font-semibold text-red-600 transition hover:bg-red-100"
                     aria-label={`Remove ${item.book.title} from cart`}
                   >
                     Remove

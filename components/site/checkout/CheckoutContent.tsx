@@ -17,18 +17,11 @@ const PAYMENT_METHODS = [
     id: "bank",
     label: "Bank Transfer",
     description: "Receive our bank details and transfer once we confirm stock."
-  },
-  {
-    id: "cod",
-    label: "Cash on Delivery",
-    description: "Pay by cash when the books are delivered or collected."
   }
 ] as const;
 
 const DELIVERY_WINDOWS = [
-  "Standard (3-5 working days)",
-  "Express (1-2 working days)",
-  "Pick-up from store"
+  "Standard delivery (8-10 working days)"
 ] as const;
 
 type SubmissionState = "idle" | "processing" | "success";
@@ -50,8 +43,7 @@ export function CheckoutContent({ sessionUser }: CheckoutContentProps) {
   );
 
   const estimatedBooksTotal = useMemo(() => subtotalValue, [subtotalValue]);
-  const estimatedDelivery = useMemo(() => (deliveryWindow === "Express (1-2 working days)" ? 250 : deliveryWindow === "Pick-up from store" ? 0 : 150), [deliveryWindow]);
-  const estimatedGrandTotal = useMemo(() => estimatedBooksTotal + estimatedDelivery, [estimatedBooksTotal, estimatedDelivery]);
+  const estimatedGrandTotal = useMemo(() => estimatedBooksTotal, [estimatedBooksTotal]);
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -316,7 +308,7 @@ export function CheckoutContent({ sessionUser }: CheckoutContentProps) {
             </div>
             <div className="flex items-center justify-between">
               <dt>Estimated delivery</dt>
-              <dd>{estimatedDelivery === 0 ? "No charge" : currencyFormatter.format(estimatedDelivery)}</dd>
+              <dd>No charge</dd>
             </div>
             <div className="flex items-center justify-between text-base font-semibold text-gray-900">
               <dt>Total (estimate)</dt>

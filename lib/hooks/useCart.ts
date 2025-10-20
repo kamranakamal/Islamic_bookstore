@@ -149,6 +149,28 @@ export function useCart() {
     [isRemoteSynced]
   );
 
+  const syncSetQuantity = useCallback(
+    (bookId: string, quantity: number) => {
+      if (!isRemoteSynced) return;
+
+      if (quantity <= 0) {
+        void fetch(`/api/profile/cart/${bookId}`, {
+          method: "DELETE",
+          credentials: "include"
+        }).catch((error) => console.warn("Failed to sync cart remove", error));
+        return;
+      }
+
+      void fetch(`/api/profile/cart/${bookId}`, {
+        method: "PATCH",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ quantity })
+      }).catch((error) => console.warn("Failed to sync cart quantity", error));
+    },
+    [isRemoteSynced]
+  );
+
   const syncClear = useCallback(() => {
     if (!isRemoteSynced) return;
     void fetch("/api/profile/cart", {
@@ -183,6 +205,32 @@ export function useCart() {
     syncClear();
   }, [syncClear]);
 
+  const setItemQuantity = useCallback(
+    (bookId: string, quantity: number) => {
+      const safeQuantity = Math.max(0, Math.min(99, Math.floor(quantity)));
+
+      setItems((prev: CartItem[]) => {
+        if (safeQuantity <= 0) {
+          return prev.filter((item) => item.book.id !== bookId);
+        }
+
+        let found = false;
+        const next = prev.map((item) => {
+          if (item.book.id === bookId) {
+            found = true;
+            return { ...item, quantity: safeQuantity } satisfies CartItem;
+          }
+          return item;
+        });
+
+        return found ? next : prev;
+      });
+
+      syncSetQuantity(bookId, safeQuantity);
+    },
+    [syncSetQuantity]
+  );
+
   const subtotalValue = useMemo(() => {
     return items.reduce((total: number, item: CartItem) => total + item.book.priceLocalInr * item.quantity, 0);
   }, [items]);
@@ -196,6 +244,7 @@ export function useCart() {
     addItem,
     removeItem,
     clear,
+    setItemQuantity,
     subtotal,
     subtotalValue,
     isHydrated,
