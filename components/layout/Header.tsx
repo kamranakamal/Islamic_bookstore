@@ -128,12 +128,6 @@ export function Header({ sessionUser }: HeaderProps) {
               <span className="max-w-[12rem] truncate text-sm font-semibold text-gray-700" title={sessionUser.email}>
                 {sessionUser.email}
               </span>
-              <Link
-                href={addressesHref}
-                className="inline-flex items-center justify-center rounded-full border border-primary px-4 py-2 text-sm font-semibold text-primary transition hover:-translate-y-0.5 hover:bg-primary/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
-              >
-                Manage addresses
-              </Link>
               <button
                 type="button"
                 onClick={handleSignOut}
@@ -242,13 +236,6 @@ export function Header({ sessionUser }: HeaderProps) {
                       <p className="font-semibold">Signed in</p>
                       <p className="truncate text-xs text-primary/80">{sessionUser.email}</p>
                     </div>
-                    <Link
-                      href={addressesHref}
-                      onClick={() => setIsMenuOpen(false)}
-                      className="flex items-center justify-center rounded-2xl border border-primary px-4 py-3 text-sm font-semibold text-primary transition hover:-translate-y-0.5 hover:bg-primary/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
-                    >
-                      Manage addresses
-                    </Link>
                     <button
                       type="button"
                       onClick={handleSignOut}

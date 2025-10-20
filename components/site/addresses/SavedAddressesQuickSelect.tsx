@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 
@@ -54,8 +55,14 @@ export function SavedAddressesQuickSelect() {
 
   if (!data.addresses.length) {
     return (
-      <div className="rounded-lg border border-dashed border-gray-300 bg-white p-4 text-sm text-gray-600">
-        Save an address on your account to reuse it here.
+      <div className="space-y-3 rounded-lg border border-dashed border-gray-300 bg-white p-4 text-sm text-gray-600">
+        <p>Save an address on your account to reuse it here.</p>
+        <Link
+          href="/account/addresses"
+          className="inline-flex items-center rounded-full border border-primary px-3 py-1 text-xs font-semibold text-primary transition hover:-translate-y-0.5 hover:bg-primary/10"
+        >
+          Manage addresses
+        </Link>
       </div>
     );
   }
@@ -81,7 +88,15 @@ export function SavedAddressesQuickSelect() {
 
   return (
     <div className="space-y-3">
-      <h2 className="text-sm font-semibold text-gray-900">Saved addresses</h2>
+      <div className="flex items-center justify-between gap-3">
+        <h2 className="text-sm font-semibold text-gray-900">Saved addresses</h2>
+        <Link
+          href="/account/addresses"
+          className="inline-flex items-center rounded-full border border-primary px-3 py-1 text-xs font-semibold text-primary transition hover:-translate-y-0.5 hover:bg-primary/10"
+        >
+          Manage addresses
+        </Link>
+      </div>
       <ul className="space-y-2">
         {data.addresses.map((address) => (
           <li key={address.id} className="rounded-lg border border-gray-200 bg-white p-4 text-sm text-gray-700">
