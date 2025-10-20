@@ -9,7 +9,9 @@ import type {
   BookSummary,
   CategoryRow,
   CategoryWithBooks,
-  SearchResult
+  SearchResult,
+  UserAddress,
+  UserAddressRow
 } from "@/lib/types";
 
 const formatLocalCurrency = new Intl.NumberFormat("en-IN", {
@@ -169,5 +171,24 @@ export function toBlogPostDetail(row: BlogPostRow): BlogPostDetail {
   return {
     ...toBlogPostSummary(row),
     body: row.body
+  };
+}
+
+export function toUserAddress(row: UserAddressRow): UserAddress {
+  return {
+    id: row.id,
+    profileId: row.profile_id,
+    label: row.label,
+    fullName: row.full_name,
+    phone: row.phone,
+    line1: row.line1,
+    line2: row.line2,
+    city: row.city,
+    state: row.state,
+    postalCode: row.postal_code,
+    country: row.country,
+    isDefault: row.is_default,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at
   };
 }

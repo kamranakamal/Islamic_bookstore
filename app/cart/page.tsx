@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 
+import { SavedAddressesQuickSelect } from "@/components/site/addresses/SavedAddressesQuickSelect";
 import { useCart } from "@/lib/hooks/useCart";
 
 export default function CartPage() {
@@ -67,6 +68,7 @@ export default function CartPage() {
             >
               Contact us to complete order
             </Link>
+            <SavedAddressesQuickSelect />
           </aside>
         </div>
       )}

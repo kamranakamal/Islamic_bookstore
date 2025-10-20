@@ -182,6 +182,23 @@ export interface OrderRow extends Record<string, unknown> {
   updated_at: string;
 }
 
+export interface UserAddressRow extends Record<string, unknown> {
+  id: string;
+  profile_id: string;
+  label: string;
+  full_name: string;
+  phone: string | null;
+  line1: string;
+  line2: string | null;
+  city: string;
+  state: string | null;
+  postal_code: string | null;
+  country: string;
+  is_default: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface AuditLogRow extends Record<string, unknown> {
   id: string;
   actor_id: string | null;
@@ -408,6 +425,15 @@ type PublicDatabaseSchema = GenericSchema & {
       },
       Partial<OrderRow>
     >;
+    user_addresses: TableDefinition<
+      UserAddressRow,
+      Omit<UserAddressRow, "id" | "created_at" | "updated_at"> & {
+        id?: string;
+        created_at?: string;
+        updated_at?: string;
+      },
+      Partial<UserAddressRow>
+    >;
     audit_logs: TableDefinition<
       AuditLogRow,
       Omit<AuditLogRow, "id" | "created_at"> & { id?: string; created_at?: string },
@@ -540,6 +566,23 @@ export interface AdminAnalyticsSnapshot {
   totalUsers: number;
   mostRequestedTitles: Array<{ title: string; count: number }>;
   recentBooks: Array<{ id: string; title: string; createdAt: string; category: string | null; isFeatured: boolean }>;
+}
+
+export interface UserAddress {
+  id: string;
+  profileId: string;
+  label: string;
+  fullName: string;
+  phone: string | null;
+  line1: string;
+  line2: string | null;
+  city: string;
+  state: string | null;
+  postalCode: string | null;
+  country: string;
+  isDefault: boolean;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface AdminContactMessage {
