@@ -7,6 +7,7 @@ import type {
   BookDetail,
   BookRowWithCategory,
   BookSummary,
+  CartItem,
   CategoryRow,
   CategoryWithBooks,
   SearchResult,
@@ -85,6 +86,20 @@ export function toBookDetail(row: BookRowWithCategory): BookDetail {
     pageCount: row.page_count,
     availableLanguages: row.available_languages ?? [],
     description: row.description
+  };
+}
+
+export function toCartItem(quantity: number, book: BookRowWithCategory): CartItem {
+  const summary = toBookSummary(book);
+  return {
+    book: {
+      id: summary.id,
+      title: summary.title,
+      author: summary.author,
+      priceLocalInr: summary.priceLocalInr,
+      priceFormattedLocal: summary.priceFormattedLocal
+    },
+    quantity
   };
 }
 

@@ -46,11 +46,39 @@ export function SavedAddressesQuickSelect() {
   }
 
   if (isError) {
-    return null;
+    return (
+      <div className="space-y-3 rounded-lg border border-dashed border-gray-300 bg-white p-4 text-sm text-gray-600">
+        <p>We could not load your saved addresses right now.</p>
+        <Link
+          href="/account/addresses"
+          className="inline-flex items-center rounded-full border border-primary px-3 py-1 text-xs font-semibold text-primary transition hover:-translate-y-0.5 hover:bg-primary/10"
+        >
+          Manage addresses
+        </Link>
+      </div>
+    );
   }
 
   if (!data?.isAuthenticated) {
-    return null;
+    return (
+      <div className="space-y-3 rounded-lg border border-dashed border-gray-300 bg-white p-4 text-sm text-gray-600">
+        <p>Sign in to manage saved addresses and reuse them during checkout.</p>
+        <div className="flex flex-wrap gap-2">
+          <Link
+            href="/login?redirect=/account/addresses"
+            className="inline-flex items-center rounded-full border border-primary px-3 py-1 text-xs font-semibold text-primary transition hover:-translate-y-0.5 hover:bg-primary/10"
+          >
+            Sign in
+          </Link>
+          <Link
+            href="/account/addresses"
+            className="inline-flex items-center rounded-full border border-primary px-3 py-1 text-xs font-semibold text-primary transition hover:-translate-y-0.5 hover:bg-primary/10"
+          >
+            Manage addresses
+          </Link>
+        </div>
+      </div>
+    );
   }
 
   if (!data.addresses.length) {

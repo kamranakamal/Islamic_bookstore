@@ -34,8 +34,6 @@ export function Header({ sessionUser }: HeaderProps) {
   const closeButtonRef = useRef<HTMLButtonElement>(null);
 
   const loginHref = pathname === "/login" ? "/login" : `/login?redirect=${encodeURIComponent(pathname)}`;
-  const signupHref = pathname === "/signup" ? "/signup" : `/signup?redirect=${encodeURIComponent(pathname)}`;
-  const addressesHref = "/account/addresses";
 
   const handleSignOut = async () => {
     if (isSigningOut) return;
@@ -141,15 +139,9 @@ export function Header({ sessionUser }: HeaderProps) {
             <div className="flex items-center gap-3">
               <Link
                 href={loginHref}
-                className="inline-flex items-center justify-center rounded-full border border-primary px-4 py-2 text-sm font-semibold text-primary transition hover:-translate-y-0.5 hover:bg-primary/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
+                className="inline-flex items-center justify-center rounded-full bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
               >
-                Sign in
-              </Link>
-              <Link
-                href={signupHref}
-                className="inline-flex items-center justify-center rounded-full bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90"
-              >
-                Sign up
+                Sign in / Sign up
               </Link>
             </div>
           )}
@@ -250,16 +242,9 @@ export function Header({ sessionUser }: HeaderProps) {
                     <Link
                       href={loginHref}
                       onClick={() => setIsMenuOpen(false)}
-                      className="flex items-center justify-center rounded-2xl border border-primary px-4 py-3 text-sm font-semibold text-primary transition hover:-translate-y-0.5 hover:bg-primary/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
+                      className="flex items-center justify-center rounded-2xl bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
                     >
-                      Sign in
-                    </Link>
-                    <Link
-                      href={signupHref}
-                      onClick={() => setIsMenuOpen(false)}
-                      className="flex items-center justify-center rounded-2xl bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90"
-                    >
-                      Create account
+                      Sign in / Sign up
                     </Link>
                   </div>
                 )}

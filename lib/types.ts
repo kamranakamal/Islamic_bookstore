@@ -199,6 +199,20 @@ export interface UserAddressRow extends Record<string, unknown> {
   updated_at: string;
 }
 
+export interface UserCartItemRow extends Record<string, unknown> {
+  id: string;
+  profile_id: string;
+  book_id: string;
+  quantity: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface UserCartItem {
+  bookId: string;
+  quantity: number;
+}
+
 export interface AuditLogRow extends Record<string, unknown> {
   id: string;
   actor_id: string | null;
@@ -433,6 +447,15 @@ type PublicDatabaseSchema = GenericSchema & {
         updated_at?: string;
       },
       Partial<UserAddressRow>
+    >;
+    user_cart_items: TableDefinition<
+      UserCartItemRow,
+      Omit<UserCartItemRow, "id" | "created_at" | "updated_at"> & {
+        id?: string;
+        created_at?: string;
+        updated_at?: string;
+      },
+      Partial<UserCartItemRow>
     >;
     audit_logs: TableDefinition<
       AuditLogRow,
