@@ -21,6 +21,7 @@ import type {
   FaqEntryRow,
   MessageRow,
   OrderRow,
+  ShippingAddressSnapshot,
   ProfileRow
 } from "@/lib/types";
 
@@ -86,7 +87,7 @@ export async function getAdminOrders(): Promise<AdminOrder[]> {
   const supabase = getSupabaseAdmin();
   const { data } = await supabase
     .from("orders")
-    .select("id, full_name, email, phone, institution, status, notes, items, created_at")
+    .select("id, full_name, email, phone, institution, status, notes, items, created_at, shipping_address, shipping_address_id")
     .order("created_at", { ascending: false });
 
   const rows = (data ?? []) as OrderRow[];
@@ -100,6 +101,8 @@ export async function getAdminOrders(): Promise<AdminOrder[]> {
     status: order.status,
     notes: order.notes,
     items: order.items ?? [],
+    shippingAddress: (order.shipping_address ?? null) as ShippingAddressSnapshot | null,
+    shippingAddressId: order.shipping_address_id ?? null,
     createdAt: order.created_at
   }));
 }

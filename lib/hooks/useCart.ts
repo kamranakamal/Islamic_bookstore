@@ -2,9 +2,10 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 
-import type { BookSummary, CartBook, CartItem } from "@/lib/types";
+import type { BookSummary, CartBook, CartItem, ShippingAddressPayload } from "@/lib/types";
 
 const STORAGE_KEY = "maktab-muhammadiya-cart";
+const STORAGE_ADDRESS_KEY = "maktab-muhammadiya-cart-address";
 const formatLocalCurrency = new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR" });
 
 function serialize(items: CartItem[]): string {
@@ -61,10 +62,67 @@ function toCartBook(book: BookSummary): CartBook {
   };
 }
 
+function normalizeShippingAddress(address: ShippingAddressPayload): ShippingAddressPayload {
+  return {
+    id: address.id ?? undefined,
+    label: address.label ?? null,
+    fullName: address.fullName,
+    phone: address.phone ?? null,
+    line1: address.line1,
+    line2: address.line2 ?? null,
+    city: address.city,
+    state: address.state ?? null,
+    postalCode: address.postalCode ?? null,
+    country: address.country ?? "India"
+  } satisfies ShippingAddressPayload;
+}
+
+function deserializeShippingAddress(value: string | null): ShippingAddressPayload | null {
+  if (!value) return null;
+  try {
+    const parsed = JSON.parse(value) as Partial<ShippingAddressPayload> | null;
+    if (!parsed || typeof parsed !== "object") {
+      return null;
+    }
+    if (typeof parsed.fullName !== "string" || typeof parsed.line1 !== "string" || typeof parsed.city !== "string") {
+      return null;
+    }
+    return normalizeShippingAddress({
+      id: typeof parsed.id === "string" ? parsed.id : undefined,
+      label: typeof parsed.label === "string" ? parsed.label : null,
+      fullName: parsed.fullName,
+      phone: typeof parsed.phone === "string" ? parsed.phone : null,
+      line1: parsed.line1,
+      line2: typeof parsed.line2 === "string" ? parsed.line2 : null,
+      city: parsed.city,
+      state: typeof parsed.state === "string" ? parsed.state : null,
+      postalCode: typeof parsed.postalCode === "string" ? parsed.postalCode : null,
+      country: typeof parsed.country === "string" ? parsed.country : "India"
+    });
+  } catch (error) {
+    console.warn("Failed to parse cart address from storage", error);
+    return null;
+  }
+}
+
 export function useCart() {
   const [items, setItems] = useState<CartItem[]>([]);
   const [isHydrated, setIsHydrated] = useState(false);
   const [isRemoteSynced, setIsRemoteSynced] = useState(false);
+  const [shippingAddress, setShippingAddress] = useState<ShippingAddressPayload | null>(null);
+
+  useEffect(() => {
+    let storedValue: string | null = null;
+    try {
+      storedValue = window.localStorage.getItem(STORAGE_ADDRESS_KEY);
+    } catch (error) {
+      console.warn("Failed to read cart address from storage", error);
+    }
+    const address = deserializeShippingAddress(storedValue);
+    if (address) {
+      setShippingAddress(address);
+    }
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -124,6 +182,18 @@ export function useCart() {
       console.warn("Failed to store cart", storageError);
     }
   }, [items, isHydrated]);
+
+  useEffect(() => {
+    try {
+      if (shippingAddress) {
+        window.localStorage.setItem(STORAGE_ADDRESS_KEY, JSON.stringify(shippingAddress));
+      } else {
+        window.localStorage.removeItem(STORAGE_ADDRESS_KEY);
+      }
+    } catch (storageError) {
+      console.warn("Failed to persist cart address", storageError);
+    }
+  }, [shippingAddress]);
 
   const syncAdd = useCallback(
     (bookId: string, quantity: number) => {
@@ -205,6 +275,14 @@ export function useCart() {
     syncClear();
   }, [syncClear]);
 
+  const updateShippingAddress = useCallback((address: ShippingAddressPayload | null) => {
+    setShippingAddress((prev) => {
+      if (!address) return null;
+      const normalized = normalizeShippingAddress(address);
+      return JSON.stringify(prev) === JSON.stringify(normalized) ? prev : normalized;
+    });
+  }, []);
+
   const setItemQuantity = useCallback(
     (bookId: string, quantity: number) => {
       const safeQuantity = Math.max(0, Math.min(99, Math.floor(quantity)));
@@ -245,6 +323,8 @@ export function useCart() {
     removeItem,
     clear,
     setItemQuantity,
+    shippingAddress,
+    setShippingAddress: updateShippingAddress,
     subtotal,
     subtotalValue,
     isHydrated,

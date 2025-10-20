@@ -165,6 +165,21 @@ export interface BulkOrderRequestRow extends Record<string, unknown> {
   updated_at: string;
 }
 
+export interface ShippingAddressPayload {
+  id?: string;
+  label?: string | null;
+  fullName: string;
+  phone?: string | null;
+  line1: string;
+  line2?: string | null;
+  city: string;
+  state?: string | null;
+  postalCode?: string | null;
+  country?: string | null;
+}
+
+export interface ShippingAddressSnapshot extends Partial<ShippingAddressPayload> {}
+
 export interface OrderRow extends Record<string, unknown> {
   id: string;
   user_id: string | null;
@@ -178,6 +193,8 @@ export interface OrderRow extends Record<string, unknown> {
     quantity: number;
   }>;
   status: "pending" | "approved" | "shipped" | "cancelled";
+  shipping_address: ShippingAddressSnapshot | null;
+  shipping_address_id: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -344,6 +361,7 @@ export interface OrderRequestPayload {
     bookId: string;
     quantity: number;
   }>;
+  shippingAddress?: ShippingAddressPayload | null;
 }
 
 export interface CreateOrUpdateBookPayload {
@@ -589,6 +607,8 @@ export interface AdminOrder {
   status: OrderRow["status"];
   notes: string | null;
   items: OrderRow["items"];
+  shippingAddress: ShippingAddressSnapshot | null;
+  shippingAddressId: string | null;
   createdAt: string;
 }
 

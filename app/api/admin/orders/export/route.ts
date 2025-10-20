@@ -2,6 +2,24 @@ import { NextResponse } from "next/server";
 
 import { requireAdminUser } from "@/lib/authHelpers";
 import { getAdminBooksData, getAdminOrders } from "@/lib/data/admin";
+import type { AdminOrder } from "@/lib/types";
+
+function formatShippingAddress(address: AdminOrder["shippingAddress"]): string {
+  if (!address) return "";
+  const lines: string[] = [];
+  if (address.label) lines.push(address.label);
+  if (address.fullName) lines.push(address.fullName);
+  const street = [address.line1, address.line2].filter(Boolean).join(", ");
+  if (street) lines.push(street);
+  const locality = [address.city, address.state].filter(Boolean).join(", ");
+  const code = address.postalCode ?? "";
+  if (locality || code) {
+    lines.push(`${locality}${code ? ` ${code}` : ""}`.trim());
+  }
+  if (address.country) lines.push(address.country);
+  if (address.phone) lines.push(`Phone: ${address.phone}`);
+  return lines.filter(Boolean).join(" | ");
+}
 
 function escapeCsv(value: string | number): string {
   const stringValue = typeof value === "number" ? String(value) : value;
@@ -32,7 +50,8 @@ export async function GET() {
     "Total quantity",
     "Estimated value (INR)",
     "Item details",
-    "Notes"
+    "Notes",
+    "Shipping address"
   ];
 
   const lines = [header.join(",")];
@@ -66,7 +85,8 @@ export async function GET() {
       escapeCsv(totalQuantity),
       escapeCsv(estimatedValue),
       escapeCsv(itemDetails || "No items"),
-      escapeCsv(order.notes ?? "")
+      escapeCsv(order.notes ?? ""),
+      escapeCsv(formatShippingAddress(order.shippingAddress))
     ];
 
     lines.push(row.join(","));

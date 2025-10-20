@@ -17,10 +17,22 @@ interface CartPageClientProps {
 
 export function CartPageClient({ bookToAdd, addStatus }: CartPageClientProps) {
   const router = useRouter();
-  const { items, subtotal, removeItem, clear, addItem, setItemQuantity, isHydrated, isRemoteSynced } = useCart();
+  const {
+    items,
+    subtotal,
+    removeItem,
+    clear,
+    addItem,
+    setItemQuantity,
+    shippingAddress,
+    setShippingAddress,
+    isHydrated,
+    isRemoteSynced
+  } = useCart();
   const [recentlyAddedTitle, setRecentlyAddedTitle] = useState<string | null>(null);
   const [notFoundVisible, setNotFoundVisible] = useState(addStatus === "not-found");
   const processedAddIdRef = useRef<string | null>(null);
+  const [addressFeedback, setAddressFeedback] = useState<string | null>(null);
 
   useEffect(() => {
     if (!bookToAdd) {
@@ -56,6 +68,24 @@ export function CartPageClient({ bookToAdd, addStatus }: CartPageClientProps) {
     const timeoutId = window.setTimeout(() => setNotFoundVisible(false), 5000);
     return () => window.clearTimeout(timeoutId);
   }, [notFoundVisible]);
+
+  useEffect(() => {
+    if (!addressFeedback) return;
+    const timeoutId = window.setTimeout(() => setAddressFeedback(null), 3000);
+    return () => window.clearTimeout(timeoutId);
+  }, [addressFeedback]);
+
+  const handleAddressSelect = (address: Parameters<typeof setShippingAddress>[0]) => {
+    setShippingAddress(address);
+    if (address) {
+      const label = address.label?.trim();
+      const line = address.line1 ?? "";
+      const summary = label?.length ? label : line;
+      setAddressFeedback(summary.length ? `Using ${summary} for delivery.` : "Updated delivery address.");
+    } else {
+      setAddressFeedback("Cleared delivery address.");
+    }
+  };
 
   return (
     <div className="space-y-10">
@@ -148,6 +178,44 @@ export function CartPageClient({ bookToAdd, addStatus }: CartPageClientProps) {
           </section>
 
           <aside className="space-y-4 rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+            <div className="space-y-3 rounded-lg border border-gray-100 bg-gray-50 p-4">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <p className="text-sm font-semibold text-gray-900">Delivery address</p>
+                  <p className="text-xs text-gray-500">Choose where we should prepare to deliver this order.</p>
+                </div>
+                {shippingAddress ? (
+                  <button
+                    type="button"
+                    onClick={() => handleAddressSelect(null)}
+                    className="text-xs font-semibold text-primary underline underline-offset-2"
+                  >
+                    Clear
+                  </button>
+                ) : null}
+              </div>
+              {shippingAddress ? (
+                <address className="space-y-1 text-sm not-italic text-gray-700">
+                  {shippingAddress.label ? (
+                    <p className="font-semibold text-gray-900">{shippingAddress.label}</p>
+                  ) : null}
+                  <p>{shippingAddress.fullName}</p>
+                  <p>{shippingAddress.line1}</p>
+                  {shippingAddress.line2 ? <p>{shippingAddress.line2}</p> : null}
+                  {(() => {
+                    const locality = [shippingAddress.city, shippingAddress.state].filter(Boolean).join(", ");
+                    const code = shippingAddress.postalCode ?? "";
+                    if (!locality && !code) return null;
+                    return <p>{`${locality}${code ? ` ${code}` : ""}`.trim()}</p>;
+                  })()}
+                  <p>{shippingAddress.country ?? "India"}</p>
+                  {shippingAddress.phone ? <p className="text-xs text-gray-500">Phone: {shippingAddress.phone}</p> : null}
+                </address>
+              ) : (
+                <p className="text-sm text-gray-600">Select one of your saved addresses below or manage them in your account.</p>
+              )}
+              {addressFeedback ? <p className="text-xs text-emerald-600">{addressFeedback}</p> : null}
+            </div>
             <div className="space-y-1">
               <p className="text-sm text-gray-500">Subtotal</p>
               <p className="text-2xl font-semibold text-primary">{subtotal}</p>
@@ -166,7 +234,10 @@ export function CartPageClient({ bookToAdd, addStatus }: CartPageClientProps) {
                 ? "Cart items are saved to your account."
                 : "Cart items are stored on this device. Sign in to sync across devices."}
             </p>
-            <SavedAddressesQuickSelect />
+            <SavedAddressesQuickSelect
+              selectedId={shippingAddress?.id ?? null}
+              onSelect={(address) => handleAddressSelect(address)}
+            />
           </aside>
         </div>
       )}

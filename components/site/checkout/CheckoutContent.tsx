@@ -31,7 +31,7 @@ interface CheckoutContentProps {
 }
 
 export function CheckoutContent({ sessionUser }: CheckoutContentProps) {
-  const { items, subtotal, subtotalValue, isHydrated, isRemoteSynced } = useCart();
+  const { items, subtotal, subtotalValue, isHydrated, isRemoteSynced, shippingAddress, setShippingAddress } = useCart();
   const [paymentMethod, setPaymentMethod] = useState<(typeof PAYMENT_METHODS)[number]["id"]>(PAYMENT_METHODS[0]?.id ?? "upi");
   const [deliveryWindow, setDeliveryWindow] = useState<(typeof DELIVERY_WINDOWS)[number]>(DELIVERY_WINDOWS[0]);
   const [submissionState, setSubmissionState] = useState<SubmissionState>("idle");
@@ -281,6 +281,41 @@ export function CheckoutContent({ sessionUser }: CheckoutContentProps) {
         </section>
 
         <aside className="space-y-6 rounded-3xl border border-gray-200 bg-white/95 p-6 shadow-sm">
+          <div className="space-y-3 rounded-2xl border border-gray-100 bg-gray-50 p-4">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <h2 className="text-sm font-semibold text-gray-900">Delivery address</h2>
+                <p className="text-xs text-gray-500">This address will be saved with your order request.</p>
+              </div>
+              {shippingAddress ? (
+                <button
+                  type="button"
+                  onClick={() => setShippingAddress(null)}
+                  className="text-xs font-semibold text-primary underline underline-offset-2"
+                >
+                  Clear
+                </button>
+              ) : null}
+            </div>
+            {shippingAddress ? (
+              <address className="space-y-1 text-sm not-italic text-gray-700">
+                {shippingAddress.label ? <p className="font-semibold text-gray-900">{shippingAddress.label}</p> : null}
+                <p>{shippingAddress.fullName}</p>
+                <p>{shippingAddress.line1}</p>
+                {shippingAddress.line2 ? <p>{shippingAddress.line2}</p> : null}
+                {(() => {
+                  const locality = [shippingAddress.city, shippingAddress.state].filter(Boolean).join(", ");
+                  const code = shippingAddress.postalCode ?? "";
+                  if (!locality && !code) return null;
+                  return <p>{`${locality}${code ? ` ${code}` : ""}`.trim()}</p>;
+                })()}
+                <p>{shippingAddress.country ?? "India"}</p>
+                {shippingAddress.phone ? <p className="text-xs text-gray-500">Phone: {shippingAddress.phone}</p> : null}
+              </address>
+            ) : (
+              <p className="text-sm text-gray-600">Choose an address below to associate it with this order.</p>
+            )}
+          </div>
           <div className="space-y-2">
             <h2 className="text-lg font-semibold text-gray-900">Order summary</h2>
             <p className="text-xs uppercase tracking-[0.3em] text-primary">{items.length} {items.length === 1 ? "book" : "books"}</p>
@@ -318,7 +353,10 @@ export function CheckoutContent({ sessionUser }: CheckoutContentProps) {
           <div className="rounded-2xl border border-primary/30 bg-primary/5 p-4 text-xs text-primary">
             We will verify availability before collecting payment. Once everything is confirmed, we will share payment instructions using your selected method.
           </div>
-          <SavedAddressesQuickSelect />
+          <SavedAddressesQuickSelect
+            selectedId={shippingAddress?.id ?? null}
+            onSelect={(address) => setShippingAddress(address)}
+          />
         </aside>
       </div>
     </div>

@@ -50,6 +50,30 @@ export function OrdersList({ orders }: OrdersListProps) {
                   <div>
                     <p>{order.fullName}</p>
                     {order.phone ? <p className="text-xs text-gray-500">{order.phone}</p> : null}
+                    {order.shippingAddress ? (
+                      <div className="mt-3 space-y-1 text-xs text-gray-500">
+                        {order.shippingAddress.label ? (
+                          <p className="font-semibold text-gray-600">{order.shippingAddress.label}</p>
+                        ) : null}
+                        {order.shippingAddress.fullName && order.shippingAddress.fullName !== order.fullName ? (
+                          <p>{order.shippingAddress.fullName}</p>
+                        ) : null}
+                        {order.shippingAddress.line1 ? <p>{order.shippingAddress.line1}</p> : null}
+                        {order.shippingAddress.line2 ? <p>{order.shippingAddress.line2}</p> : null}
+                        {(() => {
+                          const locality = [order.shippingAddress.city, order.shippingAddress.state]
+                            .filter(Boolean)
+                            .join(", ");
+                          const code = order.shippingAddress.postalCode ?? "";
+                          if (!locality && !code) return null;
+                          return <p>{`${locality}${code ? ` ${code}` : ""}`.trim()}</p>;
+                        })()}
+                        {order.shippingAddress.country ? <p>{order.shippingAddress.country}</p> : null}
+                        {order.shippingAddress.phone && order.shippingAddress.phone !== order.phone ? (
+                          <p>Alt phone: {order.shippingAddress.phone}</p>
+                        ) : null}
+                      </div>
+                    ) : null}
                   </div>
                 </td>
                 <td className="px-4 py-3 text-sm text-gray-700">

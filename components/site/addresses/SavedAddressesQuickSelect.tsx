@@ -4,7 +4,12 @@ import Link from "next/link";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 
-import type { UserAddress } from "@/lib/types";
+import type { ShippingAddressPayload, UserAddress } from "@/lib/types";
+
+interface SavedAddressesQuickSelectProps {
+  selectedId?: string | null;
+  onSelect?: (address: ShippingAddressPayload) => void;
+}
 
 const QUERY_KEY = ["profile-addresses"] as const;
 
@@ -27,7 +32,22 @@ async function fetchSavedAddresses() {
   return { addresses: data.addresses, isAuthenticated: true as const };
 }
 
-export function SavedAddressesQuickSelect() {
+function toShippingAddressPayload(address: UserAddress): ShippingAddressPayload {
+  return {
+    id: address.id,
+    label: address.label,
+    fullName: address.fullName,
+    phone: address.phone,
+    line1: address.line1,
+    line2: address.line2,
+    city: address.city,
+    state: address.state,
+    postalCode: address.postalCode,
+    country: address.country
+  } satisfies ShippingAddressPayload;
+}
+
+export function SavedAddressesQuickSelect({ selectedId = null, onSelect }: SavedAddressesQuickSelectProps) {
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
   const { data, isLoading, isError } = useQuery({
@@ -128,14 +148,21 @@ export function SavedAddressesQuickSelect() {
       <ul className="space-y-2">
         {data.addresses.map((address) => (
           <li key={address.id} className="rounded-lg border border-gray-200 bg-white p-4 text-sm text-gray-700">
-            <p className="font-semibold text-gray-900">
-              {address.label}
-              {address.isDefault ? (
-                <span className="ml-2 inline-flex items-center rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-primary">
-                  Default
+            <div className="flex items-start justify-between gap-2">
+              <p className="font-semibold text-gray-900">
+                {address.label}
+                {address.isDefault ? (
+                  <span className="ml-2 inline-flex items-center rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-primary">
+                    Default
+                  </span>
+                ) : null}
+              </p>
+              {selectedId === address.id ? (
+                <span className="inline-flex items-center rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-emerald-700">
+                  In use
                 </span>
               ) : null}
-            </p>
+            </div>
             <p>{address.fullName}</p>
             <p>{address.line1}</p>
             {address.line2 ? <p>{address.line2}</p> : null}
@@ -146,13 +173,26 @@ export function SavedAddressesQuickSelect() {
             </p>
             <p>{address.country}</p>
             {address.phone ? <p className="text-xs text-gray-500">Phone: {address.phone}</p> : null}
-            <button
-              type="button"
-              onClick={() => handleCopy(address)}
-              className="mt-3 inline-flex items-center rounded-full border border-primary px-3 py-1 text-xs font-semibold text-primary transition hover:-translate-y-0.5 hover:bg-primary/10"
-            >
-              {copiedId === address.id ? "Copied" : "Copy details"}
-            </button>
+            <div className="mt-3 flex flex-wrap gap-2">
+              <button
+                type="button"
+                onClick={() => onSelect?.(toShippingAddressPayload(address))}
+                className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold transition hover:-translate-y-0.5 ${
+                  selectedId === address.id
+                    ? "bg-primary text-primary-foreground"
+                    : "border border-primary text-primary hover:bg-primary/10"
+                }`}
+              >
+                {selectedId === address.id ? "Selected" : "Use this address"}
+              </button>
+              <button
+                type="button"
+                onClick={() => handleCopy(address)}
+                className="inline-flex items-center rounded-full border border-gray-200 px-3 py-1 text-xs font-semibold text-gray-600 transition hover:-translate-y-0.5 hover:bg-gray-100"
+              >
+                {copiedId === address.id ? "Copied" : "Copy details"}
+              </button>
+            </div>
           </li>
         ))}
       </ul>

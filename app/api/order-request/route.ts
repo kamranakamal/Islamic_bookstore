@@ -4,6 +4,19 @@ import { z } from "zod";
 import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
 import type { OrderRequestPayload } from "@/lib/types";
 
+const shippingAddressSchema = z.object({
+  id: z.string().uuid().optional(),
+  label: z.string().max(120).nullable().optional(),
+  fullName: z.string().min(3),
+  phone: z.string().optional().nullable(),
+  line1: z.string().min(3),
+  line2: z.string().max(120).optional().nullable(),
+  city: z.string().min(2),
+  state: z.string().max(120).optional().nullable(),
+  postalCode: z.string().max(30).optional().nullable(),
+  country: z.string().min(2).max(120).optional().nullable()
+});
+
 const orderSchema = z.object({
   name: z.string().min(3),
   email: z.string().email(),
@@ -17,7 +30,8 @@ const orderSchema = z.object({
         quantity: z.number().int().positive().max(50)
       })
     )
-    .min(1)
+    .min(1),
+  shippingAddress: shippingAddressSchema.optional().nullable()
 });
 
 export async function POST(request: NextRequest) {
@@ -57,6 +71,22 @@ export async function POST(request: NextRequest) {
     };
   });
 
+  const shippingAddressSnapshot = payload.shippingAddress
+    ? {
+        id: payload.shippingAddress.id ?? null,
+        label: payload.shippingAddress.label ?? null,
+        fullName: payload.shippingAddress.fullName,
+        phone: payload.shippingAddress.phone ?? null,
+        line1: payload.shippingAddress.line1,
+        line2: payload.shippingAddress.line2 ?? null,
+        city: payload.shippingAddress.city,
+        state: payload.shippingAddress.state ?? null,
+        postalCode: payload.shippingAddress.postalCode ?? null,
+        country: payload.shippingAddress.country ?? null
+      }
+    : null;
+  const shippingAddressId = payload.shippingAddress?.id ?? null;
+
   try {
     const { data, error } = await admin
       .from("orders")
@@ -67,7 +97,9 @@ export async function POST(request: NextRequest) {
         institution: payload.institution ?? null,
         notes: payload.message ?? null,
         items: orderItems,
-        status: "pending"
+        status: "pending",
+        shipping_address: shippingAddressSnapshot,
+        shipping_address_id: shippingAddressId
       })
       .select("id")
       .single();
