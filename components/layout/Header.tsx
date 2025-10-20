@@ -34,6 +34,7 @@ export function Header({ sessionUser }: HeaderProps) {
   const closeButtonRef = useRef<HTMLButtonElement>(null);
 
   const loginHref = pathname === "/login" ? "/login" : `/login?redirect=${encodeURIComponent(pathname)}`;
+  const signupHref = pathname === "/signup" ? "/signup" : `/signup?redirect=${encodeURIComponent(pathname)}`;
 
   const handleSignOut = async () => {
     if (isSigningOut) return;
@@ -136,12 +137,20 @@ export function Header({ sessionUser }: HeaderProps) {
               </button>
             </div>
           ) : (
-            <Link
-              href={loginHref}
-              className="inline-flex items-center justify-center rounded-full border border-primary px-4 py-2 text-sm font-semibold text-primary transition hover:-translate-y-0.5 hover:bg-primary/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
-            >
-              Sign in
-            </Link>
+            <div className="flex items-center gap-3">
+              <Link
+                href={loginHref}
+                className="inline-flex items-center justify-center rounded-full border border-primary px-4 py-2 text-sm font-semibold text-primary transition hover:-translate-y-0.5 hover:bg-primary/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
+              >
+                Sign in
+              </Link>
+              <Link
+                href={signupHref}
+                className="inline-flex items-center justify-center rounded-full bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90"
+              >
+                Sign up
+              </Link>
+            </div>
           )}
         </div>
         <button
@@ -198,6 +207,7 @@ export function Header({ sessionUser }: HeaderProps) {
                     <li key={href}>
                       <Link
                         href={href}
+                        onClick={() => setIsMenuOpen(false)}
                         className={clsx(
                           "flex items-center justify-between rounded-2xl border px-3.5 py-3.5 transition-all focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary",
                           isActive
@@ -235,13 +245,22 @@ export function Header({ sessionUser }: HeaderProps) {
                     </button>
                   </>
                 ) : (
-                  <Link
-                    href={loginHref}
-                    onClick={() => setIsMenuOpen(false)}
-                    className="flex items-center justify-center rounded-2xl border border-primary px-4 py-3 text-sm font-semibold text-primary transition hover:-translate-y-0.5 hover:bg-primary/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
-                  >
-                    Sign in
-                  </Link>
+                  <div className="flex flex-col gap-3">
+                    <Link
+                      href={loginHref}
+                      onClick={() => setIsMenuOpen(false)}
+                      className="flex items-center justify-center rounded-2xl border border-primary px-4 py-3 text-sm font-semibold text-primary transition hover:-translate-y-0.5 hover:bg-primary/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
+                    >
+                      Sign in
+                    </Link>
+                    <Link
+                      href={signupHref}
+                      onClick={() => setIsMenuOpen(false)}
+                      className="flex items-center justify-center rounded-2xl bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90"
+                    >
+                      Create account
+                    </Link>
+                  </div>
                 )}
               </div>
             </div>

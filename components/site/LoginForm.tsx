@@ -36,8 +36,9 @@ export function LoginForm({ redirectTo }: LoginFormProps) {
 
     try {
       const redirectPath = sanitizeRedirectPath(redirectTo);
+      const normalizedEmail = email.trim().toLowerCase();
       const { data, error: signInError } = await supabase.auth.signInWithPassword({
-        email,
+        email: normalizedEmail,
         password
       });
 
@@ -56,6 +57,20 @@ export function LoginForm({ redirectTo }: LoginFormProps) {
         });
 
         await new Promise((resolve) => setTimeout(resolve, 200));
+
+        try {
+          await fetch("/api/profile/ensure", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            credentials: "include",
+            body: JSON.stringify({
+              email: normalizedEmail,
+              displayName: data.user.user_metadata?.display_name ?? null
+            })
+          });
+        } catch (profileError) {
+          console.error("Failed to sync profile", profileError);
+        }
       }
 
       setState("idle");

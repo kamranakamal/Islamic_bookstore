@@ -2,10 +2,10 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
-import { LoginForm } from "@/components/site/LoginForm";
+import { SignupForm } from "@/components/site/SignupForm";
 import { getSessionUser } from "@/lib/authHelpers";
 
-interface LoginPageProps {
+interface SignupPageProps {
   searchParams?: Record<string, string | string[] | undefined>;
 }
 
@@ -17,13 +17,13 @@ function resolveRedirectParam(param: string | string[] | undefined): string | un
 }
 
 export const metadata: Metadata = {
-  title: "Sign in · Maktab Muhammadiya"
+  title: "Create account · Maktab Muhammadiya"
 };
 
-export default async function LoginPage({ searchParams }: LoginPageProps) {
+export default async function SignupPage({ searchParams }: SignupPageProps) {
   const sessionUser = await getSessionUser();
   const redirectParam = resolveRedirectParam(searchParams?.redirect);
-  const signupHref = redirectParam ? `/signup?redirect=${encodeURIComponent(redirectParam)}` : "/signup";
+  const loginHref = redirectParam ? `/login?redirect=${encodeURIComponent(redirectParam)}` : "/login";
 
   if (sessionUser) {
     redirect(redirectParam ?? "/");
@@ -32,16 +32,16 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
   return (
     <div className="mx-auto my-16 flex w-full max-w-md flex-col gap-8 rounded-lg border border-gray-200 bg-white p-8 shadow-sm">
       <header className="space-y-1 text-center">
-        <p className="text-sm font-semibold uppercase tracking-wide text-primary">Welcome back</p>
-        <h1 className="text-2xl font-semibold text-gray-900">Sign in to your account</h1>
-        <p className="text-sm text-gray-600">Access your saved carts and continue exploring the catalogue.</p>
+        <p className="text-sm font-semibold uppercase tracking-wide text-primary">Join the library</p>
+        <h1 className="text-2xl font-semibold text-gray-900">Create your account</h1>
+        <p className="text-sm text-gray-600">Save your details, manage carts, and stay up to date with the latest releases.</p>
       </header>
-      <LoginForm redirectTo={redirectParam} />
+      <SignupForm redirectTo={redirectParam} />
       <p className="text-center text-xs text-gray-500">
         <span className="block text-gray-600">
-          New here?{" "}
-          <Link href={signupHref} className="font-semibold text-primary hover:underline">
-            Create an account
+          Already have an account?{" "}
+          <Link href={loginHref} className="font-semibold text-primary hover:underline">
+            Sign in
           </Link>
         </span>
         <Link href="/" className="font-semibold text-primary hover:underline">
