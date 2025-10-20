@@ -5,6 +5,7 @@ import type {
   AdminBlogPost,
   AdminBooksData,
   AdminBulkOrderRequest,
+  AdminCheckoutPreference,
   AdminContactMessage,
   AdminFaqEntry,
   AdminMessageThread,
@@ -15,6 +16,7 @@ import type {
   BookRowWithCategory,
   BulkOrderRequestRow,
   CategorySummary,
+  CheckoutPreferenceRow,
   ContactMessageRow,
   FaqEntryRow,
   MessageRow,
@@ -358,4 +360,34 @@ export async function getAdminMessageThread(id: string): Promise<AdminMessageThr
       attachments: row.attachments ?? []
     }))
   };
+}
+
+export async function getAdminCheckoutPreferences(): Promise<AdminCheckoutPreference[]> {
+  const supabase = getSupabaseAdmin();
+  const { data } = await supabase
+    .from("checkout_preferences")
+    .select("*, profiles:profile_id(id, email, display_name)")
+    .order("created_at", { ascending: false });
+
+  const rows = (data ?? []) as Array<
+    CheckoutPreferenceRow & { profiles: Pick<ProfileRow, "id" | "email" | "display_name"> | null }
+  >;
+
+  return rows.map((row) => ({
+    id: row.id,
+    profileId: row.profile_id,
+    profileEmail: row.profiles?.email ?? "",
+    profileName: row.profiles?.display_name ?? null,
+    billingName: row.billing_name,
+    billingEmail: row.billing_email,
+    billingPhone: row.billing_phone,
+    paymentMethod: row.payment_method,
+    deliveryWindow: row.delivery_window,
+    referenceCode: row.reference_code,
+    paymentIdentifier: row.payment_identifier,
+    notes: row.notes,
+    status: row.status,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at
+  }));
 }

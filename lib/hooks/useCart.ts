@@ -197,6 +197,8 @@ export function useCart() {
     removeItem,
     clear,
     subtotal,
-    subtotalValue
+    subtotalValue,
+    isHydrated,
+    isRemoteSynced
   };
 }

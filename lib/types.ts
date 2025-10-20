@@ -213,6 +213,22 @@ export interface UserCartItem {
   quantity: number;
 }
 
+export interface CheckoutPreferenceRow extends Record<string, unknown> {
+  id: string;
+  profile_id: string;
+  payment_method: string;
+  billing_name: string | null;
+  billing_email: string | null;
+  billing_phone: string | null;
+  delivery_window: string | null;
+  reference_code: string | null;
+  payment_identifier: string | null;
+  notes: string | null;
+  status: string;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface AuditLogRow extends Record<string, unknown> {
   id: string;
   actor_id: string | null;
@@ -457,6 +473,15 @@ type PublicDatabaseSchema = GenericSchema & {
       },
       Partial<UserCartItemRow>
     >;
+    checkout_preferences: TableDefinition<
+      CheckoutPreferenceRow,
+      Omit<CheckoutPreferenceRow, "id" | "created_at" | "updated_at"> & {
+        id?: string;
+        created_at?: string;
+        updated_at?: string;
+      },
+      Partial<CheckoutPreferenceRow>
+    >;
     audit_logs: TableDefinition<
       AuditLogRow,
       Omit<AuditLogRow, "id" | "created_at"> & { id?: string; created_at?: string },
@@ -695,4 +720,22 @@ export interface AdminMessageThreadMessage {
 export interface AdminMessageThread {
   contactMessage: AdminContactMessage;
   messages: AdminMessageThreadMessage[];
+}
+
+export interface AdminCheckoutPreference {
+  id: string;
+  profileId: string;
+  profileEmail: string;
+  profileName: string | null;
+  billingName: string | null;
+  billingEmail: string | null;
+  billingPhone: string | null;
+  paymentMethod: string;
+  deliveryWindow: string | null;
+  referenceCode: string | null;
+  paymentIdentifier: string | null;
+  notes: string | null;
+  status: string;
+  createdAt: string;
+  updatedAt: string;
 }

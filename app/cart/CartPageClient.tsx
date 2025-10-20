@@ -17,7 +17,7 @@ interface CartPageClientProps {
 
 export function CartPageClient({ bookToAdd, addStatus }: CartPageClientProps) {
   const router = useRouter();
-  const { items, subtotal, removeItem, clear, addItem } = useCart();
+  const { items, subtotal, removeItem, clear, addItem, isHydrated, isRemoteSynced } = useCart();
   const [recentlyAddedTitle, setRecentlyAddedTitle] = useState<string | null>(null);
   const [notFoundVisible, setNotFoundVisible] = useState(addStatus === "not-found");
   const processedAddIdRef = useRef<string | null>(null);
@@ -78,7 +78,11 @@ export function CartPageClient({ bookToAdd, addStatus }: CartPageClientProps) {
         </div>
       ) : null}
 
-      {items.length === 0 ? (
+      {!isHydrated ? (
+        <div className="rounded-lg border border-dashed border-gray-300 bg-white p-10 text-center text-gray-500">
+          Loading your cart...
+        </div>
+      ) : items.length === 0 ? (
         <div className="rounded-lg border border-dashed border-gray-300 bg-white p-10 text-center text-gray-500">
           <p className="mb-4">Your cart is currently empty.</p>
           <Link href="/" className="rounded bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground">
@@ -129,11 +133,16 @@ export function CartPageClient({ bookToAdd, addStatus }: CartPageClientProps) {
               Share these selections with the team and we’ll confirm availability, pricing, and delivery or collection options within one working day.
             </p>
             <Link
-              href="/contact"
+              href="/checkout"
               className="block rounded bg-primary px-4 py-2 text-center text-sm font-semibold text-primary-foreground"
             >
-              Contact us to complete order
+              Proceed to checkout
             </Link>
+            <p className="text-xs text-gray-500">
+              {isRemoteSynced
+                ? "Cart items are saved to your account."
+                : "Cart items are stored on this device. Sign in to sync across devices."}
+            </p>
             <SavedAddressesQuickSelect />
           </aside>
         </div>
