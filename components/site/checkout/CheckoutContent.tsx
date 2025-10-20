@@ -1,11 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 
 import { SavedAddressesQuickSelect } from "@/components/site/addresses/SavedAddressesQuickSelect";
 import { useCart } from "@/lib/hooks/useCart";
 import type { SessionUser } from "@/lib/authHelpers";
+import type { UserAddress } from "@/lib/types";
 
 const PAYMENT_METHODS = [
   {
@@ -37,6 +39,44 @@ export function CheckoutContent({ sessionUser }: CheckoutContentProps) {
   const [submissionState, setSubmissionState] = useState<SubmissionState>("idle");
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [notes, setNotes] = useState("");
+
+  // Fetch default address on mount
+  const { data: addressesData } = useQuery({
+    queryKey: ["profile-addresses"],
+    queryFn: async () => {
+      const response = await fetch("/api/profile/addresses", {
+        method: "GET",
+        credentials: "include"
+      });
+      if (!response.ok) return { addresses: [] as UserAddress[] };
+      return (await response.json()) as { addresses: UserAddress[] };
+    },
+    staleTime: 30_000,
+    retry: false
+  });
+
+  // Set default address on component mount if not already set
+  useEffect(() => {
+    if (!shippingAddress && addressesData?.addresses && addressesData.addresses.length > 0) {
+      const defaultAddr = addressesData.addresses.find((addr) => addr.isDefault) || addressesData.addresses[0];
+      if (defaultAddr) {
+        setShippingAddress({
+          id: defaultAddr.id,
+          label: defaultAddr.label,
+          fullName: defaultAddr.fullName,
+          phone: defaultAddr.phone,
+          line1: defaultAddr.line1,
+          line2: defaultAddr.line2,
+          city: defaultAddr.city,
+          state: defaultAddr.state,
+          postalCode: defaultAddr.postalCode,
+          country: defaultAddr.country,
+          landmark: defaultAddr.landmark
+        });
+      }
+    }
+  }, [addressesData, shippingAddress, setShippingAddress]);
+
   const currencyFormatter = useMemo(
     () => new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR" }),
     []
@@ -274,7 +314,7 @@ export function CheckoutContent({ sessionUser }: CheckoutContentProps) {
                 disabled={submissionState === "processing"}
                 className="inline-flex items-center justify-center rounded-full bg-primary px-6 py-2.5 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-70"
               >
-                {submissionState === "processing" ? "Submitting..." : "Confirm checkout preferences"}
+                {submissionState === "processing" ? "Confirming..." : "Confirm order"}
               </button>
             </div>
           </form>
