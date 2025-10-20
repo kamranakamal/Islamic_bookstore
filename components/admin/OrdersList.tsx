@@ -1,7 +1,3 @@
-"use client";
-
-import { useMemo } from "react";
-
 import type { AdminOrder } from "@/lib/types";
 
 interface OrdersListProps {
@@ -16,10 +12,7 @@ const STATUS_LABELS: Record<AdminOrder["status"], string> = {
 };
 
 export function OrdersList({ orders }: OrdersListProps) {
-  const sorted = useMemo(
-    () => orders.slice().sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()),
-    [orders]
-  );
+  const sorted = orders.slice().sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
   if (!sorted.length) {
     return (

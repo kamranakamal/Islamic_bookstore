@@ -17,4 +17,4 @@ enhance book search feature
 and add a feature to choose quantity of the book by + or - button in the cart page
 for the smartphones collapse the sort button so that books have more focus
 for the smartphone and smaller devices in the shop page on the top there should be search bar on top and below it (sort and categories and language) selector button in horizontal order  these threee button should be small and compact to enhances ui for smartphones 
-fix order and messages and payments  page does not load the data initially in admin panel it fetch the data after i refresh the page
+fix order, messages and payments page in admin panel does not load the data initially in admin panel it Loads the data after i refresh the page, i tried to fix it so many times but it didnt fixed yet so debug this bug 

@@ -53,8 +53,10 @@ export const metadata: Metadata = {
 export default async function RootLayout({ children }: { children: ReactNode }) {
   const supabase = createServerComponentClient<Database>({ cookies });
   const {
-    data: { session }
-  } = await supabase.auth.getSession();
+    data: { user }
+  } = await supabase.auth.getUser();
+
+  const session = user ? (await supabase.auth.getSession()).data.session : null;
   const sessionUser = await getSessionUser();
 
   return (
