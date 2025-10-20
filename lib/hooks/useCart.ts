@@ -63,6 +63,8 @@ function toCartBook(book: BookSummary): CartBook {
 }
 
 function normalizeShippingAddress(address: ShippingAddressPayload): ShippingAddressPayload {
+  const landmark = typeof address.landmark === "string" ? address.landmark.trim() : "";
+
   return {
     id: address.id ?? undefined,
     label: address.label ?? null,
@@ -73,7 +75,8 @@ function normalizeShippingAddress(address: ShippingAddressPayload): ShippingAddr
     city: address.city,
     state: address.state ?? null,
     postalCode: address.postalCode ?? null,
-    country: address.country ?? "India"
+    country: address.country ?? "India",
+    landmark
   } satisfies ShippingAddressPayload;
 }
 
@@ -97,7 +100,8 @@ function deserializeShippingAddress(value: string | null): ShippingAddressPayloa
       city: parsed.city,
       state: typeof parsed.state === "string" ? parsed.state : null,
       postalCode: typeof parsed.postalCode === "string" ? parsed.postalCode : null,
-      country: typeof parsed.country === "string" ? parsed.country : "India"
+      country: typeof parsed.country === "string" ? parsed.country : "India",
+      landmark: typeof parsed.landmark === "string" ? parsed.landmark.trim() : ""
     });
   } catch (error) {
     console.warn("Failed to parse cart address from storage", error);

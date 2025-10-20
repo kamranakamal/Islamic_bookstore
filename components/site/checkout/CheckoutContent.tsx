@@ -112,7 +112,12 @@ export function CheckoutContent({ sessionUser }: CheckoutContentProps) {
       deliveryWindow,
       referenceCode: reference.length ? reference : null,
       paymentIdentifier: paymentId.length ? paymentId : null,
-      notes: notes.trim().length ? notes.trim() : null
+      notes: notes.trim().length ? notes.trim() : null,
+      cartItems: items.map((item) => ({
+        book_id: item.book.id,
+        quantity: item.quantity
+      })),
+      shippingAddress: shippingAddress ?? null
     };
 
     try {

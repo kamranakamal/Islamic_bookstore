@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
 import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
-import type { OrderRequestPayload } from "@/lib/types";
+import type { OrderRequestPayload, ShippingAddressSnapshot } from "@/lib/types";
 
 const shippingAddressSchema = z.object({
   id: z.string().uuid().optional(),
@@ -14,7 +14,8 @@ const shippingAddressSchema = z.object({
   city: z.string().min(2),
   state: z.string().max(120).optional().nullable(),
   postalCode: z.string().max(30).optional().nullable(),
-  country: z.string().min(2).max(120).optional().nullable()
+  country: z.string().min(2).max(120).optional().nullable(),
+  landmark: z.string().trim().min(3)
 });
 
 const orderSchema = z.object({
@@ -71,7 +72,7 @@ export async function POST(request: NextRequest) {
     };
   });
 
-  const shippingAddressSnapshot = payload.shippingAddress
+  const shippingAddressSnapshot: ShippingAddressSnapshot | null = payload.shippingAddress
     ? {
         id: payload.shippingAddress.id ?? null,
         label: payload.shippingAddress.label ?? null,
@@ -82,7 +83,8 @@ export async function POST(request: NextRequest) {
         city: payload.shippingAddress.city,
         state: payload.shippingAddress.state ?? null,
         postalCode: payload.shippingAddress.postalCode ?? null,
-        country: payload.shippingAddress.country ?? null
+        country: payload.shippingAddress.country ?? null,
+        landmark: payload.shippingAddress.landmark
       }
     : null;
   const shippingAddressId = payload.shippingAddress?.id ?? null;

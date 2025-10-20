@@ -166,7 +166,7 @@ export interface BulkOrderRequestRow extends Record<string, unknown> {
 }
 
 export interface ShippingAddressPayload {
-  id?: string;
+  id?: string | null;
   label?: string | null;
   fullName: string;
   phone?: string | null;
