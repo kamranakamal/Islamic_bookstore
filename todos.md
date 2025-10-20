@@ -4,7 +4,7 @@
 
 
 
-add copy address button in the order page in admin panel 
+Enhance the payment system and add a page after order confirmation and enhance address feature
 make footer compact for the smartphone and use icons instead of full socail media provider name 
 move add to cart and price card to the bottom of the page for smartphones and replace the button under add to cart with buy now 
 enhance book search feature 
