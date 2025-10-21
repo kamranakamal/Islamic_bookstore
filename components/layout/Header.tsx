@@ -16,7 +16,6 @@ const navItems: Array<{ href: string; label: string; Icon: (props: SVGProps<SVGS
   { href: "/contact", label: "Contact", Icon: IconMail },
   { href: "/bulk-order", label: "Bulk orders", Icon: IconBoxes },
   { href: "/faq", label: "FAQ", Icon: IconQuestion },
-  { href: "/privacy-policy", label: "Privacy", Icon: IconShield },
   { href: "/cart", label: "Cart", Icon: IconCart }
 ];
 
@@ -34,6 +33,8 @@ export function Header({ sessionUser }: HeaderProps) {
   const closeButtonRef = useRef<HTMLButtonElement>(null);
 
   const loginHref = pathname === "/login" ? "/login" : `/login?redirect=${encodeURIComponent(pathname)}`;
+  const mobilePrimaryNav = navItems.filter(({ href }) => ["/", "/shop", "/blog", "/bulk-order", "/cart"].includes(href));
+  const mobileSupportNav = navItems.filter(({ href }) => ["/faq", "/contact"].includes(href));
 
   const handleSignOut = async () => {
     if (isSigningOut) return;
@@ -98,7 +99,7 @@ export function Header({ sessionUser }: HeaderProps) {
             </span>
           </Link>
           <nav aria-label="Main navigation" className="hidden lg:flex">
-            <ul className="flex w-full items-center justify-center gap-1 text-sm font-semibold text-slate-700">
+            <ul className="flex w-full items-center justify-center gap-0 text-[0.9rem] font-semibold text-slate-700">
               {navItems.map(({ href, label, Icon }) => {
                 const isActive = href === "/" ? pathname === "/" : pathname.startsWith(href);
                 return (
@@ -107,25 +108,25 @@ export function Header({ sessionUser }: HeaderProps) {
                       href={href}
                       aria-current={isActive ? "page" : undefined}
                       className={clsx(
-                        "group relative inline-flex items-center gap-2 rounded-full px-4 py-2 transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary",
+                        "group relative inline-flex items-center gap-1.5 rounded-full px-3 py-2 transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary",
                         isActive ? "text-primary" : "text-slate-600 hover:text-primary"
                       )}
                     >
                       <span
                         className={clsx(
-                          "inline-flex h-7 w-7 items-center justify-center rounded-full border text-xs transition",
+                          "inline-flex h-6 w-6 items-center justify-center rounded-full border text-[0.65rem] transition",
                           isActive
                             ? "border-primary/70 bg-primary/10 text-primary"
                             : "border-transparent bg-gray-100 text-gray-500 group-hover:border-primary/40 group-hover:bg-primary/5 group-hover:text-primary"
                         )}
                       >
-                        <Icon className="h-3.5 w-3.5" aria-hidden="true" />
+                        <Icon className="h-3 w-3" aria-hidden="true" />
                       </span>
-                      <span>{label}</span>
+                      <span className="whitespace-nowrap">{label}</span>
                       <span
                         aria-hidden="true"
                         className={clsx(
-                          "pointer-events-none absolute inset-x-4 -bottom-1 h-0.5 rounded-full transition",
+                          "pointer-events-none absolute inset-x-3 -bottom-1 h-0.5 rounded-full transition",
                           isActive ? "bg-primary opacity-100" : "bg-primary/40 opacity-0 group-hover:opacity-100"
                         )}
                       />
@@ -135,14 +136,7 @@ export function Header({ sessionUser }: HeaderProps) {
               })}
             </ul>
           </nav>
-          <div className="hidden items-center justify-end gap-3 lg:flex">
-            <Link
-              href="/orders"
-              className="inline-flex items-center gap-2 rounded-full bg-gray-900 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-gray-800"
-            >
-              <IconReceipt className="h-4 w-4" aria-hidden="true" />
-              <span>My orders</span>
-            </Link>
+          <div className="hidden items-center justify-end gap-2 lg:flex">
             {sessionUser ? (
               <>
                 <span className="max-w-[14rem] truncate text-xs font-semibold text-gray-500" title={sessionUser.email}>
@@ -162,14 +156,14 @@ export function Header({ sessionUser }: HeaderProps) {
                 href={loginHref}
                 className="inline-flex items-center justify-center rounded-full border border-primary px-4 py-2 text-sm font-semibold text-primary transition hover:-translate-y-0.5 hover:bg-primary/10"
               >
-                Sign in / Sign up
+                Login
               </Link>
             )}
           </div>
         </div>
       </div>
 
-      <div className="mx-auto flex w-full max-w-7xl items-center gap-3 px-3 py-2.5 sm:gap-4 sm:px-5 lg:hidden">
+      <div className="mx-auto flex w-full max-w-7xl items-center gap-2 px-3 py-2.5 sm:px-5 lg:hidden">
         <Link
           href="/"
           className="flex items-center gap-2 rounded-full border border-gray-200 bg-white px-3 py-1.5 text-sm font-semibold text-gray-900 shadow-sm transition hover:border-primary/60"
@@ -181,13 +175,18 @@ export function Header({ sessionUser }: HeaderProps) {
           <span className="truncate">Maktab Muhammadiya</span>
         </Link>
         <div className="ml-auto flex items-center gap-2">
-          <Link
-            href="/orders"
-            className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-gray-900 text-white shadow-sm transition hover:bg-gray-800"
-            aria-label="My orders"
-          >
-            <IconReceipt className="h-4 w-4" aria-hidden="true" />
-          </Link>
+          {sessionUser ? (
+            <span className="hidden text-xs font-semibold text-gray-500 sm:inline" title={sessionUser.email}>
+              {sessionUser.email}
+            </span>
+          ) : (
+            <Link
+              href={loginHref}
+              className="inline-flex items-center justify-center rounded-full border border-gray-300 px-3 py-1.5 text-xs font-semibold text-gray-700 transition hover:border-primary/60 hover:text-primary"
+            >
+              Login
+            </Link>
+          )}
           <button
             type="button"
             className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-gray-200 bg-white text-gray-600 shadow-sm transition hover:border-primary/70 hover:bg-primary/10 hover:text-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
@@ -236,49 +235,89 @@ export function Header({ sessionUser }: HeaderProps) {
               </button>
             </header>
             <div className="flex-1 overflow-y-auto">
-              <ul className="space-y-2.5 text-sm font-medium text-gray-700">
-                {navItems.map(({ href, label, Icon }) => {
-                  const isActive = href === "/" ? pathname === "/" : pathname.startsWith(href);
-                  return (
-                    <li key={href}>
-                      <Link
-                        href={href}
-                        onClick={() => setIsMenuOpen(false)}
-                        className={clsx(
-                          "flex items-center justify-between rounded-2xl border px-3.5 py-3.5 transition-all focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary",
-                          isActive
-                            ? "border-primary bg-primary/10 text-primary shadow-sm shadow-primary/20"
-                            : "border-white/70 bg-white text-gray-600 hover:border-primary/70 hover:bg-primary/10 hover:text-primary"
-                        )}
-                        aria-current={isActive ? "page" : undefined}
-                      >
-                        <span className="flex items-center gap-3">
-                          <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-primary">
+              <section className="space-y-3">
+                <p className="text-xs font-semibold uppercase tracking-[0.3em] text-gray-400">Browse</p>
+                <ul className="grid gap-2 text-sm font-medium text-gray-700">
+                  {mobilePrimaryNav.map(({ href, label, Icon }) => {
+                    const isActive = href === "/" ? pathname === "/" : pathname.startsWith(href);
+                    return (
+                      <li key={`primary-${href}`}>
+                        <Link
+                          href={href}
+                          onClick={() => setIsMenuOpen(false)}
+                          className={clsx(
+                            "flex items-center gap-3 rounded-2xl border px-3.5 py-3 transition-all focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary",
+                            isActive
+                              ? "border-primary/60 bg-primary/10 text-primary shadow-sm shadow-primary/20"
+                              : "border-gray-200 bg-white text-gray-600 hover:border-primary/60 hover:bg-primary/5 hover:text-primary"
+                          )}
+                          aria-current={isActive ? "page" : undefined}
+                        >
+                          <span className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-primary/10 text-primary">
                             <Icon className="h-4 w-4" aria-hidden="true" />
                           </span>
-                          {label}
-                        </span>
-                        <span aria-hidden="true" className="text-sm text-gray-400">→</span>
-                      </Link>
-                    </li>
-                  );
-                })}
-              </ul>
-              <div className="mt-6 space-y-3">
+                          <span className="flex-1 text-left">{label}</span>
+                          <span aria-hidden="true" className="text-sm text-gray-400">→</span>
+                        </Link>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </section>
+
+              <section className="mt-5 space-y-3">
+                <p className="text-xs font-semibold uppercase tracking-[0.3em] text-gray-400">Support</p>
+                <ul className="grid gap-2 text-sm font-medium text-gray-700">
+                  {mobileSupportNav.map(({ href, label, Icon }) => {
+                    const isActive = pathname.startsWith(href);
+                    return (
+                      <li key={`support-${href}`}>
+                        <Link
+                          href={href}
+                          onClick={() => setIsMenuOpen(false)}
+                          className={clsx(
+                            "flex items-center gap-3 rounded-2xl border px-3.5 py-2.5 transition-all focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary",
+                            isActive
+                              ? "border-primary/60 bg-primary/10 text-primary"
+                              : "border-gray-200 bg-white text-gray-600 hover:border-primary/60 hover:bg-primary/5 hover:text-primary"
+                          )}
+                        >
+                          <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 text-gray-500">
+                            <Icon className="h-4 w-4" aria-hidden="true" />
+                          </span>
+                          <span className="flex-1 text-left">{label}</span>
+                          <span aria-hidden="true" className="text-sm text-gray-300">→</span>
+                        </Link>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </section>
+
+              <section className="mt-6 space-y-3">
                 {sessionUser ? (
                   <>
                     <div className="rounded-2xl border border-primary/40 bg-primary/5 px-4 py-3 text-sm text-primary">
                       <p className="font-semibold">Signed in</p>
                       <p className="truncate text-xs text-primary/80">{sessionUser.email}</p>
                     </div>
-                    <button
-                      type="button"
-                      onClick={handleSignOut}
-                      disabled={isSigningOut}
-                      className="w-full rounded-2xl bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-75"
-                    >
-                      Sign out
-                    </button>
+                    <div className="flex flex-col gap-2">
+                      <Link
+                        href="/orders"
+                        onClick={() => setIsMenuOpen(false)}
+                        className="flex items-center justify-center rounded-2xl border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700 transition hover:border-primary/60 hover:bg-primary/5 hover:text-primary"
+                      >
+                        Order history
+                      </Link>
+                      <button
+                        type="button"
+                        onClick={handleSignOut}
+                        disabled={isSigningOut}
+                        className="rounded-2xl bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-75"
+                      >
+                        Sign out
+                      </button>
+                    </div>
                   </>
                 ) : (
                   <div className="flex flex-col gap-3">
@@ -287,11 +326,12 @@ export function Header({ sessionUser }: HeaderProps) {
                       onClick={() => setIsMenuOpen(false)}
                       className="flex items-center justify-center rounded-2xl bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
                     >
-                      Sign in / Sign up
+                      Login
                     </Link>
+                    <p className="text-center text-xs text-gray-500">Sign in to view saved carts and manage addresses.</p>
                   </div>
                 )}
-              </div>
+              </section>
             </div>
           </nav>
         </div>
@@ -384,25 +424,6 @@ function IconQuestion(props: SVGProps<SVGSVGElement>) {
       <path d="M9 9a3 3 0 116 0c0 2-3 2-3 5" />
       <circle cx="12" cy="19" r="0.5" />
       <circle cx="12" cy="12" r="9" />
-    </svg>
-  );
-}
-
-function IconShield(props: SVGProps<SVGSVGElement>) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" {...props}>
-      <path d="M12 21c-5.5-2-9-5-9-10V5l9-3 9 3v6c0 5-3.5 8-9 10z" />
-      <path d="M10 10l2 2 4-4" />
-    </svg>
-  );
-}
-
-function IconReceipt(props: SVGProps<SVGSVGElement>) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" {...props}>
-      <path d="M7 3h10a2 2 0 012 2v16l-4-2-3 2-3-2-4 2V5a2 2 0 012-2z" />
-      <path d="M9 9h6" />
-      <path d="M9 13h6" />
     </svg>
   );
 }
