@@ -38,35 +38,23 @@ export function Header({ sessionUser }: HeaderProps) {
 
   const handleSignOut = async () => {
     if (isSigningOut) return;
+    setIsSigningOut(true);
+    setIsMenuOpen(false);
+
     try {
-      setIsSigningOut(true);
-      const supabase = getSupabaseClient();
-      const { error: clientError } = await supabase.auth.signOut();
-      if (clientError) {
-        console.error("Supabase client sign-out failed", clientError);
+      const response = await fetch("/api/auth/signout", {
+        method: "POST",
+        credentials: "include"
+      });
+
+      if (!response.ok) {
+        console.error("Server sign-out failed");
       }
-
-      try {
-        const response = await fetch("/api/auth/signout", {
-          method: "POST",
-          credentials: "include"
-        });
-
-        if (!response.ok) {
-          console.error("Server sign-out failed", await response.text());
-        }
-      } catch (apiError) {
-        console.error("Unable to reach sign-out endpoint", apiError);
-      }
-
-      setIsMenuOpen(false);
-      router.push("/");
-      router.refresh();
-    } catch (signOutError) {
-      console.error("Failed to sign out", signOutError);
-    } finally {
-      setIsSigningOut(false);
+    } catch (err) {
+      console.error("Sign-out error:", err);
     }
+
+    window.location.href = "/login";
   };
 
   const headerClasses = clsx(

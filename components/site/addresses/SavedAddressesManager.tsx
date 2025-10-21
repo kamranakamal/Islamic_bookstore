@@ -215,8 +215,16 @@ export function SavedAddressesManager({ initialAddresses, sessionUser }: SavedAd
       }
       setError(err instanceof Error ? err.message : "Unable to update default");
     },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: QUERY_KEY });
+    onSuccess: ({ address }) => {
+      queryClient.setQueryData<AddressesQueryData | undefined>(QUERY_KEY, (current) => {
+        if (!current) return current;
+
+        const updated = current.addresses.map((item) =>
+          item.id === address.id ? address : { ...item, isDefault: false }
+        );
+
+        return { ...current, addresses: updated };
+      });
     }
   });
 
