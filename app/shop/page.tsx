@@ -4,7 +4,8 @@ import type { Metadata } from "next";
 import { BookCard } from "@/components/site/BookCard";
 import { Breadcrumbs } from "@/components/site/Breadcrumbs";
 import { PageHero } from "@/components/site/PageHero";
-import { getCatalog } from "@/lib/data/catalog";
+import { ShopMobileFilters } from "@/components/site/ShopMobileFilters";
+import { getCatalog, type CatalogSort } from "@/lib/data/catalog";
 import { BOOK_LANGUAGES, type BookLanguage } from "@/lib/types";
 
 export const metadata: Metadata = {
@@ -30,7 +31,7 @@ function coerceLanguages(value: string | string[] | undefined): BookLanguage[] {
   return raw.filter((item): item is BookLanguage => allowed.has(item as BookLanguage));
 }
 
-function coerceSort(value: string | undefined): "newest" | "price-asc" | "price-desc" | "popularity" {
+function coerceSort(value: string | undefined): CatalogSort {
   if (value === "price-asc" || value === "price-desc" || value === "popularity") return value;
   return "newest";
 }
@@ -73,10 +74,20 @@ export default async function ShopPage({ searchParams }: ShopPageProps) {
         description="Search, filter, and sort the complete Maktab Muhammadiya collection."
       />
 
+      <div id="shop-categories" aria-hidden="true" className="block h-0 scroll-mt-24" />
+
+      <ShopMobileFilters
+        filters={catalog.filters}
+        categories={catalog.categories}
+        languages={catalog.languages}
+        isFiltered={isFiltered}
+        className="lg:hidden"
+      />
+
       <div className="grid gap-8 lg:grid-cols-[280px,1fr]">
         <form
           method="get"
-          className="space-y-6 rounded-lg border border-gray-200 bg-white p-6 shadow-sm"
+          className="hidden space-y-6 rounded-lg border border-gray-200 bg-white p-6 shadow-sm lg:block"
           aria-label="Filter catalogue"
         >
           <input type="hidden" name="page" value="1" />
@@ -171,7 +182,7 @@ export default async function ShopPage({ searchParams }: ShopPageProps) {
           </div>
         </form>
 
-        <section className="space-y-6">
+  <section className="space-y-6">
           <header className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
             <div>
               <h2 className="text-xl font-semibold text-gray-900">{catalog.total.toLocaleString()} titles</h2>

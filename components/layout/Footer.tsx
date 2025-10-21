@@ -67,7 +67,7 @@ export function Footer() {
               Books curated from the Qur’an, authentic Sunnah, and the Salaf — verified sources, accessible knowledge for every home.
             </p>
             <div className="flex flex-wrap gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">
-              <a href="/categories" className="transition hover:text-slate-200">
+              <a href="/shop#shop-categories" className="transition hover:text-slate-200">
                 Categories
               </a>
               <span className="hidden h-1 w-1 rounded-full bg-slate-600 sm:inline" aria-hidden="true" />
