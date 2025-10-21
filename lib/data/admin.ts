@@ -206,7 +206,7 @@ export async function getAdminAnalytics(): Promise<AdminAnalyticsSnapshot> {
         aggregatedTitles.set(title, (aggregatedTitles.get(title) ?? 0) + item.quantity);
       }
 
-      if (order.status !== "cancelled") {
+      if (!["cancelled", "refunded"].includes(order.status)) {
         const price = bookPriceById.get(item.book_id) ?? 0;
         estimatedLocalRevenue += price * item.quantity;
       }
@@ -230,6 +230,12 @@ export async function getAdminAnalytics(): Promise<AdminAnalyticsSnapshot> {
     isFeatured: book.is_featured
   }));
 
+  const inflightStatuses: OrderRow["status"][] = ["pending", "confirmed", "processing"];
+  const totalOrdersPending = inflightStatuses.reduce(
+    (total, status) => total + (ordersByStatusMap.get(status) ?? 0),
+    0
+  );
+
   return {
     totalBooks: bookRows.length,
     newBooksLast30Days,
@@ -237,7 +243,7 @@ export async function getAdminAnalytics(): Promise<AdminAnalyticsSnapshot> {
     booksByCategory,
     booksByLanguage,
     totalOrders,
-    totalOrdersPending: ordersByStatusMap.get("pending") ?? 0,
+    totalOrdersPending,
     ordersByStatus,
     totalOrderItems,
     estimatedLocalRevenue,

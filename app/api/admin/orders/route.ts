@@ -5,7 +5,7 @@ import { requireAdminUser } from "@/lib/authHelpers";
 import { getAdminOrders } from "@/lib/data/admin";
 import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
 
-const statuses = ["pending", "approved", "shipped", "cancelled"] as const;
+const statuses = ["pending", "confirmed", "processing", "shipped", "delivered", "cancelled", "refunded"] as const;
 const statusSchema = z.enum(statuses);
 
 const updateSchema = z.object({

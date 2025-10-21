@@ -15,16 +15,22 @@ export const metadata: Metadata = {
 
 const statusLabels: Record<UserOrder["status"], string> = {
   pending: "Pending review",
-  approved: "Approved",
+  confirmed: "Confirmed",
+  processing: "Processing",
   shipped: "Shipped",
-  cancelled: "Cancelled"
+  delivered: "Delivered",
+  cancelled: "Cancelled",
+  refunded: "Refunded"
 };
 
 const statusClasses: Record<UserOrder["status"], string> = {
   pending: "bg-amber-100 text-amber-700",
-  approved: "bg-emerald-100 text-emerald-700",
-  shipped: "bg-sky-100 text-sky-700",
-  cancelled: "bg-rose-100 text-rose-700"
+  confirmed: "bg-emerald-100 text-emerald-700",
+  processing: "bg-sky-100 text-sky-700",
+  shipped: "bg-blue-100 text-blue-700",
+  delivered: "bg-green-100 text-green-700",
+  cancelled: "bg-rose-100 text-rose-700",
+  refunded: "bg-slate-200 text-slate-700"
 };
 
 const dateFormatter = new Intl.DateTimeFormat("en-IN", {

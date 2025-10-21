@@ -234,7 +234,7 @@ export function CheckoutContent({ sessionUser }: CheckoutContentProps) {
 
       {submissionState === "success" ? (
         <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-700">
-          Thank you! We received your checkout preferences and will confirm the payment instructions at {sessionUser.email} once your order is approved.
+          Thank you! We received your checkout preferences and will confirm the payment instructions at {sessionUser.email} once your order is confirmed.
         </div>
       ) : null}
 

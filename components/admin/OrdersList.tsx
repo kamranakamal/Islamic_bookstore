@@ -9,11 +9,14 @@ interface OrdersListProps {
   orders: AdminOrder[];
 }
 
-const STATUS_OPTIONS = [
+const STATUS_OPTIONS: Array<{ value: AdminOrder["status"]; label: string }> = [
   { value: "pending", label: "Pending" },
-  { value: "approved", label: "Approved" },
+  { value: "confirmed", label: "Confirmed" },
+  { value: "processing", label: "Processing" },
   { value: "shipped", label: "Shipped" },
-  { value: "cancelled", label: "Cancelled" }
+  { value: "delivered", label: "Delivered" },
+  { value: "cancelled", label: "Cancelled" },
+  { value: "refunded", label: "Refunded" }
 ];
 
 function formatAddressForCopy(order: AdminOrder): string {

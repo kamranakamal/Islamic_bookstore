@@ -28,7 +28,7 @@ export function AnalyticsPanel({ snapshot }: AnalyticsPanelProps) {
     {
       label: "Est. local revenue",
       value: currencyFormatter.format(snapshot.estimatedLocalRevenue),
-      hint: "Approved + shipped orders (INR)."
+      hint: "Confirmed, processing, shipped, or delivered orders (INR)."
     }
   ];
 

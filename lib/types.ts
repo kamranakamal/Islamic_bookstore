@@ -193,7 +193,7 @@ export interface OrderRow extends Record<string, unknown> {
     book_id: string;
     quantity: number;
   }>;
-  status: "pending" | "approved" | "shipped" | "cancelled";
+  status: "pending" | "confirmed" | "processing" | "shipped" | "delivered" | "cancelled" | "refunded";
   shipping_address: ShippingAddressSnapshot | null;
   shipping_address_id: string | null;
   created_at: string;
