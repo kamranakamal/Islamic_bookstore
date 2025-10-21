@@ -80,6 +80,14 @@ export function Footer() {
               <a href="/faq" className="transition hover:text-slate-200">
                 FAQs
               </a>
+              <span className="hidden h-1 w-1 rounded-full bg-slate-600 sm:inline" aria-hidden="true" />
+              <a href="/privacy-policy" className="transition hover:text-slate-200">
+                Privacy Policy
+              </a>
+              <span className="hidden h-1 w-1 rounded-full bg-slate-600 sm:inline" aria-hidden="true" />
+              <a href="/bulk-order" className="transition hover:text-slate-200">
+                Bulk Orders
+              </a>
             </div>
           </div>
 
@@ -120,19 +128,6 @@ export function Footer() {
           <p>© {year} Maktab Muhammadiya. All rights reserved.</p>
           <div className="flex flex-wrap items-center gap-3 text-[11px] uppercase tracking-[0.3em] text-slate-500">
             <p>Knowledge. Character. Community.</p>
-            <span className="hidden h-1 w-1 rounded-full bg-slate-600 sm:inline" aria-hidden="true" />
-            <a
-              href="/privacy-policy"
-              className="text-[10px] font-semibold uppercase tracking-[0.3em] text-slate-400 transition hover:text-slate-200"
-            >
-              Privacy policy
-            </a>
-            <a
-              href="/bulk-order"
-              className="text-[10px] font-semibold uppercase tracking-[0.3em] text-slate-400 transition hover:text-slate-200"
-            >
-              Bulk orders
-            </a>
           </div>
           <CurrencySelector className="sm:justify-end" />
         </div>
