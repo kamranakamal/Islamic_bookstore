@@ -137,14 +137,8 @@ export function SavedAddressesQuickSelect({ selectedId = null, onSelect }: Saved
 
   return (
     <div className="space-y-3">
-      <div className="flex items-center justify-between gap-3">
+      <div className="flex items-center gap-3">
         <h2 className="text-sm font-semibold text-gray-900">Saved addresses</h2>
-        <Link
-          href="/account/addresses"
-          className="inline-flex items-center rounded-full border border-primary px-3 py-1 text-xs font-semibold text-primary transition hover:-translate-y-0.5 hover:bg-primary/10"
-        >
-          Manage addresses
-        </Link>
       </div>
       <ul className="space-y-2">
         {data.addresses.map((address) => (

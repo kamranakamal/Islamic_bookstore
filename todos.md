@@ -6,9 +6,9 @@
 
 
 
-move add to cart and price card to the bottom of the page for smartphones
+move add to cart and price card to the bottom of the page in smaller devices like smartphones
 
-enhance book search feature
+enhance book search feature book are not showing when searvching for them 
 
 for the smartphones collapse the sort button so that books have more focus
 

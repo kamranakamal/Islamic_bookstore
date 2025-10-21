@@ -94,12 +94,20 @@ export function CartPageClient({ bookToAdd, addStatus }: CartPageClientProps) {
         <p className="text-gray-600">
           Review your selected titles. Our team can finalise payment and fulfilment details with you directly.
         </p>
-        <Link
-          href="/orders"
-          className="inline-flex items-center justify-center rounded-full bg-gray-900 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-gray-800"
-        >
-          My orders
-        </Link>
+        <div className="flex flex-wrap gap-2">
+          <Link
+            href="/orders"
+            className="inline-flex items-center justify-center rounded-full bg-gray-900 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-gray-800"
+          >
+            My orders
+          </Link>
+          <Link
+            href="/account/addresses"
+            className="inline-flex items-center justify-center rounded-full border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700 transition hover:-translate-y-0.5 hover:border-primary/60 hover:bg-primary/5 hover:text-primary"
+          >
+            Manage addresses
+          </Link>
+        </div>
       </header>
 
       {notFoundVisible ? (
