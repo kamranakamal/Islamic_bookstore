@@ -1,18 +1,19 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { useMutation } from "@tanstack/react-query";
 import type { AdminOrder } from "@/lib/types";
 
 interface OrdersListProps {
   orders: AdminOrder[];
 }
 
-const STATUS_LABELS: Record<AdminOrder["status"], string> = {
-  pending: "Pending",
-  approved: "Approved",
-  shipped: "Shipped",
-  cancelled: "Cancelled"
-};
+const STATUS_OPTIONS = [
+  { value: "pending", label: "Pending" },
+  { value: "approved", label: "Approved" },
+  { value: "shipped", label: "Shipped" },
+  { value: "cancelled", label: "Cancelled" }
+];
 
 function formatAddressForCopy(order: AdminOrder): string {
   const lines: string[] = [];
@@ -60,7 +61,19 @@ function formatAddressForCopy(order: AdminOrder): string {
 }
 
 export function OrdersList({ orders }: OrdersListProps) {
+  const [orderItems, setOrderItems] = useState<AdminOrder[]>(orders);
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [updatingId, setUpdatingId] = useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const latestOrdersRef = useRef(orderItems);
+
+  useEffect(() => {
+    setOrderItems(orders);
+  }, [orders]);
+
+  useEffect(() => {
+    latestOrdersRef.current = orderItems;
+  }, [orderItems]);
 
   const handleCopyAddress = async (order: AdminOrder) => {
     const text = formatAddressForCopy(order);
@@ -73,7 +86,45 @@ export function OrdersList({ orders }: OrdersListProps) {
     }
   };
 
-  const sorted = orders.slice().sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  const updateMutation = useMutation<
+    { id: string; status: AdminOrder["status"] },
+    Error,
+    { id: string; status: AdminOrder["status"] },
+    { previous: AdminOrder[] }
+  >({
+    mutationFn: async (payload) => {
+      const response = await fetch("/api/admin/orders", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+      const data = (await response.json()) as { success?: boolean; error?: string };
+      if (!response.ok || !data.success) {
+        throw new Error(data.error ?? "Unable to update order");
+      }
+      return payload;
+    },
+    onMutate: ({ id, status }) => {
+      setUpdatingId(id);
+      setErrorMessage(null);
+      const previous = latestOrdersRef.current.map((order) => ({ ...order }));
+      setOrderItems((current) => current.map((order) => (order.id === id ? { ...order, status } : order)));
+      return { previous };
+    },
+    onError: (error, _payload, context) => {
+      setErrorMessage(error.message ?? "Failed to update order status");
+      if (context?.previous) {
+        setOrderItems(context.previous);
+      }
+    },
+    onSettled: () => {
+      setUpdatingId(null);
+    }
+  });
+
+  const sorted = orderItems
+    .slice()
+    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
   if (!sorted.length) {
     return (
@@ -86,13 +137,94 @@ export function OrdersList({ orders }: OrdersListProps) {
 
   return (
     <section className="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm">
-      <header className="flex items-center justify-between px-6 py-4">
+      {errorMessage ? (
+        <div className="border-b border-red-200 bg-red-50 px-6 py-3 text-sm text-red-700">{errorMessage}</div>
+      ) : null}
+      <header className="flex flex-col gap-3 px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h2 className="text-lg font-semibold text-gray-900">Recent order requests</h2>
           <p className="text-sm text-gray-600">Track inbound manual orders and their fulfilment status.</p>
         </div>
       </header>
-      <div className="overflow-x-auto">
+      <div className="grid gap-4 px-4 pb-4 lg:hidden">
+        {sorted.map((order) => (
+          <article key={order.id} className="space-y-3 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <p className="text-sm font-semibold text-gray-900">{order.fullName}</p>
+                <p className="text-xs text-gray-500">{new Date(order.createdAt).toLocaleString()}</p>
+              </div>
+              <select
+                className="rounded-full border border-gray-300 bg-white px-3 py-2 text-xs font-semibold uppercase tracking-wide text-gray-600 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30"
+                value={order.status}
+                onChange={(event) =>
+                  updateMutation.mutate({ id: order.id, status: event.target.value as AdminOrder["status"] })
+                }
+                disabled={updatingId === order.id}
+              >
+                {STATUS_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="space-y-2 text-sm text-gray-700">
+              <p>
+                <span className="font-semibold text-gray-900">Email:</span>{" "}
+                <a href={`mailto:${order.email}`} className="text-primary hover:underline">
+                  {order.email}
+                </a>
+              </p>
+              {order.phone ? (
+                <p>
+                  <span className="font-semibold text-gray-900">Phone:</span>{" "}
+                  <a href={`tel:${order.phone}`} className="text-primary hover:underline">
+                    {order.phone}
+                  </a>
+                </p>
+              ) : null}
+              {order.institution ? (
+                <p>
+                  <span className="font-semibold text-gray-900">Institution:</span> {order.institution}
+                </p>
+              ) : null}
+              {order.shippingAddress ? (
+                <div className="rounded-lg bg-gray-50 p-3 text-xs text-gray-600">
+                  <p className="font-semibold text-gray-700">Shipping address</p>
+                  {order.shippingAddress.line1 ? <p>{order.shippingAddress.line1}</p> : null}
+                  {order.shippingAddress.line2 ? <p>{order.shippingAddress.line2}</p> : null}
+                  {(() => {
+                    const locality = [order.shippingAddress.city, order.shippingAddress.state]
+                      .filter(Boolean)
+                      .join(", ");
+                    const code = order.shippingAddress.postalCode ?? "";
+                    if (!locality && !code) return null;
+                    return <p>{`${locality}${code ? ` ${code}` : ""}`.trim()}</p>;
+                  })()}
+                  {order.shippingAddress.landmark ? <p>Landmark: {order.shippingAddress.landmark}</p> : null}
+                </div>
+              ) : null}
+              <p>
+                <span className="font-semibold text-gray-900">Items:</span> {order.items.reduce((total, item) => total + item.quantity, 0)}
+              </p>
+              {order.notes ? (
+                <p className="rounded-lg bg-amber-50 p-3 text-xs text-amber-700">Note: {order.notes}</p>
+              ) : null}
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <button
+                type="button"
+                onClick={() => handleCopyAddress(order)}
+                className="inline-flex flex-1 items-center justify-center rounded-full border border-primary px-3 py-2 text-sm font-semibold text-primary transition hover:-translate-y-0.5 hover:bg-primary/10"
+              >
+                {copiedId === order.id ? "✓ Copied" : "Copy address"}
+              </button>
+            </div>
+          </article>
+        ))}
+      </div>
+      <div className="hidden overflow-x-auto lg:block">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
@@ -151,9 +283,20 @@ export function OrdersList({ orders }: OrdersListProps) {
                   {order.items.reduce((total, item) => total + item.quantity, 0)}
                 </td>
                 <td className="px-4 py-3 text-right text-sm">
-                  <span className="inline-flex items-center rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-gray-600">
-                    {STATUS_LABELS[order.status]}
-                  </span>
+                  <select
+                    className="rounded-full border border-gray-300 bg-white px-3 py-2 text-xs font-semibold uppercase tracking-wide text-gray-600 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30"
+                    value={order.status}
+                    onChange={(event) =>
+                      updateMutation.mutate({ id: order.id, status: event.target.value as AdminOrder["status"] })
+                    }
+                    disabled={updatingId === order.id}
+                  >
+                    {STATUS_OPTIONS.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
                 </td>
                 <td className="px-4 py-3 text-right text-sm text-gray-500">
                   {new Date(order.createdAt).toLocaleDateString()}

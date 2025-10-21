@@ -1,20 +1,12 @@
-## TODO List
+## TODO Lis
 
 
 
+[x] add admin bulk orders link and page
 
+[x] build bulk order manager ui with contact buttons and status updates
 
-
-
-move add to cart and price card to the bottom of the page in smaller devices like smartphones
-
-enhance book search feature book are not showing when searvching for them 
-
-for the smartphones collapse the sort button so that books have more focus
-
-for the smartphone and smaller devices in the shop page on the top there should be search bar on top and below it (sort and categories and 
-
-language) selector button in horizontal order  these threee button should be small and compact to enhances ui for smartphones 
+[x] create admin api for bulk order status updates
 
 
 
