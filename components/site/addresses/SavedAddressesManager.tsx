@@ -10,6 +10,7 @@ import { userAddressInputSchema, userAddressUpdateSchema } from "@/lib/validator
 import { AddressForm, type AddressFormValues } from "./AddressForm";
 
 const QUERY_KEY = ["profile-addresses"] as const;
+type AddressesQueryData = { addresses: UserAddress[]; isAuthenticated: boolean };
 
 async function fetchSavedAddresses() {
   const response = await fetch("/api/profile/addresses", {
@@ -137,7 +138,7 @@ export function SavedAddressesManager({ initialAddresses, sessionUser }: SavedAd
 
   const updateMutation = useMutation({
     mutationFn: async ({ id, values }: { id: string; values: unknown }) => {
-  const parsed = userAddressUpdateSchema.safeParse(values);
+      const parsed = userAddressUpdateSchema.safeParse(values);
       if (!parsed.success) {
         throw new Error(parsed.error.issues[0]?.message ?? "Invalid address");
       }
@@ -174,6 +175,51 @@ export function SavedAddressesManager({ initialAddresses, sessionUser }: SavedAd
     }
   });
 
+  const setDefaultMutation = useMutation({
+    mutationFn: async (address: UserAddress) => {
+      const response = await fetch(`/api/profile/addresses/${address.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ isDefault: true })
+      });
+
+      if (!response.ok) {
+        const payload = await response.json().catch(() => ({}));
+        throw new Error((payload as { error?: string }).error ?? "Unable to update default");
+      }
+
+      return (await response.json()) as { address: UserAddress };
+    },
+    onMutate: async (address) => {
+      setError(null);
+      await queryClient.cancelQueries({ queryKey: QUERY_KEY });
+
+      const previous = queryClient.getQueryData<AddressesQueryData>(QUERY_KEY);
+
+      queryClient.setQueryData<AddressesQueryData | undefined>(QUERY_KEY, (current) => {
+        if (!current) return current;
+
+        const updated = current.addresses.map((item) =>
+          item.id === address.id ? { ...item, isDefault: true } : { ...item, isDefault: false }
+        );
+
+        return { ...current, addresses: updated };
+      });
+
+      return { previous };
+    },
+    onError: (err, _address, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData<AddressesQueryData>(QUERY_KEY, context.previous);
+      }
+      setError(err instanceof Error ? err.message : "Unable to update default");
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: QUERY_KEY });
+    }
+  });
+
   const handleCreate = async (values: AddressFormValues) => {
     setError(null);
     try {
@@ -195,13 +241,10 @@ export function SavedAddressesManager({ initialAddresses, sessionUser }: SavedAd
     }
   };
 
-  const handleSetDefault = async (address: UserAddress) => {
+  const handleSetDefault = (address: UserAddress) => {
+    if (address.isDefault) return;
     setError(null);
-    try {
-      await updateMutation.mutateAsync({ id: address.id, values: { isDefault: true } });
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Unable to update default");
-    }
+    setDefaultMutation.mutate(address);
   };
 
   const handleRemove = async (address: UserAddress) => {
@@ -213,7 +256,8 @@ export function SavedAddressesManager({ initialAddresses, sessionUser }: SavedAd
     }
   };
 
-  const isSubmitting = createMutation.isPending || updateMutation.isPending || deleteMutation.isPending;
+  const isSubmitting =
+    createMutation.isPending || updateMutation.isPending || deleteMutation.isPending || setDefaultMutation.isPending;
 
   return (
     <div className="space-y-6">
