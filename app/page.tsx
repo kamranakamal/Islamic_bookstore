@@ -6,11 +6,7 @@ import { BookCard } from "@/components/site/BookCard";
 import { getHomepageData } from "@/lib/data/home";
 import { appUrl, organization } from "@/lib/config";
 import { Skeleton } from "@/components/ui/Skeleton";
-
-const SearchForm = dynamic(() => import("@/components/site/SearchForm").then((mod) => ({ default: mod.SearchForm })), {
-  ssr: false,
-  loading: () => <Skeleton className="h-14 w-full" />
-});
+import { SearchForm } from "@/components/site/SearchForm";
 
 export const revalidate = 60;
 
