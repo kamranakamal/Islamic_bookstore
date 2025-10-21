@@ -130,11 +130,11 @@ export function toAdminBook(row: BookRowWithCategory): AdminBook {
   };
 }
 
-export function toSearchResult(row: BookRowWithCategory & { rank: number }): SearchResult {
+export function toSearchResult(row: BookRowWithCategory & { rank?: number }): SearchResult {
   const summary = toBookSummary(row);
   return {
     ...summary,
-    rank: row.rank
+    rank: row.rank ?? 0
   };
 }
 
