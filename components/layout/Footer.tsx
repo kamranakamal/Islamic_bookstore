@@ -19,8 +19,6 @@ const CONTACT_DETAILS = {
     href: "https://www.instagram.com/maktabamuhammadiya.__?igsh=ZDRybXFuZm9icGVj",
     external: true,
   },
-  address:
-    "Azad Market Mohalla Sheesh mehel, House No. 830, Fourth Floor (Front Side), Purani Delhi 110006",
 };
 
 interface ContactLink {
@@ -61,17 +59,16 @@ export function Footer() {
 
   return (
     <footer className="border-t border-slate-800 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-slate-100">
-      <div className="mx-auto flex w-full max-w-7xl flex-col gap-10 px-4 py-12 sm:px-6 lg:px-8 xl:px-12">
-        <div className="flex flex-col gap-8 md:flex-row md:items-start md:justify-between">
-          <div className="max-w-lg space-y-4">
+      <div className="mx-auto flex w-full max-w-7xl flex-col gap-8 px-4 py-8 sm:gap-10 sm:px-6 sm:py-12 lg:px-8 xl:px-12">
+        <div className="flex flex-col gap-6 sm:gap-8 md:flex-row md:items-start md:justify-between">
+          <div className="max-w-lg space-y-3 sm:space-y-4">
             <p className="text-lg font-semibold tracking-tight text-white">Maktab Muhammadiya</p>
             <p className="text-sm text-slate-200">
               Books curated from the Qur’an, authentic Sunnah, and the Salaf — verified sources, accessible knowledge for every home.
             </p>
-            <p className="text-xs text-slate-400">{CONTACT_DETAILS.address}</p>
           </div>
 
-          <div className="flex flex-col gap-6 md:w-1/2">
+          <div className="flex flex-col gap-4 sm:gap-6 md:w-1/2">
             <div>
               <p className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-300">Stay connected</p>
               <p className="mt-2 text-sm text-slate-200">
@@ -106,7 +103,22 @@ export function Footer() {
 
         <div className="flex flex-col gap-2 border-t border-slate-800 pt-6 text-xs text-slate-400 sm:flex-row sm:items-center sm:justify-between">
           <p>© {year} Maktab Muhammadiya. All rights reserved.</p>
-          <p className="text-[11px] uppercase tracking-[0.3em] text-slate-500">Knowledge. Character. Community.</p>
+          <div className="flex flex-wrap items-center gap-3 text-[11px] uppercase tracking-[0.3em] text-slate-500">
+            <p>Knowledge. Character. Community.</p>
+            <span className="hidden h-1 w-1 rounded-full bg-slate-600 sm:inline" aria-hidden="true" />
+            <a
+              href="/privacy-policy"
+              className="text-[10px] font-semibold uppercase tracking-[0.3em] text-slate-400 transition hover:text-slate-200"
+            >
+              Privacy policy
+            </a>
+            <a
+              href="/bulk-order"
+              className="text-[10px] font-semibold uppercase tracking-[0.3em] text-slate-400 transition hover:text-slate-200"
+            >
+              Bulk orders
+            </a>
+          </div>
         </div>
       </div>
     </footer>
