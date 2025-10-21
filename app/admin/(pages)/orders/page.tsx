@@ -1,3 +1,5 @@
+import { HydrationBoundary, QueryClient, dehydrate } from "@tanstack/react-query";
+
 import { OrdersList } from "@/components/admin/OrdersList";
 import { getAdminOrders } from "@/lib/data/admin";
 
@@ -5,6 +7,8 @@ export const dynamic = "force-dynamic";
 
 export default async function AdminOrdersPage() {
   const orders = await getAdminOrders();
+  const queryClient = new QueryClient();
+  queryClient.setQueryData(["admin-orders"], orders);
 
   return (
     <div className="space-y-6">
@@ -21,7 +25,9 @@ export default async function AdminOrdersPage() {
           Export orders CSV
         </a>
       </header>
-      <OrdersList orders={orders} />
+      <HydrationBoundary state={dehydrate(queryClient)}>
+        <OrdersList orders={orders} />
+      </HydrationBoundary>
     </div>
   );
 }

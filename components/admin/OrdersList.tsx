@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { useMutation } from "@tanstack/react-query";
+import { useMemo, useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+
 import type { AdminOrder } from "@/lib/types";
 
 interface OrdersListProps {
@@ -61,19 +62,25 @@ function formatAddressForCopy(order: AdminOrder): string {
 }
 
 export function OrdersList({ orders }: OrdersListProps) {
-  const [orderItems, setOrderItems] = useState<AdminOrder[]>(orders);
+  const queryClient = useQueryClient();
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const latestOrdersRef = useRef(orderItems);
-
-  useEffect(() => {
-    setOrderItems(orders);
-  }, [orders]);
-
-  useEffect(() => {
-    latestOrdersRef.current = orderItems;
-  }, [orderItems]);
+  const ordersQuery = useQuery<AdminOrder[]>({
+    queryKey: ["admin-orders"],
+    queryFn: async () => {
+      const response = await fetch("/api/admin/orders");
+      const data = (await response.json()) as { orders?: AdminOrder[]; error?: string };
+      if (!response.ok || !data.orders) {
+        throw new Error(data.error ?? "Unable to load admin orders");
+      }
+      return data.orders;
+    },
+    initialData: orders,
+    staleTime: 15_000,
+    refetchOnWindowFocus: "always",
+    refetchOnReconnect: "always"
+  });
 
   const handleCopyAddress = async (order: AdminOrder) => {
     const text = formatAddressForCopy(order);
@@ -90,7 +97,7 @@ export function OrdersList({ orders }: OrdersListProps) {
     { id: string; status: AdminOrder["status"] },
     Error,
     { id: string; status: AdminOrder["status"] },
-    { previous: AdminOrder[] }
+    { previous?: AdminOrder[] }
   >({
     mutationFn: async (payload) => {
       const response = await fetch("/api/admin/orders", {
@@ -104,27 +111,49 @@ export function OrdersList({ orders }: OrdersListProps) {
       }
       return payload;
     },
-    onMutate: ({ id, status }) => {
+    onMutate: async ({ id, status }) => {
       setUpdatingId(id);
       setErrorMessage(null);
-      const previous = latestOrdersRef.current.map((order) => ({ ...order }));
-      setOrderItems((current) => current.map((order) => (order.id === id ? { ...order, status } : order)));
+      await queryClient.cancelQueries({ queryKey: ["admin-orders"] });
+      const previous = queryClient.getQueryData<AdminOrder[]>(["admin-orders"]);
+      if (previous) {
+        queryClient.setQueryData<AdminOrder[]>(["admin-orders"], (current = []) =>
+          current.map((order) => (order.id === id ? { ...order, status, updatedAt: new Date().toISOString() } : order))
+        );
+      }
       return { previous };
     },
     onError: (error, _payload, context) => {
       setErrorMessage(error.message ?? "Failed to update order status");
       if (context?.previous) {
-        setOrderItems(context.previous);
+        queryClient.setQueryData(["admin-orders"], context.previous);
       }
+    },
+    onSuccess: ({ id, status }) => {
+      queryClient.setQueryData<AdminOrder[]>(["admin-orders"], (current = []) =>
+        current.map((order) => (order.id === id ? { ...order, status, updatedAt: new Date().toISOString() } : order))
+      );
     },
     onSettled: () => {
       setUpdatingId(null);
+      queryClient.invalidateQueries({ queryKey: ["admin-orders"], exact: true }).catch(() => {
+        /* ignore background refetch errors */
+      });
     }
   });
 
-  const sorted = orderItems
-    .slice()
-    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  const loadError = ordersQuery.isError
+    ? ordersQuery.error instanceof Error
+      ? ordersQuery.error.message
+      : "Unable to load admin orders"
+    : null;
+
+  const sorted = useMemo(() => {
+    const list = ordersQuery.data ?? [];
+    return list
+      .slice()
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  }, [ordersQuery.data]);
 
   if (!sorted.length) {
     return (
@@ -137,8 +166,8 @@ export function OrdersList({ orders }: OrdersListProps) {
 
   return (
     <section className="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm">
-      {errorMessage ? (
-        <div className="border-b border-red-200 bg-red-50 px-6 py-3 text-sm text-red-700">{errorMessage}</div>
+      {errorMessage || loadError ? (
+        <div className="border-b border-red-200 bg-red-50 px-6 py-3 text-sm text-red-700">{errorMessage ?? loadError}</div>
       ) : null}
       <header className="flex flex-col gap-3 px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
         <div>

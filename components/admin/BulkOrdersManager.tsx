@@ -255,21 +255,21 @@ export function BulkOrdersManager({ requests }: BulkOrdersManagerProps) {
                     href={whatsappHref}
                     target="_blank"
                     rel="noreferrer"
-                    className="inline-flex flex-1 items-center justify-center gap-2 rounded-full bg-emerald-500 px-3 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-600"
+                    className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-emerald-500 px-3 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-600 sm:flex-1 sm:min-w-[140px]"
                   >
                     WhatsApp
                   </a>
                 ) : null}
                 <a
                   href={emailHref}
-                  className="inline-flex flex-1 items-center justify-center gap-2 rounded-full border border-primary px-3 py-2 text-sm font-semibold text-primary transition hover:border-primary/80 hover:bg-primary/10"
+                  className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-primary px-3 py-2 text-sm font-semibold text-primary transition hover:border-primary/80 hover:bg-primary/10 sm:flex-1 sm:min-w-[140px]"
                 >
                   Email
                 </a>
                 {smsHref ? (
                   <a
                     href={smsHref}
-                    className="inline-flex flex-1 items-center justify-center gap-2 rounded-full border border-gray-300 px-3 py-2 text-sm font-semibold text-gray-700 transition hover:border-gray-400 hover:bg-gray-50"
+                    className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-gray-300 px-3 py-2 text-sm font-semibold text-gray-700 transition hover:border-gray-400 hover:bg-gray-50 sm:flex-1 sm:min-w-[140px]"
                   >
                     SMS
                   </a>

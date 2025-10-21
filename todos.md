@@ -1,6 +1,8 @@
 ## TODO Lis
 
 
+- [x] Add admin payment status update controls
+- [x] Resolve bulk orders action buttons overflowing on mobile
 
 [x] add admin bulk orders link and page
 

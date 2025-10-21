@@ -6,6 +6,7 @@ import type {
   AdminBooksData,
   AdminBulkOrderRequest,
   AdminCheckoutPreference,
+  CheckoutPaymentStatus,
   AdminContactMessage,
   AdminFaqEntry,
   AdminMessageThread,
@@ -24,6 +25,20 @@ import type {
   ShippingAddressSnapshot,
   ProfileRow
 } from "@/lib/types";
+
+const CHECKOUT_PAYMENT_STATUSES: CheckoutPaymentStatus[] = [
+  "pending",
+  "contacted",
+  "awaiting_payment",
+  "paid",
+  "cancelled"
+];
+
+function normalizeCheckoutPaymentStatus(value: string): CheckoutPaymentStatus {
+  return CHECKOUT_PAYMENT_STATUSES.includes(value as CheckoutPaymentStatus)
+    ? (value as CheckoutPaymentStatus)
+    : "pending";
+}
 
 export async function getAdminBooksData(): Promise<AdminBooksData> {
   const supabase = getSupabaseAdmin();
@@ -389,7 +404,7 @@ export async function getAdminCheckoutPreferences(): Promise<AdminCheckoutPrefer
     referenceCode: row.reference_code,
     paymentIdentifier: row.payment_identifier,
     notes: row.notes,
-    status: row.status,
+    status: normalizeCheckoutPaymentStatus(row.status),
     createdAt: row.created_at,
     updatedAt: row.updated_at
   }));

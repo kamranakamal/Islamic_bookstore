@@ -769,6 +769,13 @@ export interface AdminMessageThread {
   messages: AdminMessageThreadMessage[];
 }
 
+export type CheckoutPaymentStatus =
+  | "pending"
+  | "contacted"
+  | "awaiting_payment"
+  | "paid"
+  | "cancelled";
+
 export interface AdminCheckoutPreference {
   id: string;
   profileId: string;
@@ -782,7 +789,7 @@ export interface AdminCheckoutPreference {
   referenceCode: string | null;
   paymentIdentifier: string | null;
   notes: string | null;
-  status: string;
+  status: CheckoutPaymentStatus;
   createdAt: string;
   updatedAt: string;
 }

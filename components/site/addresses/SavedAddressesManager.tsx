@@ -66,6 +66,7 @@ export function SavedAddressesManager({ initialAddresses, sessionUser }: SavedAd
         state: "",
         postalCode: "",
         country: "India",
+        landmark: "",
         isDefault: addresses.length === 0
       };
     }
@@ -81,6 +82,7 @@ export function SavedAddressesManager({ initialAddresses, sessionUser }: SavedAd
         state: "",
         postalCode: "",
         country: "India",
+        landmark: "",
         isDefault: addresses.length === 0
       };
     }
@@ -96,6 +98,7 @@ export function SavedAddressesManager({ initialAddresses, sessionUser }: SavedAd
       state: address.state ?? "",
       postalCode: address.postalCode ?? "",
       country: address.country,
+      landmark: address.landmark ?? "",
       isDefault: address.isDefault
     };
   }, [formMode, sessionUser.displayName, sessionUser.email, addresses.length]);
