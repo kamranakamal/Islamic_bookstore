@@ -200,6 +200,30 @@ export interface OrderRow extends Record<string, unknown> {
   updated_at: string;
 }
 
+export interface UserOrderItem {
+  bookId: string;
+  quantity: number;
+  title: string;
+  author: string | null;
+  coverUrl: string;
+  unitPrice: number | null;
+  unitPriceFormatted: string | null;
+  lineTotalFormatted: string | null;
+  isUnavailable: boolean;
+}
+
+export interface UserOrder {
+  id: string;
+  status: OrderRow["status"];
+  createdAt: string;
+  items: UserOrderItem[];
+  estimatedTotal: number | null;
+  estimatedTotalFormatted: string | null;
+  shippingAddress: ShippingAddressSnapshot | null;
+  notes: string | null;
+  hasUnavailableItems: boolean;
+}
+
 export interface UserAddressRow extends Record<string, unknown> {
   id: string;
   profile_id: string;

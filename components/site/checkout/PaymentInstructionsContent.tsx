@@ -86,6 +86,14 @@ export function PaymentInstructionsContent() {
     ? `https://wa.me/${WHATSAPP_PAYMENT_NUMBER}?text=${encodeURIComponent(whatsappMessage)}`
     : "#";
 
+  const whatsappBankSupportMessage = paymentContext
+    ? `I need confirmation for the bank transfer details for order ${paymentContext.orderId}.`
+    : "";
+
+  const whatsappBankSupportLink = paymentContext
+    ? `https://wa.me/${WHATSAPP_PAYMENT_NUMBER}?text=${encodeURIComponent(whatsappBankSupportMessage)}`
+    : "#";
+
   const copyToClipboard = useCallback(async (text: string, label: string) => {
     if (typeof navigator === "undefined" || !navigator.clipboard) {
       console.warn(`Clipboard API not available to copy ${label}`);
@@ -264,12 +272,14 @@ export function PaymentInstructionsContent() {
                       </div>
                     </div>
                   </div>
-                  <p className="text-xs text-gray-500">Need additional confirmation or a PDF invoice? Email us and we will respond promptly.</p>
+                  <p className="text-xs text-gray-500">Need additional confirmation or a PDF invoice? WhatsApp us and we will respond promptly.</p>
                   <a
-                    href="mailto:orders@maktabmuhammadiya.org?subject=Bank%20transfer%20details%20for%20order"
+                    href={whatsappBankSupportLink}
+                    target="_blank"
+                    rel="noreferrer"
                     className="inline-flex items-center justify-center rounded-full border border-primary px-4 py-2 text-xs font-semibold text-primary transition hover:-translate-y-0.5 hover:bg-primary/10"
                   >
-                    Email us for account confirmation
+                    WhatsApp us for account confirmation
                   </a>
                 </div>
               </div>
@@ -286,6 +296,12 @@ export function PaymentInstructionsContent() {
               >
                 Message us on WhatsApp
               </a>
+              <Link
+                href="/orders"
+                className="inline-flex items-center justify-center rounded-full border border-gray-300 px-5 py-2 text-sm font-semibold text-gray-700 transition hover:-translate-y-0.5 hover:bg-white"
+              >
+                My orders
+              </Link>
               <p className="text-xs text-gray-500">
                 The pre-filled message includes your order ID, book list, quantity, and total paid amount to speed up verification.
               </p>

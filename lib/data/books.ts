@@ -41,3 +41,27 @@ export const listBookIds = cache(async (): Promise<BookIdRecord[]> => {
     updatedAt: row.updated_at ?? ""
   }));
 });
+
+export async function getBookSummariesByIds(ids: string[]): Promise<Record<string, BookSummary>> {
+  const uniqueIds = Array.from(new Set(ids.filter((id) => typeof id === "string" && id.trim().length > 0)));
+
+  if (!uniqueIds.length) {
+    return {};
+  }
+
+  const supabase = getServerSupabaseClient();
+  const { data } = await supabase
+    .from("books")
+    .select("*, categories(name, slug)")
+    .in("id", uniqueIds);
+
+  const rows = (data ?? []) as BookRowWithCategory[];
+  const summaries: Record<string, BookSummary> = {};
+
+  for (const row of rows) {
+    const summary = toBookSummary(row);
+    summaries[summary.id] = summary;
+  }
+
+  return summaries;
+}
