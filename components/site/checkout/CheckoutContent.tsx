@@ -1,11 +1,13 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 
 import { SavedAddressesQuickSelect } from "@/components/site/addresses/SavedAddressesQuickSelect";
 import { useCart } from "@/lib/hooks/useCart";
+import { CHECKOUT_PAYMENT_CONTEXT_STORAGE_KEY } from "@/lib/constants";
 import type { SessionUser } from "@/lib/authHelpers";
 import type { UserAddress } from "@/lib/types";
 
@@ -33,7 +35,17 @@ interface CheckoutContentProps {
 }
 
 export function CheckoutContent({ sessionUser }: CheckoutContentProps) {
-  const { items, subtotal, subtotalValue, isHydrated, isRemoteSynced, shippingAddress, setShippingAddress } = useCart();
+  const router = useRouter();
+  const {
+    items,
+    subtotal,
+    subtotalValue,
+    isHydrated,
+    isRemoteSynced,
+    shippingAddress,
+    setShippingAddress,
+    clear
+  } = useCart();
   const [paymentMethod, setPaymentMethod] = useState<(typeof PAYMENT_METHODS)[number]["id"]>(PAYMENT_METHODS[0]?.id ?? "upi");
   const [deliveryWindow, setDeliveryWindow] = useState<(typeof DELIVERY_WINDOWS)[number]>(DELIVERY_WINDOWS[0]);
   const [submissionState, setSubmissionState] = useState<SubmissionState>("idle");
@@ -127,19 +139,59 @@ export function CheckoutContent({ sessionUser }: CheckoutContentProps) {
         body: JSON.stringify(payload)
       });
 
-      if (!response.ok) {
-        const body = await response.json().catch(() => ({ error: "" }));
+      const body = (await response.json().catch(() => null)) as
+        | { success?: boolean; error?: string; orderId?: string | null; warnings?: string[] }
+        | null;
+
+      if (!response.ok || !body?.success) {
         const message = typeof body?.error === "string" && body.error.length ? body.error : "Unable to submit checkout preferences.";
         setSubmitError(message);
         setSubmissionState("idle");
         return;
       }
 
-  setSubmissionState("success");
-  setNotes("");
-  form.reset();
-  setPaymentMethod(PAYMENT_METHODS[0]?.id ?? "upi");
-  setDeliveryWindow(DELIVERY_WINDOWS[0]);
+      if (!body.orderId) {
+        setSubmitError("We could not confirm your order. Please contact support.");
+        setSubmissionState("idle");
+        return;
+      }
+
+      const paymentContext = {
+        orderId: body.orderId,
+        amount: estimatedGrandTotal,
+        currency: "INR",
+        items: items.map((item) => ({
+          id: item.book.id,
+          title: item.book.title,
+          quantity: item.quantity,
+          price: item.book.priceLocalInr,
+          total: item.book.priceLocalInr * item.quantity
+        })),
+        warnings: Array.isArray(body.warnings) ? body.warnings : []
+      };
+
+      try {
+        window.sessionStorage.setItem(
+          CHECKOUT_PAYMENT_CONTEXT_STORAGE_KEY,
+          JSON.stringify(paymentContext)
+        );
+      } catch (storageError) {
+        console.warn("Failed to persist checkout payment context", storageError);
+      }
+
+      if (paymentContext.warnings.length) {
+        console.warn("Checkout warnings:", paymentContext.warnings);
+      }
+
+      clear();
+      setSubmissionState("success");
+      setNotes("");
+      form.reset();
+      setPaymentMethod(PAYMENT_METHODS[0]?.id ?? "upi");
+      setDeliveryWindow(DELIVERY_WINDOWS[0]);
+
+  router.replace(`/checkout/payment?orderId=${encodeURIComponent(body.orderId)}`);
+      return;
     } catch (error) {
       console.error("Failed to submit checkout preferences", error);
       setSubmitError("Something went wrong while submitting. Please try again.");

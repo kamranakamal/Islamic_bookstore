@@ -71,6 +71,7 @@ export async function POST(request: NextRequest) {
 
   const supabase = getSupabaseAdmin();
   const warnings: string[] = [];
+  let createdOrderId: string | null = null;
 
   // Save checkout preferences
   const { error: prefError } = await supabase.from("checkout_preferences").insert({
@@ -131,7 +132,11 @@ export async function POST(request: NextRequest) {
       shipping_address_id: shippingAddress?.id ?? null
     };
 
-    const { error: orderError } = await supabase.from("orders").insert(extendedOrderPayload);
+    const { data: orderData, error: orderError } = await supabase
+      .from("orders")
+      .insert(extendedOrderPayload)
+      .select("id")
+      .single();
 
     if (orderError) {
       const orderErrorMessage = orderError.message?.toLowerCase() ?? "";
@@ -167,17 +172,25 @@ export async function POST(request: NextRequest) {
         ? [notes ?? null, "Shipping address:", formattedAddress].filter(Boolean).join("\n\n") || null
         : notes;
 
-      const { error: fallbackError } = await supabase.from("orders").insert({
-        ...baseOrderPayload,
-        notes: fallbackNotes
-      });
+      const { data: fallbackData, error: fallbackError } = await supabase
+        .from("orders")
+        .insert({
+          ...baseOrderPayload,
+          notes: fallbackNotes
+        })
+        .select("id")
+        .single();
 
       if (fallbackError) {
         console.error("Fallback order insert failed", fallbackError);
         return NextResponse.json({ error: "Unable to create order" }, { status: 500 });
       }
+
+      createdOrderId = fallbackData?.id ?? null;
+    } else {
+      createdOrderId = orderData?.id ?? null;
     }
   }
 
-  return NextResponse.json({ success: true, warnings }, { status: 201 });
+  return NextResponse.json({ success: true, warnings, orderId: createdOrderId }, { status: 201 });
 }
