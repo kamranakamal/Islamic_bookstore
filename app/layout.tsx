@@ -4,6 +4,8 @@ import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { ReactNode } from "react";
 
+import { Inter } from "next/font/google";
+
 import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
 
 import { Footer } from "@/components/layout/Footer";
@@ -12,6 +14,8 @@ import { Providers } from "@/components/providers";
 import { appUrl, organization } from "@/lib/config";
 import { getSessionUser } from "@/lib/authHelpers";
 import type { Database } from "@/lib/types";
+
+const inter = Inter({ subsets: ["latin"], weight: ["400", "500", "600", "700"], display: "swap", variable: "--font-inter" });
 
 export const metadata: Metadata = {
   metadataBase: new URL(appUrl),
@@ -61,7 +65,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
 
   return (
     <html lang="en" className="h-full">
-      <body className="relative min-h-screen bg-transparent text-gray-900">
+      <body className={`${inter.variable} relative min-h-screen bg-transparent text-gray-900`}>
         <a href="#main-content" className="skip-link">
           Skip to main content
         </a>

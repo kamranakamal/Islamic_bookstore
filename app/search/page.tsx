@@ -30,10 +30,35 @@ export async function generateMetadata({ searchParams }: SearchPageProps): Promi
     ? `Browse books matching ${query} at Maktab Muhammadiya.`
     : "Discover books rooted in the Qur’an and authentic Sunnah.";
   const canonical = query ? `${appUrl}/search?query=${encodeURIComponent(query)}` : `${appUrl}/search`;
+  const robots = query
+    ? {
+        index: false,
+        follow: true,
+        googleBot: {
+          index: false,
+          follow: true,
+          noimageindex: false,
+          maxSnippet: -1,
+          maxImagePreview: "large",
+          maxVideoPreview: -1
+        }
+      }
+    : {
+        index: true,
+        follow: true,
+        googleBot: {
+          index: true,
+          follow: true,
+          maxSnippet: -1,
+          maxImagePreview: "large",
+          maxVideoPreview: -1
+        }
+      };
 
   return {
     title,
     description,
+    robots,
     alternates: {
       canonical
     },
@@ -63,8 +88,23 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
         dangerouslySetInnerHTML={{
           __html: JSON.stringify({
             "@context": "https://schema.org",
+            "@type": "WebSite",
+            url: appUrl,
+            potentialAction: {
+              "@type": "SearchAction",
+              target: `${appUrl}/search?query={search_term_string}`,
+              "query-input": "required name=search_term_string"
+            }
+          })
+        }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
             "@type": "ItemList",
-              itemListElement: (results?.books ?? []).map((book, index) => ({
+            itemListElement: (results?.books ?? []).map((book, index) => ({
               "@type": "ListItem",
               position: index + 1,
               name: book.title,
@@ -91,6 +131,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
                 <Link
                   key={suggestion}
                   href={`/search?query=${encodeURIComponent(suggestion)}`}
+                  prefetch={false}
                   className="inline-flex items-center rounded-full border border-primary/30 bg-primary/5 px-3 py-1 font-medium text-primary transition hover:bg-primary/10"
                 >
                   {suggestion}
@@ -141,18 +182,21 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
                   <div className="mt-3 flex flex-wrap gap-2 text-sm">
                     <Link
                       href="/shop?category=hadith-collection"
+                      prefetch={false}
                       className="inline-flex items-center rounded-full border border-gray-200 px-3 py-1 font-medium text-gray-700 transition hover:border-primary hover:text-primary"
                     >
                       Hadith
                     </Link>
                     <Link
                       href="/shop?category=quran-tafseer"
+                      prefetch={false}
                       className="inline-flex items-center rounded-full border border-gray-200 px-3 py-1 font-medium text-gray-700 transition hover:border-primary hover:text-primary"
                     >
                       Tafseer
                     </Link>
                     <Link
                       href="/shop?category=children-books"
+                      prefetch={false}
                       className="inline-flex items-center rounded-full border border-gray-200 px-3 py-1 font-medium text-gray-700 transition hover:border-primary hover:text-primary"
                     >
                       Children
@@ -171,12 +215,14 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
               <div className="mt-5 flex flex-wrap justify-center gap-3 text-sm">
                 <Link
                   href="/shop"
+                  prefetch={false}
                   className="inline-flex items-center justify-center rounded-full bg-primary px-5 py-2 font-semibold text-primary-foreground transition hover:bg-primary/90"
                 >
                   Browse all books
                 </Link>
                 <Link
                   href="/contact"
+                  prefetch={false}
                   className="inline-flex items-center justify-center rounded-full border border-primary px-5 py-2 font-semibold text-primary transition hover:bg-primary/10"
                 >
                   Ask for a recommendation
@@ -189,6 +235,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
             <nav aria-label="Search pagination" className="flex flex-wrap items-center justify-center gap-3 text-sm">
               <Link
                 href={`/search?query=${encodeURIComponent(query)}&page=${Math.max(page - 1, 1)}`}
+                prefetch={false}
                 aria-disabled={page <= 1}
                 className="inline-flex items-center rounded-full border border-gray-300 px-4 py-2 transition hover:border-primary hover:text-primary aria-disabled:cursor-not-allowed aria-disabled:opacity-50"
               >
@@ -199,6 +246,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
               </span>
               <Link
                 href={`/search?query=${encodeURIComponent(query)}&page=${Math.min(page + 1, results.totalPages)}`}
+                prefetch={false}
                 aria-disabled={page >= results.totalPages}
                 className="inline-flex items-center rounded-full border border-gray-300 px-4 py-2 transition hover:border-primary hover:text-primary aria-disabled:cursor-not-allowed aria-disabled:opacity-50"
               >
@@ -216,6 +264,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
               <Link
                 key={`empty-${suggestion}`}
                 href={`/search?query=${encodeURIComponent(suggestion)}`}
+                prefetch={false}
                 className="inline-flex items-center rounded-full border border-gray-200 px-3 py-1 font-medium text-gray-700 transition hover:border-primary hover:text-primary"
               >
                 {suggestion}

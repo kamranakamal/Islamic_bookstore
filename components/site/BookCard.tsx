@@ -46,6 +46,7 @@ export function BookCard({ book }: BookCardProps) {
     >
       <Link
         href={`/books/${book.id}`}
+        prefetch={false}
         className="relative block aspect-[3/4] w-full overflow-hidden bg-gray-100"
         aria-label={`View details for ${book.title}`}
       >
@@ -67,6 +68,7 @@ export function BookCard({ book }: BookCardProps) {
         <h3 className="text-sm font-semibold leading-snug text-gray-900 sm:text-base">
           <Link
             href={`/books/${book.id}`}
+            prefetch={false}
             className="focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
           >
             <span id={titleId} className="underline-offset-4 transition group-hover:underline">
