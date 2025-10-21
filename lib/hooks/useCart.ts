@@ -2,11 +2,15 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 
+import { useCurrency } from "@/components/currency/CurrencyProvider";
+import { getCurrencyInfo } from "@/lib/currency";
+
 import type { BookSummary, CartBook, CartItem, ShippingAddressPayload } from "@/lib/types";
 
 const STORAGE_KEY = "maktab-muhammadiya-cart";
 const STORAGE_ADDRESS_KEY = "maktab-muhammadiya-cart-address";
 const formatLocalCurrency = new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR" });
+const formatInternationalCurrency = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" });
 
 function serialize(items: CartItem[]): string {
   return JSON.stringify(items);
@@ -27,6 +31,7 @@ function deserialize(value: string | null): CartItem[] {
 }
 
 function normalizeCartItems(items: CartItem[]): CartItem[] {
+  const inrRate = getCurrencyInfo("INR").usdRate;
   return items
     .filter((item) => typeof item.book?.id === "string" && typeof item.quantity === "number")
     .map((item) => {
@@ -37,6 +42,15 @@ function normalizeCartItems(items: CartItem[]): CartItem[] {
           : typeof legacyPrice === "number"
             ? legacyPrice
             : 0;
+      const rawUsd = (item.book as unknown as { priceInternationalUsd?: number }).priceInternationalUsd;
+      const priceInternationalUsd =
+        typeof item.book?.priceInternationalUsd === "number"
+          ? item.book.priceInternationalUsd
+          : typeof rawUsd === "number"
+            ? rawUsd
+            : priceLocalInr > 0
+              ? priceLocalInr / inrRate
+              : 0;
 
       return {
         ...item,
@@ -46,19 +60,34 @@ function normalizeCartItems(items: CartItem[]): CartItem[] {
           priceFormattedLocal:
             typeof item.book?.priceFormattedLocal === "string"
               ? item.book.priceFormattedLocal
-              : formatLocalCurrency.format(priceLocalInr)
+              : formatLocalCurrency.format(priceLocalInr),
+          priceInternationalUsd,
+          priceFormattedInternational:
+            typeof item.book?.priceFormattedInternational === "string"
+              ? item.book.priceFormattedInternational
+              : formatInternationalCurrency.format(priceInternationalUsd)
         }
       } satisfies CartItem;
     });
 }
 
 function toCartBook(book: BookSummary): CartBook {
+  const inrRate = getCurrencyInfo("INR").usdRate;
+  const priceInternationalUsd =
+    book.priceInternationalUsd > 0
+      ? book.priceInternationalUsd
+      : book.priceLocalInr > 0
+        ? book.priceLocalInr / inrRate
+        : 0;
   return {
     id: book.id,
     title: book.title,
     author: book.author,
     priceLocalInr: book.priceLocalInr,
-    priceFormattedLocal: book.priceFormattedLocal ?? formatLocalCurrency.format(book.priceLocalInr)
+    priceInternationalUsd,
+    priceFormattedLocal: book.priceFormattedLocal ?? formatLocalCurrency.format(book.priceLocalInr),
+    priceFormattedInternational:
+      book.priceFormattedInternational ?? formatInternationalCurrency.format(priceInternationalUsd)
   };
 }
 
@@ -114,6 +143,7 @@ export function useCart() {
   const [isHydrated, setIsHydrated] = useState(false);
   const [isRemoteSynced, setIsRemoteSynced] = useState(false);
   const [shippingAddress, setShippingAddress] = useState<ShippingAddressPayload | null>(null);
+  const { getBookPrice, formatAmount } = useCurrency();
 
   useEffect(() => {
     let storedValue: string | null = null;
@@ -317,9 +347,17 @@ export function useCart() {
     return items.reduce((total: number, item: CartItem) => total + item.book.priceLocalInr * item.quantity, 0);
   }, [items]);
 
+  const subtotalUsdValue = useMemo(() => {
+    return items.reduce((total: number, item: CartItem) => total + item.book.priceInternationalUsd * item.quantity, 0);
+  }, [items]);
+
+  const subtotalConvertedValue = useMemo(() => {
+    return items.reduce((total: number, item: CartItem) => total + getBookPrice(item.book, item.quantity).amount, 0);
+  }, [getBookPrice, items]);
+
   const subtotal = useMemo(() => {
-    return formatLocalCurrency.format(subtotalValue);
-  }, [subtotalValue]);
+    return formatAmount(subtotalConvertedValue);
+  }, [formatAmount, subtotalConvertedValue]);
 
   return {
     items,
@@ -331,6 +369,8 @@ export function useCart() {
     setShippingAddress: updateShippingAddress,
     subtotal,
     subtotalValue,
+    subtotalUsdValue,
+    subtotalConvertedValue,
     isHydrated,
     isRemoteSynced
   };

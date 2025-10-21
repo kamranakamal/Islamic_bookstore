@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 
+import { useCurrency } from "@/components/currency/CurrencyProvider";
 import { useCart } from "@/lib/hooks/useCart";
 import type { BookSummary } from "@/lib/types";
 
@@ -14,6 +15,7 @@ interface BookCardProps {
 export function BookCard({ book }: BookCardProps) {
   const titleId = `book-${book.id}-title`;
   const { addItem } = useCart();
+  const { getBookPrice } = useCurrency();
   const [feedback, setFeedback] = useState<"idle" | "added">("idle");
   const timerRef = useRef<number | null>(null);
 
@@ -38,6 +40,7 @@ export function BookCard({ book }: BookCardProps) {
   }, []);
 
   const isOutOfStock = book.stockQuantity <= 0;
+  const displayPrice = getBookPrice(book);
 
   return (
     <article
@@ -76,7 +79,7 @@ export function BookCard({ book }: BookCardProps) {
             </span>
           </Link>
         </h3>
-        <p className="text-sm font-semibold text-primary sm:text-base">{book.priceFormattedLocal}</p>
+  <p className="text-sm font-semibold text-primary sm:text-base">{displayPrice.formatted}</p>
         <p className="text-xs text-gray-500 sm:text-sm">{book.author}</p>
         <div className="mt-auto">
           {isOutOfStock ? (

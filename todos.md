@@ -13,9 +13,11 @@
 
 
 ### Localization & UX
-- [ ] Implement automatic currency selection based on user location if user is from neighbour countries like pakistan, nepal, bangladesh use local price otherwise use international price 
+- [x] Implement automatic currency selection based on user location if user is from india then use local price inr otherwise convert international price usd in their local currency and add a mini drop down currency selector in this format USD- USA, INR-INDIA in the footer
 - [ ] Enhance overall UI design and user experience
 
 ### Performance & SEO
 - [ ] Optimize application performance
 - [ ] Implement SEO best practices and optimizations
+
+

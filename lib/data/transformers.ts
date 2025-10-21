@@ -97,7 +97,9 @@ export function toCartItem(quantity: number, book: BookRowWithCategory): CartIte
       title: summary.title,
       author: summary.author,
       priceLocalInr: summary.priceLocalInr,
-      priceFormattedLocal: summary.priceFormattedLocal
+      priceInternationalUsd: summary.priceInternationalUsd,
+      priceFormattedLocal: summary.priceFormattedLocal,
+      priceFormattedInternational: summary.priceFormattedInternational
     },
     quantity
   };

@@ -450,7 +450,9 @@ export interface CartBook {
   title: string;
   author: string;
   priceLocalInr: number;
+  priceInternationalUsd: number;
   priceFormattedLocal: string;
+  priceFormattedInternational: string;
 }
 
 export interface CartItem {

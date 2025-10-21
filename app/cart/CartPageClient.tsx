@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 
+import { useCurrency } from "@/components/currency/CurrencyProvider";
 import { SavedAddressesQuickSelect } from "@/components/site/addresses/SavedAddressesQuickSelect";
 import { useCart } from "@/lib/hooks/useCart";
 import type { BookSummary } from "@/lib/types";
@@ -29,6 +30,7 @@ export function CartPageClient({ bookToAdd, addStatus }: CartPageClientProps) {
     isHydrated,
     isRemoteSynced
   } = useCart();
+  const { getBookPrice } = useCurrency();
   const [recentlyAddedTitle, setRecentlyAddedTitle] = useState<string | null>(null);
   const [notFoundVisible, setNotFoundVisible] = useState(addStatus === "not-found");
   const processedAddIdRef = useRef<string | null>(null);
@@ -137,17 +139,24 @@ export function CartPageClient({ bookToAdd, addStatus }: CartPageClientProps) {
         <div className="grid gap-8 lg:grid-cols-[2fr,1fr]">
           <section className="space-y-4">
             <ul className="space-y-4" aria-live="polite">
-              {items.map((item) => (
-                <li
-                  key={item.book.id}
-                  className="flex flex-col gap-4 rounded-lg border border-gray-200 bg-white p-4 sm:flex-row sm:items-start sm:justify-between"
-                >
-                  <div className="space-y-2">
-                    <div>
-                      <p className="font-semibold text-gray-900">{item.book.title}</p>
-                      <p className="text-sm text-gray-500">{item.book.author}</p>
-                    </div>
-                    <p className="text-sm text-gray-600">{item.book.priceFormattedLocal}</p>
+              {items.map((item) => {
+                const unitPrice = getBookPrice(item.book);
+                const linePrice = getBookPrice(item.book, item.quantity);
+
+                return (
+                  <li
+                    key={item.book.id}
+                    className="flex flex-col gap-4 rounded-lg border border-gray-200 bg-white p-4 sm:flex-row sm:items-start sm:justify-between"
+                  >
+                    <div className="space-y-2">
+                      <div>
+                        <p className="font-semibold text-gray-900">{item.book.title}</p>
+                        <p className="text-sm text-gray-500">{item.book.author}</p>
+                      </div>
+                      <div className="text-sm text-gray-600">
+                        <p>{unitPrice.formatted}</p>
+                        <p className="text-xs text-gray-400">Line total: {linePrice.formatted}</p>
+                      </div>
                     <div className="flex items-center gap-3 text-sm text-gray-600">
                       <span className="text-xs uppercase tracking-wide text-gray-500">Quantity</span>
                       <div className="inline-flex items-center rounded-full border border-gray-200 bg-white">
@@ -179,8 +188,9 @@ export function CartPageClient({ bookToAdd, addStatus }: CartPageClientProps) {
                   >
                     Remove
                   </button>
-                </li>
-              ))}
+                  </li>
+                );
+              })}
             </ul>
             <button
               type="button"

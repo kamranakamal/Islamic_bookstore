@@ -1,5 +1,7 @@
 import type { SVGProps } from "react";
 
+import { CurrencySelector } from "@/components/currency/CurrencySelector";
+
 const CONTACT_DETAILS = {
   phone: {
     label: "+91 93155 80623",
@@ -114,7 +116,7 @@ export function Footer() {
           </div>
         </div>
 
-        <div className="flex flex-col gap-2 border-t border-slate-800 pt-6 text-xs text-slate-400 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-3 border-t border-slate-800 pt-6 text-xs text-slate-400 sm:flex-row sm:items-center sm:justify-between">
           <p>© {year} Maktab Muhammadiya. All rights reserved.</p>
           <div className="flex flex-wrap items-center gap-3 text-[11px] uppercase tracking-[0.3em] text-slate-500">
             <p>Knowledge. Character. Community.</p>
@@ -132,6 +134,7 @@ export function Footer() {
               Bulk orders
             </a>
           </div>
+          <CurrencySelector className="sm:justify-end" />
         </div>
       </div>
     </footer>

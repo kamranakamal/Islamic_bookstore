@@ -2,10 +2,11 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 
 import { SavedAddressesQuickSelect } from "@/components/site/addresses/SavedAddressesQuickSelect";
+import { useCurrency } from "@/components/currency/CurrencyProvider";
 import { useCart } from "@/lib/hooks/useCart";
 import { CHECKOUT_PAYMENT_CONTEXT_STORAGE_KEY } from "@/lib/constants";
 import type { SessionUser } from "@/lib/authHelpers";
@@ -40,12 +41,15 @@ export function CheckoutContent({ sessionUser }: CheckoutContentProps) {
     items,
     subtotal,
     subtotalValue,
+    subtotalUsdValue,
+    subtotalConvertedValue,
     isHydrated,
     isRemoteSynced,
     shippingAddress,
     setShippingAddress,
     clear
   } = useCart();
+  const { currency, getBookPrice, formatAmount } = useCurrency();
   const [paymentMethod, setPaymentMethod] = useState<(typeof PAYMENT_METHODS)[number]["id"]>(PAYMENT_METHODS[0]?.id ?? "upi");
   const [deliveryWindow, setDeliveryWindow] = useState<(typeof DELIVERY_WINDOWS)[number]>(DELIVERY_WINDOWS[0]);
   const [submissionState, setSubmissionState] = useState<SubmissionState>("idle");
@@ -89,13 +93,9 @@ export function CheckoutContent({ sessionUser }: CheckoutContentProps) {
     }
   }, [addressesData, shippingAddress, setShippingAddress]);
 
-  const currencyFormatter = useMemo(
-    () => new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR" }),
-    []
-  );
-
-  const estimatedBooksTotal = useMemo(() => subtotalValue, [subtotalValue]);
-  const estimatedGrandTotal = useMemo(() => estimatedBooksTotal, [estimatedBooksTotal]);
+  const estimatedBooksTotal = subtotalConvertedValue;
+  const estimatedGrandTotal = estimatedBooksTotal;
+  const estimatedGrandTotalFormatted = formatAmount(estimatedGrandTotal, currency);
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -159,14 +159,20 @@ export function CheckoutContent({ sessionUser }: CheckoutContentProps) {
       const paymentContext = {
         orderId: body.orderId,
         amount: estimatedGrandTotal,
-        currency: "INR",
+        amountFormatted: estimatedGrandTotalFormatted,
+        currency,
+        amountInInr: subtotalValue,
+        amountInUsd: subtotalUsdValue,
         items: items.map((item) => ({
           id: item.book.id,
           title: item.book.title,
           quantity: item.quantity,
           price: item.book.priceLocalInr,
-          total: item.book.priceLocalInr * item.quantity
+          total: item.book.priceLocalInr * item.quantity,
+          priceUsd: item.book.priceInternationalUsd,
+          totalUsd: item.book.priceInternationalUsd * item.quantity
         })),
+        shippingAddress: shippingAddress ?? null,
         warnings: Array.isArray(body.warnings) ? body.warnings : []
       };
 
@@ -190,7 +196,7 @@ export function CheckoutContent({ sessionUser }: CheckoutContentProps) {
       setPaymentMethod(PAYMENT_METHODS[0]?.id ?? "upi");
       setDeliveryWindow(DELIVERY_WINDOWS[0]);
 
-  router.replace(`/checkout/payment?orderId=${encodeURIComponent(body.orderId)}`);
+      router.replace(`/checkout/payment?orderId=${encodeURIComponent(body.orderId)}`);
       return;
     } catch (error) {
       console.error("Failed to submit checkout preferences", error);
@@ -419,20 +425,23 @@ export function CheckoutContent({ sessionUser }: CheckoutContentProps) {
             <p className="text-xs uppercase tracking-[0.3em] text-primary">{items.length} {items.length === 1 ? "book" : "books"}</p>
           </div>
           <ul className="space-y-3 divide-y divide-gray-100">
-            {items.map((item) => (
-              <li key={item.book.id} className="pt-3 first:pt-0">
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <p className="text-sm font-semibold text-gray-900">{item.book.title}</p>
-                    <p className="text-xs text-gray-500">{item.book.author}</p>
+            {items.map((item) => {
+              const linePrice = getBookPrice(item.book, item.quantity);
+              return (
+                <li key={item.book.id} className="pt-3 first:pt-0">
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <p className="text-sm font-semibold text-gray-900">{item.book.title}</p>
+                      <p className="text-xs text-gray-500">{item.book.author}</p>
+                    </div>
+                    <div className="text-right text-sm text-gray-700">
+                      <p>{linePrice.formatted}</p>
+                      <p className="text-xs text-gray-400">Qty {item.quantity}</p>
+                    </div>
                   </div>
-                  <div className="text-right text-sm text-gray-700">
-                    <p>{item.book.priceFormattedLocal}</p>
-                    <p className="text-xs text-gray-400">Qty {item.quantity}</p>
-                  </div>
-                </div>
-              </li>
-            ))}
+                </li>
+              );
+            })}
           </ul>
           <dl className="space-y-2 text-sm text-gray-700">
             <div className="flex items-center justify-between">
@@ -445,7 +454,7 @@ export function CheckoutContent({ sessionUser }: CheckoutContentProps) {
             </div>
             <div className="flex items-center justify-between text-base font-semibold text-gray-900">
               <dt>Total (estimate)</dt>
-              <dd>{currencyFormatter.format(estimatedGrandTotal)}</dd>
+              <dd>{estimatedGrandTotalFormatted}</dd>
             </div>
           </dl>
           <div className="rounded-2xl border border-primary/30 bg-primary/5 p-4 text-xs text-primary">

@@ -6,6 +6,7 @@ import { getBookById } from "@/lib/data/books";
 import { appUrl, organization } from "@/lib/config";
 import { getBookLanguageLabel } from "@/lib/types";
 import { BookGallery } from "@/components/site/BookGallery";
+import { BookPricingSummary } from "@/components/site/BookPricingSummary";
 
 interface BookPageParams {
   params: {
@@ -145,26 +146,7 @@ export default async function BookPage({ params }: BookPageParams) {
     }
   ];
 
-  const pricingSummary = (
-    <div className="space-y-3">
-      <div className="flex items-center justify-between gap-3 text-sm">
-        <p className="text-[13px] font-medium uppercase tracking-wide text-gray-500">Local price</p>
-        <span
-          className={clsx(
-            "inline-flex items-center rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-wide",
-            isInStock ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-800"
-          )}
-        >
-          {isInStock ? "Available" : "Waitlist"}
-        </span>
-      </div>
-      <p className="text-2xl font-semibold text-primary sm:text-3xl">{book.priceFormattedLocal}</p>
-      <p className="text-xs text-gray-500">
-        International customers:
-        <span className="ml-1 font-medium text-gray-600">{book.priceFormattedInternational}</span>
-      </p>
-    </div>
-  );
+  const pricingSummary = <BookPricingSummary book={book} isInStock={isInStock} />;
 
   const actionButtons = (
     <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-1">

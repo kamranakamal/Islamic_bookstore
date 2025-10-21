@@ -1,7 +1,7 @@
 import "./globals.css";
 
 import type { Metadata } from "next";
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { ReactNode } from "react";
 
 import { Inter } from "next/font/google";
@@ -13,6 +13,13 @@ import { Header } from "@/components/layout/Header";
 import { Providers } from "@/components/providers";
 import { appUrl, organization } from "@/lib/config";
 import { getSessionUser } from "@/lib/authHelpers";
+import {
+  CURRENCY_COOKIE_NAME,
+  DEFAULT_CURRENCY,
+  detectCurrencyFromHeaders,
+  isSupportedCurrency,
+  type SupportedCurrency
+} from "@/lib/currency";
 import type { Database, SessionTokens } from "@/lib/types";
 
 const inter = Inter({ subsets: ["latin"], weight: ["400", "500", "600", "700"], display: "swap", variable: "--font-inter" });
@@ -55,6 +62,19 @@ export const metadata: Metadata = {
 };
 
 export default async function RootLayout({ children }: { children: ReactNode }) {
+  const headerList = headers();
+  const cookieStore = cookies();
+
+  let initialCurrency: SupportedCurrency | null = null;
+  const cookieCurrency = cookieStore.get(CURRENCY_COOKIE_NAME)?.value;
+  if (isSupportedCurrency(cookieCurrency)) {
+    initialCurrency = (cookieCurrency as string).toUpperCase() as SupportedCurrency;
+  }
+
+  if (!initialCurrency) {
+    initialCurrency = detectCurrencyFromHeaders(headerList) ?? DEFAULT_CURRENCY;
+  }
+
   const supabase = createServerComponentClient<Database>({ cookies });
   const {
     data: { user }
@@ -85,8 +105,8 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
           <div className="absolute left-1/2 top-[-18rem] h-[32rem] w-[32rem] -translate-x-1/2 rounded-full bg-primary/20 blur-[140px]" />
           <div className="absolute right-[-12rem] top-[35%] h-[28rem] w-[28rem] rounded-full bg-amber-200/40 blur-[160px]" />
           <div className="absolute bottom-[-14rem] left-[-8rem] h-[24rem] w-[26rem] rounded-full bg-sky-200/35 blur-[160px]" />
-        </div>
-  <Providers serverSession={sessionTokens}>
+    </div>
+    <Providers serverSession={sessionTokens} initialCurrency={initialCurrency}>
           <div className="flex min-h-screen flex-col">
             <Header sessionUser={sessionUser} />
             <main

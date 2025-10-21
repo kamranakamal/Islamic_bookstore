@@ -4,7 +4,7 @@ let supabaseOrigin: string | null = null;
 if (supabaseUrl) {
   try {
     supabaseOrigin = new URL(supabaseUrl).origin;
-  } catch (error) {
+  } catch {
     supabaseOrigin = null;
   }
 }
