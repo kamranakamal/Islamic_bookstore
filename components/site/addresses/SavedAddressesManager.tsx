@@ -132,7 +132,13 @@ export function SavedAddressesManager({ initialAddresses, sessionUser }: SavedAd
         throw new Error((payload as { error?: string }).error ?? "Unable to save address");
       }
 
-      await invalidate();
+      return (await response.json()) as { address: UserAddress };
+    },
+    onSuccess: ({ address }) => {
+      queryClient.setQueryData<AddressesQueryData | undefined>(QUERY_KEY, (current) => {
+        if (!current) return current;
+        return { ...current, addresses: [...current.addresses, address] };
+      });
     }
   });
 
@@ -155,7 +161,14 @@ export function SavedAddressesManager({ initialAddresses, sessionUser }: SavedAd
         throw new Error((payload as { error?: string }).error ?? "Unable to update address");
       }
 
-      await invalidate();
+      return (await response.json()) as { address: UserAddress };
+    },
+    onSuccess: ({ address }) => {
+      queryClient.setQueryData<AddressesQueryData | undefined>(QUERY_KEY, (current) => {
+        if (!current) return current;
+        const updated = current.addresses.map((item) => (item.id === address.id ? address : item));
+        return { ...current, addresses: updated };
+      });
     }
   });
 
@@ -171,7 +184,14 @@ export function SavedAddressesManager({ initialAddresses, sessionUser }: SavedAd
         throw new Error((payload as { error?: string }).error ?? "Unable to remove address");
       }
 
-      await invalidate();
+      return id;
+    },
+    onSuccess: (id) => {
+      queryClient.setQueryData<AddressesQueryData | undefined>(QUERY_KEY, (current) => {
+        if (!current) return current;
+        const updated = current.addresses.filter((item) => item.id !== id);
+        return { ...current, addresses: updated };
+      });
     }
   });
 
