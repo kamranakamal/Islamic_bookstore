@@ -10,7 +10,7 @@ import type { SessionUser } from "@/lib/authHelpers";
 
 const navItems: Array<{ href: string; label: string; Icon: (props: SVGProps<SVGSVGElement>) => JSX.Element }> = [
   { href: "/", label: "Home", Icon: IconHome },
-  { href: "/shop", label: "Shop", Icon: IconLibrary },
+  { href: "/shop", label: "Shop", Icon: IconShop },
   { href: "/blog", label: "Blog", Icon: IconScroll },
   { href: "/about", label: "About", Icon: IconSparkle },
   { href: "/contact", label: "Contact", Icon: IconMail },
@@ -371,6 +371,17 @@ function IconLibrary(props: SVGProps<SVGSVGElement>) {
       <path d="M4 4h4v16H4z" />
       <path d="M10 12h4" />
       <path d="M10 4h10v16H10z" />
+    </svg>
+  );
+}
+
+function IconShop(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" {...props}>
+      <path d="M3 9l1.4-4.2A2 2 0 015.33 3.5h13.34a2 2 0 011.93 1.3L22 9" />
+      <path d="M3 9h18v9.5a2.5 2.5 0 01-2.5 2.5h-13A2.5 2.5 0 013 18.5V9z" />
+      <path d="M8 9V6.5a4 4 0 014-4 4 4 0 014 4V9" />
+      <path d="M9.5 13h5" />
     </svg>
   );
 }

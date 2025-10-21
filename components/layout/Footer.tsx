@@ -79,20 +79,21 @@ export function Footer() {
               </p>
             </div>
 
-            <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <ul className="flex flex-wrap items-center justify-start gap-3 sm:grid sm:grid-cols-2 sm:gap-4">
               {CONTACT_LINKS.map(({ title, detail, Icon }) => (
                 <li key={title}>
                   <a
                     href={detail.href}
                     target={detail.external ? "_blank" : undefined}
                     rel={detail.external ? "noopener noreferrer" : undefined}
-                    className="group flex items-center gap-3 rounded-2xl border border-slate-800 bg-slate-900/60 p-4 transition hover:border-slate-200 hover:bg-slate-800/80"
+                    className="group flex h-16 w-16 items-center justify-center rounded-2xl border border-slate-800 bg-slate-900/70 p-3 transition hover:border-slate-200 hover:bg-slate-800/80 sm:h-auto sm:w-auto sm:justify-start sm:gap-3 sm:p-4"
                     aria-label={`${title}: ${detail.label}`}
                   >
                     <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-800 text-slate-100 shadow-inner transition group-hover:bg-slate-200 group-hover:text-slate-900">
                       <Icon className="h-5 w-5" aria-hidden="true" />
                     </span>
-                    <span className="flex flex-col">
+                    <span className="sr-only sm:hidden">{title}</span>
+                    <span className="hidden sm:flex sm:flex-col">
                       <span className="text-sm font-medium text-white">{title}</span>
                       <span className="text-xs text-slate-300">{detail.label}</span>
                     </span>
