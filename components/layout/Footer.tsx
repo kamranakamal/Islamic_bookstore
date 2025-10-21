@@ -71,12 +71,12 @@ export function Footer() {
                 Categories
               </a>
               <span className="hidden h-1 w-1 rounded-full bg-slate-600 sm:inline" aria-hidden="true" />
-              <a href="/bulk-order" className="transition hover:text-slate-200">
-                Bulk orders
+              <a href="/contact" className="transition hover:text-slate-200">
+                Contact
               </a>
               <span className="hidden h-1 w-1 rounded-full bg-slate-600 sm:inline" aria-hidden="true" />
-              <a href="/privacy-policy" className="transition hover:text-slate-200">
-                Privacy
+              <a href="/faq" className="transition hover:text-slate-200">
+                FAQs
               </a>
             </div>
           </div>

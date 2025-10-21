@@ -13,6 +13,8 @@ export const metadata: Metadata = {
   description: "Explore the full Maktab Muhammadiya catalog, filter by category or language, and discover your next read."
 };
 
+export const dynamic = "force-dynamic";
+
 type ShopPageProps = {
   searchParams: Record<string, string | string[] | undefined>;
 };
@@ -182,7 +184,7 @@ export default async function ShopPage({ searchParams }: ShopPageProps) {
           </div>
         </form>
 
-  <section className="space-y-6">
+    <section className="space-y-6">
           <header className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
             <div>
               <h2 className="text-xl font-semibold text-gray-900">{catalog.total.toLocaleString()} titles</h2>

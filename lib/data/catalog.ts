@@ -1,5 +1,7 @@
 import { cache } from "react";
 
+import type { PostgrestResponse } from "@supabase/supabase-js";
+
 import { getServerSupabaseClient } from "@/lib/authHelpers";
 import { listCategorySummaries } from "@/lib/data/categories";
 import { toBookSummary } from "@/lib/data/transformers";
@@ -55,7 +57,7 @@ export const listCatalogLanguages = cache(async (): Promise<Array<{ value: BookL
     .map((value) => ({ value, label: getBookLanguageLabel(value) }));
 });
 
-export const getCatalog = cache(async (filters: CatalogFilters = {}): Promise<CatalogResult> => {
+export async function getCatalog(filters: CatalogFilters = {}): Promise<CatalogResult> {
   const page = Math.max(1, filters.page ?? 1);
   const sort: CatalogSort = filters.sort ?? "newest";
   const searchValue = filters.search?.trim() ?? "";
@@ -63,46 +65,69 @@ export const getCatalog = cache(async (filters: CatalogFilters = {}): Promise<Ca
   const languageFilters = (filters.languages ?? []).filter(Boolean);
 
   const supabase = getServerSupabaseClient();
-  let query = supabase
-    .from("books")
-    .select("*, categories(name, slug)", { count: "exact" })
-    .range((page - 1) * PAGE_SIZE, page * PAGE_SIZE - 1);
+  const buildQuery = () => {
+    let query = supabase
+      .from("books")
+      .select("*, categories(name, slug)", { count: "exact" })
+      .range((page - 1) * PAGE_SIZE, page * PAGE_SIZE - 1);
 
-  if (searchValue) {
-    const sanitized = searchValue.replace(/['"]/g, " ").trim();
-    query = query.or(
-      `title.ilike.%${sanitized}%,author.ilike.%${sanitized}%,description.ilike.%${sanitized}%`
-    );
+    if (searchValue) {
+      const sanitized = searchValue.replace(/['"]/g, " ").trim();
+      query = query.or(`title.ilike.%${sanitized}%,author.ilike.%${sanitized}%,description.ilike.%${sanitized}%`);
+    }
+
+    if (categoryFilters.length) {
+      query = query.in("categories.slug", categoryFilters);
+    }
+
+    if (languageFilters.length) {
+      query = query.overlaps("available_languages", languageFilters);
+    }
+
+    switch (sort) {
+      case "price-asc":
+        query = query.order("price_local_inr", { ascending: true });
+        break;
+      case "price-desc":
+        query = query.order("price_local_inr", { ascending: false });
+        break;
+      case "popularity":
+        query = query.order("is_featured", { ascending: false }).order("updated_at", { ascending: false });
+        break;
+      case "newest":
+      default:
+        query = query.order("created_at", { ascending: false });
+        break;
+    }
+
+    return query;
+  };
+
+  const categoriesPromise = listCategorySummaries();
+  const languagesPromise = listCatalogLanguages();
+
+  let booksResponse: PostgrestResponse<BookRowWithCategory> | null = null;
+  const maxAttempts = 2;
+
+  for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
+    const response = (await buildQuery()) as PostgrestResponse<BookRowWithCategory>;
+
+    if (!response.error && Array.isArray(response.data)) {
+      booksResponse = response;
+      break;
+    }
+
+    if (attempt < maxAttempts - 1) {
+      await new Promise((resolve) => setTimeout(resolve, 80));
+    }
+
+    booksResponse = response;
   }
 
-  if (categoryFilters.length) {
-    query = query.in("categories.slug", categoryFilters);
-  }
+  const [categories, languages] = await Promise.all([categoriesPromise, languagesPromise]);
 
-  if (languageFilters.length) {
-    query = query.overlaps("available_languages", languageFilters);
-  }
-
-  switch (sort) {
-    case "price-asc":
-      query = query.order("price_local_inr", { ascending: true });
-      break;
-    case "price-desc":
-      query = query.order("price_local_inr", { ascending: false });
-      break;
-    case "popularity":
-      query = query.order("is_featured", { ascending: false }).order("updated_at", { ascending: false });
-      break;
-    case "newest":
-    default:
-      query = query.order("created_at", { ascending: false });
-      break;
-  }
-
-  const { data, count, error } = await query;
-
-  if (error) {
-    console.error("Failed to load catalog", error);
+  if (!booksResponse || booksResponse.error) {
+    console.error("Failed to load catalog", booksResponse?.error);
     return {
       books: [],
       total: 0,
@@ -114,13 +139,13 @@ export const getCatalog = cache(async (filters: CatalogFilters = {}): Promise<Ca
         languages: languageFilters,
         sort
       },
-      categories: await listCategorySummaries(),
-      languages: await listCatalogLanguages()
+      categories,
+      languages
     };
   }
 
-  const rows = (data ?? []) as BookRowWithCategory[];
-  const total = count ?? rows.length;
+  const rows = (booksResponse.data ?? []) as BookRowWithCategory[];
+  const total = booksResponse.count ?? rows.length;
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
   return {
@@ -134,7 +159,7 @@ export const getCatalog = cache(async (filters: CatalogFilters = {}): Promise<Ca
       languages: languageFilters,
       sort
     },
-    categories: await listCategorySummaries(),
-    languages: await listCatalogLanguages()
+    categories,
+    languages
   };
-});
+}
