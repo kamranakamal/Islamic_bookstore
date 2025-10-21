@@ -241,12 +241,6 @@ export default async function BookPage({ params }: BookPageParams) {
         </span>
         <span className="hidden sm:inline">{book.categoryName}</span>
       </div>
-      <section className="lg:hidden">
-        <div className="space-y-4 rounded-2xl border border-gray-200 bg-white/90 p-5 shadow-sm shadow-primary/10">
-          {pricingSummary}
-          {actionButtons}
-        </div>
-      </section>
       <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1.6fr)_minmax(280px,1fr)] lg:gap-10">
         <article className="order-2 space-y-6 lg:order-1 lg:space-y-8">
           <BookGallery title={book.title} images={book.galleryUrls} />
@@ -291,7 +285,7 @@ export default async function BookPage({ params }: BookPageParams) {
             </p>
           </section>
 
-          <section className="rounded-2xl border border-dashed border-primary/40 bg-primary/5 px-4 py-5 text-sm text-primary/80 sm:px-6">
+          <section className="hidden rounded-2xl border border-dashed border-primary/40 bg-primary/5 px-4 py-5 text-sm text-primary/80 sm:px-6 md:block lg:hidden">
             <div className="flex flex-wrap items-center gap-3">
               <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-primary">ℹ️</span>
               <p className="flex-1 leading-relaxed text-primary/80">
@@ -308,6 +302,13 @@ export default async function BookPage({ params }: BookPageParams) {
           {assuranceList}
         </aside>
       </div>
+
+      <section className="mt-6 lg:hidden">
+        <div className="space-y-4 rounded-2xl border border-gray-200 bg-white/90 p-5 shadow-sm shadow-primary/10">
+          {pricingSummary}
+          {actionButtons}
+        </div>
+      </section>
     </div>
   );
 }
