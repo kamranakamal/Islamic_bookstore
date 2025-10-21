@@ -261,7 +261,7 @@ export default async function BookPage({ params }: BookPageParams) {
             <div className="space-y-2">
               <h1 className="text-3xl font-semibold leading-tight text-gray-900 sm:text-4xl">{book.title}</h1>
               <p className="text-base text-gray-600 sm:text-lg">
-                Discover this carefully curated volume from the Maktab Muhammadiya shelves, complete with authentic sourcing and scholarly notes.
+                {book.description}
               </p>
             </div>
           </section>
@@ -278,12 +278,7 @@ export default async function BookPage({ params }: BookPageParams) {
             </div>
           </section>
 
-          <section className="space-y-4">
-            <h2 className="text-xl font-semibold text-gray-900">Overview</h2>
-            <p className="whitespace-pre-line text-base leading-relaxed text-gray-700 md:text-lg">
-              {book.description}
-            </p>
-          </section>
+          {/* Overview removed as requested */}
 
           <section className="hidden rounded-2xl border border-dashed border-primary/40 bg-primary/5 px-4 py-5 text-sm text-primary/80 sm:px-6 md:block lg:hidden">
             <div className="flex flex-wrap items-center gap-3">
