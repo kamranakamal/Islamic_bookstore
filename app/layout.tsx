@@ -13,7 +13,7 @@ import { Header } from "@/components/layout/Header";
 import { Providers } from "@/components/providers";
 import { appUrl, organization } from "@/lib/config";
 import { getSessionUser } from "@/lib/authHelpers";
-import type { Database } from "@/lib/types";
+import type { Database, SessionTokens } from "@/lib/types";
 
 const inter = Inter({ subsets: ["latin"], weight: ["400", "500", "600", "700"], display: "swap", variable: "--font-inter" });
 
@@ -60,7 +60,19 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
     data: { user }
   } = await supabase.auth.getUser();
 
-  const session = user ? (await supabase.auth.getSession()).data.session : null;
+  let sessionTokens: SessionTokens | null = null;
+  if (user) {
+    const {
+      data: { session }
+    } = await supabase.auth.getSession();
+
+    if (session?.access_token && session?.refresh_token) {
+      sessionTokens = {
+        access_token: session.access_token,
+        refresh_token: session.refresh_token
+      };
+    }
+  }
   const sessionUser = await getSessionUser();
 
   return (
@@ -74,7 +86,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
           <div className="absolute right-[-12rem] top-[35%] h-[28rem] w-[28rem] rounded-full bg-amber-200/40 blur-[160px]" />
           <div className="absolute bottom-[-14rem] left-[-8rem] h-[24rem] w-[26rem] rounded-full bg-sky-200/35 blur-[160px]" />
         </div>
-        <Providers serverSession={session}>
+  <Providers serverSession={sessionTokens}>
           <div className="flex min-h-screen flex-col">
             <Header sessionUser={sessionUser} />
             <main

@@ -5,6 +5,11 @@ export type Json = string | number | boolean | null | { [key: string]: Json } | 
 export type UserRole = "admin" | "member";
 export type MessageStatus = "new" | "in_progress" | "resolved" | "archived";
 
+export interface SessionTokens {
+  access_token: string;
+  refresh_token: string;
+}
+
 export interface ProfileRow extends Record<string, unknown> {
   id: string;
   auth_user_id: string;

@@ -2,13 +2,11 @@ import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 
 import { createRouteHandlerClient } from "@supabase/auth-helpers-nextjs";
-import type { Session } from "@supabase/supabase-js";
-
-import type { Database } from "@/lib/types";
+import type { Database, SessionTokens } from "@/lib/types";
 
 interface AuthCallbackPayload {
   event: string;
-  session: Session | null;
+  session: SessionTokens | null;
 }
 
 export async function POST(request: Request) {
@@ -16,7 +14,7 @@ export async function POST(request: Request) {
   const { event, session }: AuthCallbackPayload = await request.json();
 
   if (event === "SIGNED_IN" || event === "TOKEN_REFRESHED") {
-    if (session) {
+    if (session?.access_token && session?.refresh_token) {
       await supabase.auth.setSession({
         access_token: session.access_token,
         refresh_token: session.refresh_token

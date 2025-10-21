@@ -3,12 +3,11 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 
-import type { Session } from "@supabase/supabase-js";
-
 import { getSupabaseClient } from "@/lib/supabaseClient";
+import type { SessionTokens } from "@/lib/types";
 
 interface SupabaseListenerProps {
-  serverSession: Session | null;
+  serverSession: SessionTokens | null;
 }
 
 export function SupabaseListener({ serverSession }: SupabaseListenerProps) {
@@ -40,13 +39,30 @@ export function SupabaseListener({ serverSession }: SupabaseListenerProps) {
 
     const {
       data: { subscription }
-    } = supabase.auth.onAuthStateChange(async (event, session) => {
+    } = supabase.auth.onAuthStateChange(async (event, authSession) => {
       if (event === "SIGNED_IN" || event === "SIGNED_OUT" || event === "TOKEN_REFRESHED") {
+        let sessionTokens: SessionTokens | null = null;
+
+        if (event === "SIGNED_IN" || event === "TOKEN_REFRESHED") {
+          const {
+            data: { user: verifiedUser }
+          } = await supabase.auth.getUser();
+
+          if (!verifiedUser || !authSession?.access_token || !authSession?.refresh_token) {
+            return;
+          }
+
+          sessionTokens = {
+            access_token: authSession.access_token,
+            refresh_token: authSession.refresh_token
+          };
+        }
+
         await fetch("/api/auth/callback", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           credentials: "include",
-          body: JSON.stringify({ event, session })
+          body: JSON.stringify({ event, session: sessionTokens })
         });
 
         if (event === "SIGNED_IN" || event === "SIGNED_OUT") {

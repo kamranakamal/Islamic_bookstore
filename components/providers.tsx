@@ -1,14 +1,14 @@
 "use client";
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import type { Session } from "@supabase/supabase-js";
 import { ReactNode, useState } from "react";
 
 import { SupabaseListener } from "@/components/SupabaseListener";
+import type { SessionTokens } from "@/lib/types";
 
 interface ProvidersProps {
   children: ReactNode;
-  serverSession: Session | null;
+  serverSession: SessionTokens | null;
 }
 
 export function Providers({ children, serverSession }: ProvidersProps) {
