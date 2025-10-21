@@ -94,6 +94,12 @@ export function CartPageClient({ bookToAdd, addStatus }: CartPageClientProps) {
         <p className="text-gray-600">
           Review your selected titles. Our team can finalise payment and fulfilment details with you directly.
         </p>
+        <Link
+          href="/orders"
+          className="inline-flex items-center justify-center rounded-full bg-gray-900 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-gray-800"
+        >
+          My orders
+        </Link>
       </header>
 
       {notFoundVisible ? (
@@ -229,12 +235,6 @@ export function CartPageClient({ bookToAdd, addStatus }: CartPageClientProps) {
               className="block rounded bg-primary px-4 py-2 text-center text-sm font-semibold text-primary-foreground"
             >
               Proceed to checkout
-            </Link>
-            <Link
-              href="/orders"
-              className="block rounded border border-gray-200 px-4 py-2 text-center text-sm font-semibold text-gray-700 transition hover:-translate-y-0.5 hover:bg-gray-50"
-            >
-              My orders
             </Link>
             <p className="text-xs text-gray-500">
               {isRemoteSynced

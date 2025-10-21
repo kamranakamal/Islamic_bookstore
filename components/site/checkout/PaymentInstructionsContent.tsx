@@ -298,7 +298,7 @@ export function PaymentInstructionsContent() {
               </a>
               <Link
                 href="/orders"
-                className="inline-flex items-center justify-center rounded-full border border-gray-300 px-5 py-2 text-sm font-semibold text-gray-700 transition hover:-translate-y-0.5 hover:bg-white"
+                className="inline-flex items-center justify-center rounded-full bg-gray-900 px-5 py-2 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-gray-800"
               >
                 My orders
               </Link>

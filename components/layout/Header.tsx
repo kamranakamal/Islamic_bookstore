@@ -51,8 +51,8 @@ export function Header({ sessionUser }: HeaderProps) {
   };
 
   const headerClasses = clsx(
-    "sticky top-0 border-b border-white/60 backdrop-blur supports-[backdrop-filter]:bg-white/65 transition-shadow",
-    isMenuOpen ? "z-40 bg-white shadow-lg shadow-primary/10" : "z-50 bg-white/80 shadow-sm"
+    "sticky top-0 z-50 border-b border-gray-100 bg-white/85 backdrop-blur transition-shadow supports-[backdrop-filter]:bg-white/80",
+    isMenuOpen ? "shadow-lg shadow-primary/10" : "shadow-sm"
   );
 
   useEffect(() => {
@@ -82,81 +82,124 @@ export function Header({ sessionUser }: HeaderProps) {
 
   return (
     <header className={headerClasses}>
-      <div className="mx-auto flex w-full max-w-7xl items-center gap-3 px-3 py-2.5 sm:gap-4 sm:px-5 lg:px-8">
-        <Link
-          href="/"
-          className="flex min-w-0 items-center gap-2.5 rounded-full bg-gradient-to-r from-primary to-primary/85 px-3 py-1.5 text-sm font-semibold text-primary-foreground shadow-sm shadow-primary/20 transition hover:shadow-md sm:px-4 sm:text-base"
-          aria-label="Maktab Muhammadiya home"
-        >
-          <span aria-hidden="true" className="hidden h-2 w-2 shrink-0 rounded-full bg-white/90 sm:block" />
-          <span className="truncate font-semibold leading-none">Maktab Muhammadiya</span>
-          <span aria-hidden="true" className="hidden shrink-0 text-sm font-semibold tracking-[0.55em] text-white/90 md:inline">
-            المكتبة
-          </span>
-        </Link>
-        <div className="ml-auto hidden items-center gap-4 lg:flex">
-          <nav aria-label="Main navigation">
-            <ul className="flex items-center gap-3 text-sm font-medium text-gray-700">
+      <div className="hidden lg:block">
+        <div className="mx-auto grid max-w-7xl grid-cols-[auto,1fr,auto] items-center gap-8 px-8 py-3">
+          <Link
+            href="/"
+            aria-label="Maktab Muhammadiya home"
+            className="group flex items-center gap-3 rounded-full border border-gray-200 bg-white px-4 py-2 shadow-sm transition hover:border-primary/60 hover:shadow-md"
+          >
+            <span className="flex h-11 w-11 items-center justify-center rounded-full bg-primary/10 text-primary">
+              <IconLibrary className="h-5 w-5" aria-hidden="true" />
+            </span>
+            <span className="flex flex-col leading-tight">
+              <span className="text-sm font-semibold text-gray-900">Maktab Muhammadiya</span>
+              <span className="text-xs font-medium text-gray-500">Curated Islamic scholarship</span>
+            </span>
+          </Link>
+          <nav aria-label="Main navigation" className="hidden lg:flex">
+            <ul className="flex w-full items-center justify-center gap-1 text-sm font-semibold text-slate-700">
               {navItems.map(({ href, label, Icon }) => {
                 const isActive = href === "/" ? pathname === "/" : pathname.startsWith(href);
                 return (
                   <li key={href}>
                     <Link
-                      className={clsx(
-                        "rounded-full px-4 py-2 text-sm transition-all focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary",
-                        isActive
-                          ? "bg-primary text-primary-foreground shadow-sm shadow-primary/20"
-                          : "text-gray-600 hover:bg-primary/10 hover:text-primary"
-                      )}
                       href={href}
                       aria-current={isActive ? "page" : undefined}
+                      className={clsx(
+                        "group relative inline-flex items-center gap-2 rounded-full px-4 py-2 transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary",
+                        isActive ? "text-primary" : "text-slate-600 hover:text-primary"
+                      )}
                     >
-                      <span className="mr-2 inline-flex h-5 w-5 items-center justify-center rounded-full bg-primary/10 text-primary">
+                      <span
+                        className={clsx(
+                          "inline-flex h-7 w-7 items-center justify-center rounded-full border text-xs transition",
+                          isActive
+                            ? "border-primary/70 bg-primary/10 text-primary"
+                            : "border-transparent bg-gray-100 text-gray-500 group-hover:border-primary/40 group-hover:bg-primary/5 group-hover:text-primary"
+                        )}
+                      >
                         <Icon className="h-3.5 w-3.5" aria-hidden="true" />
                       </span>
-                      {label}
+                      <span>{label}</span>
+                      <span
+                        aria-hidden="true"
+                        className={clsx(
+                          "pointer-events-none absolute inset-x-4 -bottom-1 h-0.5 rounded-full transition",
+                          isActive ? "bg-primary opacity-100" : "bg-primary/40 opacity-0 group-hover:opacity-100"
+                        )}
+                      />
                     </Link>
                   </li>
                 );
               })}
             </ul>
           </nav>
-          {sessionUser ? (
-            <div className="flex items-center gap-3">
-              <span className="max-w-[12rem] truncate text-sm font-semibold text-gray-700" title={sessionUser.email}>
-                {sessionUser.email}
-              </span>
-              <button
-                type="button"
-                onClick={handleSignOut}
-                disabled={isSigningOut}
-                className="inline-flex items-center justify-center rounded-full bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-75"
-              >
-                Sign out
-              </button>
-            </div>
-          ) : (
-            <div className="flex items-center gap-3">
+          <div className="hidden items-center justify-end gap-3 lg:flex">
+            <Link
+              href="/orders"
+              className="inline-flex items-center gap-2 rounded-full bg-gray-900 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-gray-800"
+            >
+              <IconReceipt className="h-4 w-4" aria-hidden="true" />
+              <span>My orders</span>
+            </Link>
+            {sessionUser ? (
+              <>
+                <span className="max-w-[14rem] truncate text-xs font-semibold text-gray-500" title={sessionUser.email}>
+                  {sessionUser.email}
+                </span>
+                <button
+                  type="button"
+                  onClick={handleSignOut}
+                  disabled={isSigningOut}
+                  className="inline-flex items-center justify-center rounded-full bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-75"
+                >
+                  Sign out
+                </button>
+              </>
+            ) : (
               <Link
                 href={loginHref}
-                className="inline-flex items-center justify-center rounded-full bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
+                className="inline-flex items-center justify-center rounded-full border border-primary px-4 py-2 text-sm font-semibold text-primary transition hover:-translate-y-0.5 hover:bg-primary/10"
               >
                 Sign in / Sign up
               </Link>
-            </div>
-          )}
+            )}
+          </div>
         </div>
-        <button
-          type="button"
-          className="ml-auto inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-white/70 bg-white/70 text-gray-600 shadow-sm transition hover:border-primary/70 hover:bg-primary/10 hover:text-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary lg:hidden"
-          onClick={() => setIsMenuOpen((prev) => !prev)}
-          aria-expanded={isMenuOpen}
-          aria-controls="mobile-nav"
-          aria-label={isMenuOpen ? "Close navigation menu" : "Open navigation menu"}
-          aria-haspopup="true"
+      </div>
+
+      <div className="mx-auto flex w-full max-w-7xl items-center gap-3 px-3 py-2.5 sm:gap-4 sm:px-5 lg:hidden">
+        <Link
+          href="/"
+          className="flex items-center gap-2 rounded-full border border-gray-200 bg-white px-3 py-1.5 text-sm font-semibold text-gray-900 shadow-sm transition hover:border-primary/60"
+          aria-label="Maktab Muhammadiya home"
         >
-          {isMenuOpen ? <IconClose className="h-5 w-5" /> : <IconMenu className="h-5 w-5" />}
-        </button>
+          <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-primary">
+            <IconLibrary className="h-4 w-4" aria-hidden="true" />
+          </span>
+          <span className="truncate">Maktab Muhammadiya</span>
+        </Link>
+        <div className="ml-auto flex items-center gap-2">
+          <Link
+            href="/orders"
+            className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-gray-900 text-white shadow-sm transition hover:bg-gray-800"
+            aria-label="My orders"
+          >
+            <IconReceipt className="h-4 w-4" aria-hidden="true" />
+          </Link>
+          <button
+            type="button"
+            className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-gray-200 bg-white text-gray-600 shadow-sm transition hover:border-primary/70 hover:bg-primary/10 hover:text-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
+            onClick={() => setIsMenuOpen((prev) => !prev)}
+            aria-expanded={isMenuOpen}
+            aria-controls="mobile-nav"
+            aria-label={isMenuOpen ? "Close navigation menu" : "Open navigation menu"}
+            aria-haspopup="true"
+          >
+            {isMenuOpen ? <IconClose className="h-5 w-5" /> : <IconMenu className="h-5 w-5" />}
+          </button>
+        </div>
       </div>
 
       {isMenuOpen ? (
@@ -350,6 +393,16 @@ function IconShield(props: SVGProps<SVGSVGElement>) {
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" {...props}>
       <path d="M12 21c-5.5-2-9-5-9-10V5l9-3 9 3v6c0 5-3.5 8-9 10z" />
       <path d="M10 10l2 2 4-4" />
+    </svg>
+  );
+}
+
+function IconReceipt(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" {...props}>
+      <path d="M7 3h10a2 2 0 012 2v16l-4-2-3 2-3-2-4 2V5a2 2 0 012-2z" />
+      <path d="M9 9h6" />
+      <path d="M9 13h6" />
     </svg>
   );
 }
