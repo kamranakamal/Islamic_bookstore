@@ -17,13 +17,29 @@ const links = [
   { href: "/admin/analytics", label: "Analytics" }
 ];
 
-export function AdminNav() {
+type AdminNavLayout = "responsive" | "vertical" | "horizontal";
+
+interface AdminNavProps {
+  layout?: AdminNavLayout;
+  className?: string;
+  onNavigate?: () => void;
+  ariaLabel?: string;
+}
+
+const NAV_LAYOUT_CLASS: Record<AdminNavLayout, string> = {
+  responsive:
+    "-mx-2 flex gap-2 overflow-x-auto pb-1 lg:mx-0 lg:flex-col lg:gap-1 lg:overflow-visible lg:pb-0",
+  vertical: "flex flex-col gap-1",
+  horizontal: "flex gap-3 overflow-x-auto pb-1"
+};
+
+export function AdminNav({ layout = "responsive", className, onNavigate, ariaLabel }: AdminNavProps) {
   const pathname = usePathname();
 
   return (
     <nav
-      aria-label="Admin navigation"
-      className="-mx-2 flex gap-2 overflow-x-auto pb-1 lg:mx-0 lg:flex-col lg:gap-1 lg:overflow-visible lg:pb-0"
+      aria-label={ariaLabel ?? "Admin navigation"}
+  className={clsx(NAV_LAYOUT_CLASS[layout], className)}
     >
       {links.map((link) => {
         const isActive = pathname === link.href || pathname.startsWith(`${link.href}/`);
@@ -32,11 +48,18 @@ export function AdminNav() {
             key={link.href}
             href={link.href}
             className={clsx(
-              "inline-flex min-w-[120px] items-center justify-center whitespace-nowrap rounded-full px-4 py-2 text-sm font-semibold transition lg:min-w-0 lg:justify-start lg:rounded lg:px-3",
+              "inline-flex items-center whitespace-nowrap text-sm font-semibold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary",
+              layout === "vertical"
+                ? "w-full justify-start rounded-lg px-3 py-2"
+                : layout === "horizontal"
+                  ? "min-w-[120px] justify-center rounded-full px-4 py-2"
+                  : "min-w-[120px] justify-center rounded-full px-4 py-2 lg:w-full lg:justify-start lg:rounded-lg lg:px-3",
               isActive
                 ? "bg-primary text-primary-foreground shadow-sm hover:bg-primary/90"
-                : "bg-white text-gray-700 hover:bg-primary/10 hover:text-primary"
+                : "bg-white text-slate-700 hover:bg-primary/10 hover:text-primary"
             )}
+            onClick={onNavigate}
+            aria-current={isActive ? "page" : undefined}
           >
             {link.label}
           </Link>
