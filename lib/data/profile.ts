@@ -64,7 +64,7 @@ export async function getUserOrders(profileId: string): Promise<UserOrder[]> {
           quantity: item.quantity,
           title: "Book no longer available",
           author: null,
-          coverUrl: "/logo.svg",
+          coverUrl: "/book_cover.svg",
           unitPrice: null,
           unitPriceFormatted: null,
           lineTotalFormatted: null,

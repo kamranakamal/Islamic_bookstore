@@ -26,9 +26,9 @@ const formatInternationalCurrency = new Intl.NumberFormat("en-US", {
 });
 
 function buildCoverUrl(path: string | null): string {
-  if (!path) return "/logo.svg";
+  if (!path) return "/book_cover.svg";
   const baseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  if (!baseUrl) return "/logo.svg";
+  if (!baseUrl) return "/book_cover.svg";
   const normalizedBase = baseUrl.replace(/\/$/, "");
   const separator = path.includes("?") ? "&" : "?";
   return `${normalizedBase}/storage/v1/object/public/${path}${separator}width=600&quality=80`;
@@ -69,7 +69,7 @@ export function toBookSummary(row: BookRowWithCategory): BookSummary {
     priceInternationalUsd: Number(row.price_international_usd ?? 0),
     priceFormattedLocal: formatLocalCurrency.format(Number(row.price_local_inr ?? 0)),
     priceFormattedInternational: formatInternationalCurrency.format(Number(row.price_international_usd ?? 0)),
-    coverUrl: galleryUrls[0] ?? "/logo.svg",
+    coverUrl: galleryUrls[0] ?? "/book_cover.svg",
     galleryUrls,
     categoryName: row.categories?.name ?? "Uncategorised",
     categorySlug: row.categories?.slug ?? undefined,

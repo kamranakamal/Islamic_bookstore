@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 
@@ -89,11 +90,15 @@ export function BookList({ books, onEdit, isRefreshing = false }: BookListProps)
               <tr key={book.id} className="hover:bg-gray-50">
                 <td className="px-4 py-3 text-sm font-medium text-gray-900">
                   <div className="flex items-center gap-3">
-                    {book.coverUrl ? (
-                      <img src={book.coverUrl} alt={`${book.title} cover`} className="h-12 w-8 rounded object-cover" />
-                    ) : (
-                      <div className="h-12 w-8 rounded bg-gray-200" aria-hidden />
-                    )}
+                    <div className="relative h-12 w-8 overflow-hidden rounded">
+                      <Image
+                        src={book.coverUrl && book.coverUrl !== "/book_cover.svg" ? book.coverUrl : "/book_cover.svg"}
+                        alt={book.coverUrl && book.coverUrl !== "/book_cover.svg" ? `${book.title} cover` : "Default book cover"}
+                        fill
+                        sizes="32px"
+                        className="object-cover"
+                      />
+                    </div>
                     <div>
                       <p>{book.title}</p>
                       <p className="text-xs text-gray-500">{book.priceFormattedLocal}</p>

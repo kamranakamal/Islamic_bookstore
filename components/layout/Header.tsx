@@ -17,7 +17,8 @@ const navItems: Array<{ href: string; label: string; Icon: (props: SVGProps<SVGS
   { href: "/contact", label: "Contact", Icon: IconMail },
   { href: "/bulk-order", label: "Bulk orders", Icon: IconBoxes },
   { href: "/faq", label: "FAQ", Icon: IconQuestion },
-  { href: "/cart", label: "Cart", Icon: IconCart }
+  { href: "/cart", label: "Cart", Icon: IconCart },
+  { href: "/orders", label: "Orders", Icon: IconOrders }
 ];
 
 interface HeaderProps {
@@ -34,7 +35,7 @@ export function Header({ sessionUser }: HeaderProps) {
   const closeButtonRef = useRef<HTMLButtonElement>(null);
 
   const loginHref = pathname === "/login" ? "/login" : `/login?redirect=${encodeURIComponent(pathname)}`;
-  const mobilePrimaryNav = navItems.filter(({ href }) => ["/", "/shop", "/blog", "/bulk-order", "/cart"].includes(href));
+  const mobilePrimaryNav = navItems.filter(({ href }) => ["/", "/shop", "/blog", "/bulk-order", "/cart", "/orders"].includes(href));
   const mobileSupportNav = navItems.filter(({ href }) => ["/faq", "/contact"].includes(href));
 
   const handleSignOut = async () => {
@@ -320,23 +321,14 @@ export function Header({ sessionUser }: HeaderProps) {
                       <p className="font-semibold">Signed in</p>
                       <p className="truncate text-xs text-primary/80">{sessionUser.email}</p>
                     </div>
-                    <div className="flex flex-col gap-2">
-                      <Link
-                        href="/orders"
-                        onClick={() => setIsMenuOpen(false)}
-                        className="flex items-center justify-center rounded-2xl border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700 transition hover:border-primary/60 hover:bg-primary/5 hover:text-primary"
-                      >
-                        Order history
-                      </Link>
-                      <button
-                        type="button"
-                        onClick={handleSignOut}
-                        disabled={isSigningOut}
-                        className="rounded-2xl bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-75"
-                      >
-                        Sign out
-                      </button>
-                    </div>
+                    <button
+                      type="button"
+                      onClick={handleSignOut}
+                      disabled={isSigningOut}
+                      className="rounded-2xl bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-75"
+                    >
+                      Sign out
+                    </button>
                   </>
                 ) : (
                   <div className="flex flex-col gap-3">
@@ -396,12 +388,13 @@ function IconLibrary(props: SVGProps<SVGSVGElement>) {
 
 function IconShop(props: SVGProps<SVGSVGElement>) {
   return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" {...props}>
-      <path d="M3 9l1.4-4.2A2 2 0 015.33 3.5h13.34a2 2 0 011.93 1.3L22 9" />
-      <path d="M3 9h18v9.5a2.5 2.5 0 01-2.5 2.5h-13A2.5 2.5 0 013 18.5V9z" />
-      <path d="M8 9V6.5a4 4 0 014-4 4 4 0 014 4V9" />
-      <path d="M9.5 13h5" />
-    </svg>
+    <Image 
+      src="/shop_icon.svg" 
+      alt="Shop" 
+      width={12} 
+      height={12}
+      className="h-3 w-3"
+    />
   );
 }
 
@@ -429,10 +422,13 @@ function IconSparkle(props: SVGProps<SVGSVGElement>) {
 
 function IconMail(props: SVGProps<SVGSVGElement>) {
   return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" {...props}>
-      <rect x="3" y="5" width="18" height="14" rx="2" />
-      <path d="M3 7l9 6 9-6" />
-    </svg>
+    <Image 
+      src="/contact_icon.svg" 
+      alt="Contact" 
+      width={12} 
+      height={12}
+      className="h-3 w-3"
+    />
   );
 }
 
@@ -465,5 +461,17 @@ function IconCart(props: SVGProps<SVGSVGElement>) {
       <circle cx="17" cy="20" r="1" />
       <path d="M5 5h2l1 7h9l1.5-5h-14" />
     </svg>
+  );
+}
+
+function IconOrders(props: SVGProps<SVGSVGElement>) {
+  return (
+    <Image 
+      src="/Myorder_icon.svg" 
+      alt="Orders" 
+      width={12} 
+      height={12}
+      className="h-3 w-3"
+    />
   );
 }
