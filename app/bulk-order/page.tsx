@@ -38,21 +38,14 @@ export default async function BulkOrderPage() {
         title={page.heroTitle ?? page.title}
         description={page.heroDescription ?? page.body ?? undefined}
         actions={
-          primaryActionLabel && primaryActionHref ? (
-            <a
-              href={primaryActionHref}
-              className="rounded border border-primary px-4 py-2 text-sm font-semibold text-primary transition hover:bg-primary/10"
-            >
-              {primaryActionLabel}
-            </a>
-          ) : (
-            <a
-              href={`mailto:${organization.contact.email}?subject=Bulk%20order%20enquiry`}
-              className="rounded border border-primary px-4 py-2 text-sm font-semibold text-primary transition hover:bg-primary/10"
-            >
-              Email the team directly
-            </a>
-          )
+          <a
+            href={`https://mail.google.com/mail/?view=cm&fs=1&to=${organization.contact.email}&su=Bulk%20order%20enquiry&body=Hello,%0A%0AI%20would%20like%20to%20place%20a%20bulk%20order.%0A`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="rounded border border-primary px-4 py-2 text-sm font-semibold text-primary transition hover:bg-primary/10"
+          >
+            Email the team directly
+          </a>
         }
       />
       <section className="grid gap-8 lg:grid-cols-[1fr,1.2fr]">
