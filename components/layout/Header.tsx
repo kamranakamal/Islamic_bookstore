@@ -2,6 +2,7 @@
 
 import { useEffect, useId, useRef, useState, type SVGProps } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import clsx from "clsx";
 
@@ -96,8 +97,14 @@ export function Header({ sessionUser }: HeaderProps) {
             aria-label="Maktab Muhammadiya home"
             className="group flex items-center gap-3 rounded-full border border-gray-200 bg-white px-4 py-2 shadow-sm transition hover:border-primary/60 hover:shadow-md"
           >
-            <span className="flex h-11 w-11 items-center justify-center rounded-full bg-primary/10 text-primary">
-              <IconLibrary className="h-5 w-5" aria-hidden="true" />
+            <span className="flex h-11 w-11 items-center justify-center rounded-full bg-primary/10 text-primary overflow-hidden">
+              <Image 
+                src="/android-chrome-192x192.png" 
+                alt="Maktab Muhammadiya Logo" 
+                width={32} 
+                height={32}
+                className="rounded-full"
+              />
             </span>
             <span className="flex flex-col leading-tight">
               <span className="text-sm font-semibold text-gray-900">Maktab Muhammadiya</span>
@@ -175,8 +182,14 @@ export function Header({ sessionUser }: HeaderProps) {
           className="flex items-center gap-2 rounded-full border border-gray-200 bg-white px-3 py-1.5 text-sm font-semibold text-gray-900 shadow-sm transition hover:border-primary/60"
           aria-label="Maktab Muhammadiya home"
         >
-          <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-primary">
-            <IconLibrary className="h-4 w-4" aria-hidden="true" />
+          <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-primary overflow-hidden">
+            <Image 
+              src="/android-chrome-192x192.png" 
+              alt="Maktab Muhammadiya Logo" 
+              width={24} 
+              height={24}
+              className="rounded-full"
+            />
           </span>
           <span className="truncate">Maktab Muhammadiya</span>
         </Link>
