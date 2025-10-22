@@ -26,7 +26,7 @@ const headers = async () => [
     ]
   },
   {
-    source: "/:all*(js|css|svg|png|jpg|jpeg|gif|webp|ico)",
+    source: "/(.+)\\.(js|css|svg|png|jpg|jpeg|gif|webp|ico)",
     headers: [
       {
         key: "Cache-Control",
