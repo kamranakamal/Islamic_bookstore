@@ -21,11 +21,6 @@ export default async function BulkOrderPage() {
     notFound();
   }
 
-  const metadata = (page.metadata ?? {}) as Record<string, unknown>;
-  const primaryActionLabel =
-    typeof metadata["primaryActionLabel"] === "string" ? (metadata["primaryActionLabel"] as string) : undefined;
-  const primaryActionHref =
-    typeof metadata["primaryActionHref"] === "string" ? (metadata["primaryActionHref"] as string) : undefined;
   const supportCards = page.sections
     .filter((section) => section.type === "card")
     .sort((a, b) => a.position - b.position);

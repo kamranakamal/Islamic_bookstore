@@ -1,11 +1,9 @@
-import dynamic from "next/dynamic";
 import type { Metadata } from "next";
 import Link from "next/link";
 
 import { BookCard } from "@/components/site/BookCard";
 import { getHomepageData } from "@/lib/data/home";
 import { appUrl, organization } from "@/lib/config";
-import { Skeleton } from "@/components/ui/Skeleton";
 import { SearchForm } from "@/components/site/SearchForm";
 
 export const revalidate = 60;

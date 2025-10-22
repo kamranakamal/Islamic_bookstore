@@ -109,10 +109,6 @@ export function SavedAddressesManager({ initialAddresses, sessionUser }: SavedAd
     setError(null);
   };
 
-  const invalidate = async () => {
-    await queryClient.invalidateQueries({ queryKey: QUERY_KEY });
-  };
-
   const createMutation = useMutation({
     mutationFn: async (values: unknown) => {
       const parsed = userAddressInputSchema.safeParse(values);
