@@ -12,37 +12,37 @@ const headers = async () => [
     headers: [
       {
         key: "Cache-Control",
-        value: "private, no-store, max-age=0"
-      }
-    ]
+        value: "private, no-store, max-age=0",
+      },
+    ],
   },
   {
     source: "/admin/:path*",
     headers: [
       {
         key: "Cache-Control",
-        value: "private, no-store, max-age=0"
-      }
-    ]
+        value: "private, no-store, max-age=0",
+      },
+    ],
   },
   {
-    source: "/(.+)\\.(js|css|svg|png|jpg|jpeg|gif|webp|ico)",
+    source: "/(.*)\\.(?:jpg|jpeg|png|gif|webp|svg|ico)",
     headers: [
       {
         key: "Cache-Control",
-        value: "public, max-age=31536000, immutable"
-      }
-    ]
+        value: "public, max-age=31536000, immutable",
+      },
+    ],
   },
   {
     source: "/:path*",
     headers: [
       {
         key: "Cache-Control",
-        value: "public, max-age=60, stale-while-revalidate=600"
-      }
-    ]
-  }
+        value: "public, max-age=60, stale-while-revalidate=600",
+      },
+    ],
+  },
 ];
 
 const nextConfig = {
