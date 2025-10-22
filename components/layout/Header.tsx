@@ -9,7 +9,7 @@ import clsx from "clsx";
 import { getSupabaseClient } from "@/lib/supabaseClient";
 import type { SessionUser } from "@/lib/authHelpers";
 
-const navItems: Array<{ href: string; label: string; Icon: (props: SVGProps<SVGSVGElement>) => JSX.Element }> = [
+const navItems: Array<{ href: string; label: string; Icon: (props?: any) => JSX.Element }> = [
   { href: "/", label: "Home", Icon: IconHome },
   { href: "/shop", label: "Shop", Icon: IconShop },
   { href: "/blog", label: "Blog", Icon: IconScroll },
@@ -54,9 +54,13 @@ export function Header({ sessionUser }: HeaderProps) {
       }
     } catch (err) {
       console.error("Sign-out error:", err);
+    } finally {
+      setIsSigningOut(false);
     }
 
-    window.location.href = "/login";
+    if (typeof window !== 'undefined') {
+      window.location.replace("/login");
+    }
   };
 
   const headerClasses = clsx(
@@ -386,7 +390,7 @@ function IconLibrary(props: SVGProps<SVGSVGElement>) {
   );
 }
 
-function IconShop(props: SVGProps<SVGSVGElement>) {
+function IconShop(props?: any) {
   return (
     <Image 
       src="/shop_icon.svg" 
@@ -420,7 +424,7 @@ function IconSparkle(props: SVGProps<SVGSVGElement>) {
 }
 
 
-function IconMail(props: SVGProps<SVGSVGElement>) {
+function IconMail(props?: any) {
   return (
     <Image 
       src="/contact_icon.svg" 
@@ -464,7 +468,7 @@ function IconCart(props: SVGProps<SVGSVGElement>) {
   );
 }
 
-function IconOrders(props: SVGProps<SVGSVGElement>) {
+function IconOrders(props?: any) {
   return (
     <Image 
       src="/Myorder_icon.svg" 

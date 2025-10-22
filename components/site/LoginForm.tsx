@@ -36,11 +36,15 @@ export function LoginForm({ redirectTo }: LoginFormProps) {
 
     try {
       const redirectPath = sanitizeRedirectPath(redirectTo);
+      console.log("Login attempt started, redirect path:", redirectPath);
+      
       const normalizedEmail = email.trim().toLowerCase();
       const { data, error: signInError } = await supabase.auth.signInWithPassword({
         email: normalizedEmail,
         password
       });
+
+      console.log("Supabase auth response:", { data: !!data, error: signInError });
 
       if (signInError || !data?.user) {
         setState("error");
@@ -49,17 +53,21 @@ export function LoginForm({ redirectTo }: LoginFormProps) {
       }
 
       if (data.session) {
-        await fetch("/api/auth/callback", {
+        console.log("Setting session via auth callback...");
+        const callbackResponse = await fetch("/api/auth/callback", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           credentials: "include",
           body: JSON.stringify({ event: "SIGNED_IN", session: data.session })
         });
 
-        await new Promise((resolve) => setTimeout(resolve, 200));
+        console.log("Auth callback response:", callbackResponse.ok);
+
+        await new Promise((resolve) => setTimeout(resolve, 500)); // Increased timeout
 
         try {
-          await fetch("/api/profile/ensure", {
+          console.log("Ensuring user profile...");
+          const profileResponse = await fetch("/api/profile/ensure", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             credentials: "include",
@@ -68,13 +76,19 @@ export function LoginForm({ redirectTo }: LoginFormProps) {
               displayName: data.user.user_metadata?.display_name ?? null
             })
           });
+          console.log("Profile ensure response:", profileResponse.ok);
         } catch (profileError) {
           console.error("Failed to sync profile", profileError);
         }
       }
 
       setState("idle");
-      window.location.href = redirectPath;
+      console.log("Login successful, redirecting to:", redirectPath);
+      
+      // Force a page refresh to ensure session is properly loaded
+      if (typeof window !== 'undefined') {
+        window.location.replace(redirectPath);
+      }
     } catch (unknownError) {
       setState("error");
       setError({ message: unknownError instanceof Error ? unknownError.message : "Unable to sign in." });
