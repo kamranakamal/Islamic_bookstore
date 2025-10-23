@@ -114,8 +114,8 @@ export function CategoriesManager({ categories }: CategoriesManagerProps) {
   const isSubmitting = createMutation.isPending;
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[minmax(0,320px),1fr]">
-      <section className="space-y-4 rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+    <div className="space-y-6 lg:grid lg:gap-6 lg:grid-cols-[minmax(0,320px),1fr]">
+      <section className="space-y-4 rounded-lg border border-gray-200 bg-white p-4 shadow-sm sm:p-6">
         <header className="space-y-1">
           <h2 className="text-lg font-semibold text-gray-900">Create a category</h2>
           <p className="text-sm text-gray-600">Define a new catalog category for organising books.</p>
@@ -199,7 +199,7 @@ export function CategoriesManager({ categories }: CategoriesManagerProps) {
           </button>
         </form>
       </section>
-      <section className="space-y-4 rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+      <section className="space-y-4 rounded-lg border border-gray-200 bg-white p-4 shadow-sm sm:p-6">
         <header className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <h2 className="text-lg font-semibold text-gray-900">Existing categories</h2>
@@ -214,27 +214,27 @@ export function CategoriesManager({ categories }: CategoriesManagerProps) {
             No categories yet. Create one using the form.
           </div>
         ) : (
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto -mx-4 sm:-mx-6">
             <table className="min-w-full divide-y divide-gray-200 text-sm">
               <thead className="bg-gray-50 text-xs font-semibold uppercase tracking-wide text-gray-500">
                 <tr>
-                  <th className="px-4 py-3 text-left">Name</th>
-                  <th className="px-4 py-3 text-left">Slug</th>
-                  <th className="px-4 py-3 text-left">Description</th>
-                  <th className="px-4 py-3 text-left">Updated</th>
+                  <th className="px-4 py-3 text-left sm:px-6">Name</th>
+                  <th className="px-4 py-3 text-left sm:px-6">Slug</th>
+                  <th className="hidden px-4 py-3 text-left sm:px-6 md:table-cell">Description</th>
+                  <th className="hidden px-4 py-3 text-left sm:px-6 lg:table-cell">Updated</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 bg-white text-sm text-gray-700">
                 {sortedCategories.map((category) => (
                   <tr key={category.id} className="hover:bg-gray-50">
-                    <td className="px-4 py-3 font-semibold text-gray-900">{category.name}</td>
-                    <td className="px-4 py-3 text-sm text-gray-600">
-                      <code className="rounded bg-gray-100 px-2 py-1 text-xs text-gray-700">{category.slug}</code>
+                    <td className="px-4 py-3 font-semibold text-gray-900 sm:px-6">{category.name}</td>
+                    <td className="px-4 py-3 text-sm text-gray-600 sm:px-6">
+                      <code className="rounded bg-gray-100 px-2 py-1 text-xs text-gray-700 truncate inline-block">{category.slug}</code>
                     </td>
-                    <td className="px-4 py-3 text-sm text-gray-600">
+                    <td className="hidden px-4 py-3 text-sm text-gray-600 sm:px-6 md:table-cell truncate">
                       {category.description?.length ? category.description : "—"}
                     </td>
-                    <td className="px-4 py-3 text-sm text-gray-500">
+                    <td className="hidden px-4 py-3 text-sm text-gray-500 sm:px-6 lg:table-cell whitespace-nowrap">
                       {category.updatedAt
                         ? new Date(category.updatedAt).toLocaleString("en-GB", {
                             day: "numeric",

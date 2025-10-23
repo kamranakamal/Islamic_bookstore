@@ -195,29 +195,29 @@ export function PaymentsManager({ preferences }: PaymentsManagerProps) {
         <div className="border-b border-red-100 bg-red-50 px-6 py-3 text-sm text-red-700">{combinedError}</div>
       ) : null}
 
-      <div className="overflow-x-auto">
+      <div className="overflow-x-auto -mx-6">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-600">
+              <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-600 sm:px-6">
                 Customer
               </th>
-              <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-600">
+              <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-600 sm:px-6">
                 Contact
               </th>
-              <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-600">
+              <th className="hidden px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-600 sm:px-6 md:table-cell">
                 Payment method
               </th>
-              <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-600">
+              <th className="hidden px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-600 sm:px-6 lg:table-cell">
                 Delivery window
               </th>
-              <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-600">
+              <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-600 sm:px-6">
                 Reference
               </th>
-              <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-600">
+              <th className="hidden px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-600 sm:px-6 lg:table-cell">
                 Updated
               </th>
-              <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-gray-600">
+              <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-gray-600 sm:px-6">
                 Status
               </th>
             </tr>
@@ -226,48 +226,40 @@ export function PaymentsManager({ preferences }: PaymentsManagerProps) {
             {filteredPreferences.length ? (
               filteredPreferences.map((entry) => (
                 <tr key={entry.id} className="hover:bg-gray-50">
-                  <td className="px-4 py-3 text-sm font-medium text-gray-900">
+                  <td className="px-4 py-3 text-sm font-medium text-gray-900 sm:px-6">
                     <div>
                       <p>{entry.profileName ?? "Member"}</p>
-                      <p className="text-xs text-gray-500">Profile ID: {entry.profileId}</p>
-                      <p className="text-xs text-gray-500">Account email: {entry.profileEmail}</p>
+                      <p className="text-xs text-gray-500">ID: {entry.profileId.slice(0, 8)}...</p>
                     </div>
                   </td>
-                  <td className="px-4 py-3 text-sm text-gray-700">
+                  <td className="px-4 py-3 text-sm text-gray-700 sm:px-6">
                     <div className="space-y-1">
                       <p className="font-semibold text-gray-900">{entry.billingName ?? "—"}</p>
                       <a
                         href={`mailto:${entry.billingEmail ?? entry.profileEmail}`}
-                        className="block text-primary hover:underline"
+                        className="block text-primary hover:underline text-xs"
                       >
                         {entry.billingEmail ?? entry.profileEmail}
                       </a>
-                      <p className="text-xs text-gray-500">{entry.billingPhone ?? "No phone provided"}</p>
                     </div>
                   </td>
-                  <td className="px-4 py-3 text-sm text-gray-700">
+                  <td className="hidden px-4 py-3 text-sm text-gray-700 sm:px-6 md:table-cell">
                     <div className="space-y-1">
                       <span className="block font-semibold text-gray-900">
                         {formatTitleCase(entry.paymentMethod)}
                       </span>
-                      {entry.paymentIdentifier ? (
-                        <span className="block text-xs text-gray-500">ID: {entry.paymentIdentifier}</span>
-                      ) : null}
                     </div>
                   </td>
-                  <td className="px-4 py-3 text-sm text-gray-700">{entry.deliveryWindow ?? "—"}</td>
-                  <td className="px-4 py-3 text-sm text-gray-700">
-                    <div className="space-y-1">
-                      <span>{entry.referenceCode ?? "—"}</span>
-                      {entry.notes ? <p className="text-xs text-gray-500">{entry.notes}</p> : null}
-                    </div>
+                  <td className="hidden px-4 py-3 text-sm text-gray-700 sm:px-6 lg:table-cell">{entry.deliveryWindow ?? "—"}</td>
+                  <td className="px-4 py-3 text-sm text-gray-700 sm:px-6">
+                    <span>{entry.referenceCode ? entry.referenceCode.slice(0, 10) : "—"}</span>
                   </td>
-                  <td className="px-4 py-3 text-sm text-gray-500">{new Date(entry.updatedAt).toLocaleString()}</td>
-                  <td className="px-4 py-3 text-right text-sm">
+                  <td className="hidden px-4 py-3 text-sm text-gray-500 sm:px-6 lg:table-cell">{new Date(entry.updatedAt).toLocaleDateString()}</td>
+                  <td className="px-4 py-3 text-right text-sm sm:px-6">
                     <div className="flex flex-col items-end gap-1">
                       <select
                         aria-label={`Update status for ${entry.profileName ?? entry.profileEmail}`}
-                        className="min-w-[170px] rounded-full border border-gray-300 bg-white px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30 disabled:cursor-not-allowed disabled:opacity-60"
+                        className="min-w-[140px] rounded-full border border-gray-300 bg-white px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30 disabled:cursor-not-allowed disabled:opacity-60"
                         value={entry.status}
                         onChange={(event) =>
                           updateMutation.mutate({

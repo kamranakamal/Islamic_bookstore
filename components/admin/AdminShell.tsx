@@ -95,7 +95,7 @@ export function AdminShell({ user, children }: AdminShellProps) {
       </div>
 
       {isMobileNavOpen ? (
-        <div className="lg:hidden">
+        <div className="lg:hidden fixed inset-0 z-50">
           <div className="fixed inset-0 z-40">
             <div
               className="absolute inset-0 bg-slate-900/50"
@@ -117,6 +117,7 @@ export function AdminShell({ user, children }: AdminShellProps) {
                   type="button"
                   className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-300 text-slate-600 transition hover:bg-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
                   onClick={() => setIsMobileNavOpen(false)}
+                  aria-label="Close navigation menu"
                 >
                   <span className="sr-only">Close navigation</span>
                   <CloseIcon className="h-5 w-5" />

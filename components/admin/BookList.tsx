@@ -111,7 +111,7 @@ export function BookList({ books, onEdit, isRefreshing = false }: BookListProps)
 
   return (
     <section className="rounded-lg border border-gray-200 bg-white shadow-sm">
-      <header className="flex items-center justify-between px-6 py-4">
+      <header className="flex items-center justify-between px-4 py-4 sm:px-6">
         <div>
           <h2 className="text-lg font-semibold text-gray-900">Current catalog</h2>
           <p className="text-sm text-gray-600">
@@ -120,25 +120,25 @@ export function BookList({ books, onEdit, isRefreshing = false }: BookListProps)
           </p>
         </div>
       </header>
-      <div className="admin-table-responsive overflow-x-auto">
+      <div className="admin-table-responsive overflow-x-auto -mx-4 sm:-mx-6">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-600">Title</th>
-              <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-600">Author</th>
-              <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-600">Category</th>
-              <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-600">Formats</th>
-              <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-600">Languages</th>
-              <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-gray-600">Stock</th>
-              <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-gray-600">Prices</th>
-              <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-gray-600">Updated</th>
-              <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-gray-600">Actions</th>
+              <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-600 sm:px-6">Title</th>
+              <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-600 sm:px-6">Author</th>
+              <th className="hidden px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-600 sm:px-6 md:table-cell">Category</th>
+              <th className="hidden px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-600 sm:px-6 lg:table-cell">Formats</th>
+              <th className="hidden px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-600 sm:px-6 xl:table-cell">Languages</th>
+              <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-gray-600 sm:px-6">Stock</th>
+              <th className="hidden px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-gray-600 sm:px-6 lg:table-cell">Prices</th>
+              <th className="hidden px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-gray-600 sm:px-6 xl:table-cell">Updated</th>
+              <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-gray-600 sm:px-6">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200 bg-white">
             {paginatedBooks.map((book: AdminBook) => (
               <tr key={book.id} className="hover:bg-gray-50">
-                <td className="px-4 py-3 text-sm font-medium text-gray-900">
+                <td className="px-4 py-3 text-sm font-medium text-gray-900 sm:px-6">
                   <div className="flex items-center gap-3">
                     <div className="relative h-12 w-8 overflow-hidden rounded">
                       <Image
@@ -160,31 +160,30 @@ export function BookList({ books, onEdit, isRefreshing = false }: BookListProps)
                     </div>
                   </div>
                 </td>
-                <td className="px-4 py-3 text-sm text-gray-700">{book.author}</td>
-                <td className="px-4 py-3 text-sm text-gray-700">{book.categoryName}</td>
-                <td className="px-4 py-3 text-sm text-gray-700">
-                  {book.availableFormats.length ? book.availableFormats.join(", ") : "—"}
+                <td className="px-4 py-3 text-sm text-gray-700 sm:px-6">{book.author}</td>
+                <td className="hidden px-4 py-3 text-sm text-gray-700 sm:px-6 md:table-cell">{book.categoryName}</td>
+                <td className="hidden px-4 py-3 text-sm text-gray-700 sm:px-6 lg:table-cell">
+                  {book.availableFormats.length ? book.availableFormats.slice(0, 2).join(", ") : "—"}
                 </td>
-                <td className="px-4 py-3 text-sm text-gray-700">
+                <td className="hidden px-4 py-3 text-sm text-gray-700 sm:px-6 xl:table-cell">
                   {book.availableLanguages.length
-                    ? book.availableLanguages.map((language) => getBookLanguageLabel(language)).join(", ")
+                    ? book.availableLanguages.slice(0, 2).map((language) => getBookLanguageLabel(language)).join(", ")
                     : "—"}
                 </td>
-                <td className="px-4 py-3 text-right text-sm text-gray-700">{book.stockQuantity}</td>
-                <td className="px-4 py-3 text-right text-sm text-gray-700">
+                <td className="px-4 py-3 text-right text-sm text-gray-700 sm:px-6">{book.stockQuantity}</td>
+                <td className="hidden px-4 py-3 text-right text-sm text-gray-700 sm:px-6 lg:table-cell">
                   <div className="inline-flex flex-col items-end text-xs text-gray-600">
-                    <span>Local (INR): {book.priceFormattedLocal}</span>
-                    <span>International (USD): {book.priceFormattedInternational}</span>
+                    <span>{book.priceFormattedLocal}</span>
                   </div>
                 </td>
-                <td className="px-4 py-3 text-right text-sm text-gray-500">
+                <td className="hidden px-4 py-3 text-right text-sm text-gray-500 sm:px-6 xl:table-cell whitespace-nowrap">
                   {new Date(book.updatedAt).toLocaleDateString()}
                 </td>
-                <td className="px-4 py-3 text-right text-sm">
+                <td className="px-4 py-3 text-right text-sm sm:px-6">
                   <div className="flex justify-end gap-2 admin-actions-mobile">
                     <button
                       type="button"
-                      className="rounded border border-gray-300 px-3 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-100"
+                      className="rounded border border-gray-300 px-3 py-2 text-xs font-semibold text-gray-700 transition hover:bg-gray-100 sm:text-sm"
                       onClick={() => {
                         setSelectedBookId(null);
                         onEdit?.(book);
@@ -215,8 +214,8 @@ export function BookList({ books, onEdit, isRefreshing = false }: BookListProps)
         </table>
       </div>
       {totalBooks > 0 ? (
-        <div className="flex flex-wrap items-center justify-between gap-3 border-t border-gray-200 px-6 py-4 text-sm text-gray-600">
-          <p>
+        <div className="flex flex-wrap items-center justify-between gap-3 border-t border-gray-200 px-4 py-4 text-sm text-gray-600 sm:px-6">
+          <p className="text-xs sm:text-sm">
             Showing {startIndex + 1}–{endIndex} of {totalBooks} books
           </p>
           <div className="flex gap-2">
@@ -228,7 +227,7 @@ export function BookList({ books, onEdit, isRefreshing = false }: BookListProps)
             >
               Previous
             </button>
-            <span className="self-center text-xs text-gray-500">
+            <span className="self-center text-xs text-gray-500 whitespace-nowrap">
               Page {currentPage} of {totalPages}
             </span>
             <button

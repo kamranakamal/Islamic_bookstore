@@ -39,7 +39,7 @@ export function AdminNav({ layout = "responsive", className, onNavigate, ariaLab
   return (
     <nav
       aria-label={ariaLabel ?? "Admin navigation"}
-  className={clsx(NAV_LAYOUT_CLASS[layout], className)}
+      className={clsx(NAV_LAYOUT_CLASS[layout], className)}
     >
       {links.map((link) => {
         const isActive = pathname === link.href || pathname.startsWith(`${link.href}/`);
@@ -48,12 +48,12 @@ export function AdminNav({ layout = "responsive", className, onNavigate, ariaLab
             key={link.href}
             href={link.href}
             className={clsx(
-              "inline-flex items-center whitespace-nowrap text-sm font-semibold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary",
+              "inline-flex items-center whitespace-nowrap text-sm font-semibold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary touch-action-auto",
               layout === "vertical"
-                ? "w-full justify-start rounded-lg px-3 py-2"
+                ? "w-full justify-start rounded-lg px-3 py-2 min-h-[44px]"
                 : layout === "horizontal"
                   ? "min-w-[120px] justify-center rounded-full px-4 py-2"
-                  : "min-w-[120px] justify-center rounded-full px-4 py-2 lg:w-full lg:justify-start lg:rounded-lg lg:px-3",
+                  : "min-w-[120px] justify-center rounded-full px-4 py-2 lg:w-full lg:justify-start lg:rounded-lg lg:px-3 lg:min-h-[44px]",
               isActive
                 ? "bg-primary text-primary-foreground shadow-sm hover:bg-primary/90"
                 : "bg-white text-slate-700 hover:bg-primary/10 hover:text-primary"
