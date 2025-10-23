@@ -14,6 +14,7 @@ export default function Head() {
     <>
       <meta name="theme-color" content="#0F766E" />
       <meta name="format-detection" content="telephone=yes,address=yes,email=yes" />
+      <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
       
       {/* Favicon links */}
       <link rel="icon" href="/favicon.ico" sizes="any" />
