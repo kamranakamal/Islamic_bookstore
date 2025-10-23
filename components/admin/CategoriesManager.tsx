@@ -121,7 +121,6 @@ export function CategoriesManager({ categories }: CategoriesManagerProps) {
           <p className="text-sm text-gray-600">Define a new catalog category for organising books.</p>
         </header>
         <form className="space-y-4" onSubmit={handleSubmit}>
-          {/* ...existing code... */}
           <div className="space-y-2">
             <label htmlFor="category-name" className="text-sm font-semibold text-gray-900">Name</label>
             <input
@@ -137,7 +136,58 @@ export function CategoriesManager({ categories }: CategoriesManagerProps) {
               required
             />
           </div>
-          {/* ...existing code... */}
+          <div className="space-y-2">
+            <label htmlFor="category-slug" className="flex items-center justify-between text-sm font-semibold text-gray-900">
+              <span>Slug</span>
+              <button
+                type="button"
+                onClick={() =>
+                  setForm((prev) => ({
+                    ...prev,
+                    slug: prev.name ? slugify(prev.name) : prev.slug
+                  }))
+                }
+                className="text-xs font-semibold text-primary hover:underline"
+              >
+                Generate
+              </button>
+            </label>
+            <input
+              id="category-slug"
+              type="text"
+              value={form.slug}
+              onChange={(event) =>
+                setForm((prev) => ({
+                  ...prev,
+                  slug: slugify(event.target.value)
+                }))
+              }
+              className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30"
+              placeholder="lowercase-with-hyphens"
+              required
+            />
+            <p className="text-xs text-gray-500">Lowercase letters, numbers, and hyphens only.</p>
+          </div>
+          <div className="space-y-2">
+            <label htmlFor="category-description" className="text-sm font-semibold text-gray-900">
+              Description (optional)
+            </label>
+            <textarea
+              id="category-description"
+              rows={3}
+              value={form.description}
+              onChange={(event) =>
+                setForm((prev) => ({
+                  ...prev,
+                  description: event.target.value
+                }))
+              }
+              className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30"
+              placeholder="Brief summary for admins"
+            />
+          </div>
+          {formError && <p className="text-sm text-red-600">{formError}</p>}
+          {successMessage && <p className="text-sm text-emerald-600">{successMessage}</p>}
           <button
             type="submit"
             className="w-full rounded bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-75"
