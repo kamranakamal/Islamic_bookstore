@@ -26,10 +26,14 @@ export function BooksManager({ books, categories }: BooksManagerProps) {
       }
       return data as AdminBooksData;
     },
-    initialData: { books, categories }
+    initialData: { books, categories },
+    staleTime: 0,
+    refetchOnMount: "always",
+    refetchOnWindowFocus: true,
+    refetchOnReconnect: true
   });
 
-  const booksData = booksQuery.data?.books ?? books;
+  const booksData = (booksQuery.data?.books ?? books) as AdminBook[];
   const categoriesData = booksQuery.data?.categories ?? categories;
 
   useEffect(() => {
