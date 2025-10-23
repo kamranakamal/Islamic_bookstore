@@ -15,7 +15,23 @@ export default function Head() {
       <meta name="theme-color" content="#0F766E" />
       <meta name="format-detection" content="telephone=yes,address=yes,email=yes" />
       <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
-      
+      <script>
+        {`
+          var lastTouchEnd = 0;
+          document.addEventListener('touchend', function(event) {
+            var now = (new Date()).getTime();
+            if (now - lastTouchEnd <= 300) {
+              event.preventDefault();
+            }
+            lastTouchEnd = now;
+          }, false);
+
+          document.addEventListener('gesturestart', function(e) {
+            e.preventDefault();
+          });
+        `}
+      </script>
+
       {/* Favicon links */}
       <link rel="icon" href="/favicon.ico" sizes="any" />
       <link rel="icon" href="/favicon-16x16.png" sizes="16x16" type="image/png" />
