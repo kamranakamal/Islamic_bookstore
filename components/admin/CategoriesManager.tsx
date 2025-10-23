@@ -121,10 +121,9 @@ export function CategoriesManager({ categories }: CategoriesManagerProps) {
           <p className="text-sm text-gray-600">Define a new catalog category for organising books.</p>
         </header>
         <form className="space-y-4" onSubmit={handleSubmit}>
+          {/* ...existing code... */}
           <div className="space-y-2">
-            <label htmlFor="category-name" className="text-sm font-semibold text-gray-900">
-              Name
-            </label>
+            <label htmlFor="category-name" className="text-sm font-semibold text-gray-900">Name</label>
             <input
               id="category-name"
               type="text"
@@ -138,58 +137,7 @@ export function CategoriesManager({ categories }: CategoriesManagerProps) {
               required
             />
           </div>
-          <div className="space-y-2">
-            <label htmlFor="category-slug" className="flex items-center justify-between text-sm font-semibold text-gray-900">
-              <span>Slug</span>
-              <button
-                type="button"
-                onClick={() =>
-                  setForm((prev) => ({
-                    ...prev,
-                    slug: prev.name ? slugify(prev.name) : prev.slug
-                  }))
-                }
-                className="text-xs font-semibold text-primary hover:underline"
-              >
-                Generate
-              </button>
-            </label>
-            <input
-              id="category-slug"
-              type="text"
-              value={form.slug}
-              onChange={(event) =>
-                setForm((prev) => ({
-                  ...prev,
-                  slug: slugify(event.target.value)
-                }))
-              }
-              className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30"
-              placeholder="lowercase-with-hyphens"
-              required
-            />
-            <p className="text-xs text-gray-500">Lowercase letters, numbers, and hyphens only.</p>
-          </div>
-          <div className="space-y-2">
-            <label htmlFor="category-description" className="text-sm font-semibold text-gray-900">
-              Description (optional)
-            </label>
-            <textarea
-              id="category-description"
-              rows={3}
-              value={form.description}
-              onChange={(event) =>
-                setForm((prev) => ({
-                  ...prev,
-                  description: event.target.value
-                }))
-              }
-              className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30"
-              placeholder="Brief summary for admins"
-            />
-          </div>
-          {formError ? <p className="text-sm text-red-600">{formError}</p> : null}
-          {successMessage ? <p className="text-sm text-emerald-600">{successMessage}</p> : null}
+          {/* ...existing code... */}
           <button
             type="submit"
             className="w-full rounded bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-75"
@@ -214,40 +162,68 @@ export function CategoriesManager({ categories }: CategoriesManagerProps) {
             No categories yet. Create one using the form.
           </div>
         ) : (
-          <div className="overflow-x-auto -mx-4 sm:-mx-6">
-            <table className="min-w-full divide-y divide-gray-200 text-sm">
-              <thead className="bg-gray-50 text-xs font-semibold uppercase tracking-wide text-gray-500">
-                <tr>
-                  <th className="px-4 py-3 text-left sm:px-6">Name</th>
-                  <th className="px-4 py-3 text-left sm:px-6">Slug</th>
-                  <th className="hidden px-4 py-3 text-left sm:px-6 md:table-cell">Description</th>
-                  <th className="hidden px-4 py-3 text-left sm:px-6 lg:table-cell">Updated</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100 bg-white text-sm text-gray-700">
-                {sortedCategories.map((category) => (
-                  <tr key={category.id} className="hover:bg-gray-50">
-                    <td className="px-4 py-3 font-semibold text-gray-900 sm:px-6">{category.name}</td>
-                    <td className="px-4 py-3 text-sm text-gray-600 sm:px-6">
+          <>
+            {/* Mobile card view */}
+            <div className="grid gap-4 sm:hidden">
+              {sortedCategories.map((category) => (
+                <div key={category.id} className="rounded-lg border border-gray-200 bg-gray-50 p-4 shadow-sm">
+                  <div className="flex flex-col gap-1">
+                    <span className="font-semibold text-gray-900 text-base">{category.name}</span>
+                    <span className="text-xs text-gray-600">
                       <code className="rounded bg-gray-100 px-2 py-1 text-xs text-gray-700 truncate inline-block">{category.slug}</code>
-                    </td>
-                    <td className="hidden px-4 py-3 text-sm text-gray-600 sm:px-6 md:table-cell truncate">
-                      {category.description?.length ? category.description : "—"}
-                    </td>
-                    <td className="hidden px-4 py-3 text-sm text-gray-500 sm:px-6 lg:table-cell whitespace-nowrap">
-                      {category.updatedAt
+                    </span>
+                    {category.description?.length ? (
+                      <span className="text-sm text-gray-700 mt-1">{category.description}</span>
+                    ) : null}
+                    <span className="text-xs text-gray-500 mt-2">
+                      Updated: {category.updatedAt
                         ? new Date(category.updatedAt).toLocaleString("en-GB", {
                             day: "numeric",
                             month: "short",
                             year: "numeric"
                           })
                         : "—"}
-                    </td>
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+            {/* Table view for larger screens */}
+            <div className="overflow-x-auto -mx-4 hidden sm:block">
+              <table className="min-w-full divide-y divide-gray-200 text-sm">
+                <thead className="bg-gray-50 text-xs font-semibold uppercase tracking-wide text-gray-500">
+                  <tr>
+                    <th className="px-4 py-3 text-left sm:px-6">Name</th>
+                    <th className="px-4 py-3 text-left sm:px-6">Slug</th>
+                    <th className="hidden px-4 py-3 text-left sm:px-6 md:table-cell">Description</th>
+                    <th className="hidden px-4 py-3 text-left sm:px-6 lg:table-cell">Updated</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody className="divide-y divide-gray-100 bg-white text-sm text-gray-700">
+                  {sortedCategories.map((category) => (
+                    <tr key={category.id} className="hover:bg-gray-50">
+                      <td className="px-4 py-3 font-semibold text-gray-900 sm:px-6">{category.name}</td>
+                      <td className="px-4 py-3 text-sm text-gray-600 sm:px-6">
+                        <code className="rounded bg-gray-100 px-2 py-1 text-xs text-gray-700 truncate inline-block">{category.slug}</code>
+                      </td>
+                      <td className="hidden px-4 py-3 text-sm text-gray-600 sm:px-6 md:table-cell truncate">
+                        {category.description?.length ? category.description : "—"}
+                      </td>
+                      <td className="hidden px-4 py-3 text-sm text-gray-500 sm:px-6 lg:table-cell whitespace-nowrap">
+                        {category.updatedAt
+                          ? new Date(category.updatedAt).toLocaleString("en-GB", {
+                              day: "numeric",
+                              month: "short",
+                              year: "numeric"
+                            })
+                          : "—"}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </>
         )}
       </section>
     </div>
