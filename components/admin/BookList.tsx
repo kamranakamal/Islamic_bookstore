@@ -56,20 +56,37 @@ export function BookList({ books, onEdit, isRefreshing = false }: BookListProps)
 
   const deleteMutation = useMutation({
     mutationFn: async (bookId: string) => {
-      const response = await fetch(`/api/admin/books?id=${bookId}`, {
-        method: "DELETE",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" }
-      });
-      if (!response.ok) {
-        // attempt to parse JSON error if present
-        const data = await response.json().catch(() => null);
-        throw new Error((data as { error?: string })?.error ?? "Unable to delete book");
+      try {
+        const response = await fetch(`/api/admin/books?id=${bookId}`, {
+          method: "DELETE",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" }
+        });
+
+        if (!response.ok) {
+          let errorMessage = "Unable to delete book";
+          try {
+            const data = await response.json();
+            errorMessage = (data as { error?: string })?.error ?? errorMessage;
+          } catch {
+            errorMessage = `Server error: ${response.status} ${response.statusText}`;
+          }
+          throw new Error(errorMessage);
+        }
+
+        const data = await response.json();
+        return data;
+      } catch (error) {
+        console.error("Delete mutation error:", error);
+        throw error;
       }
     },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ["admin-books"] });
       setSelectedBookId(null);
+    },
+    onError: (error) => {
+      console.error("Delete failed:", error);
     }
   });
 
@@ -120,8 +137,8 @@ export function BookList({ books, onEdit, isRefreshing = false }: BookListProps)
           </thead>
           <tbody className="divide-y divide-gray-200 bg-white">
             {paginatedBooks.map((book: AdminBook) => (
-                      <tr key={book.id} className="hover:bg-gray-50">
-                        <td className="px-4 py-3 text-sm font-medium text-gray-900">
+              <tr key={book.id} className="hover:bg-gray-50">
+                <td className="px-4 py-3 text-sm font-medium text-gray-900">
                   <div className="flex items-center gap-3">
                     <div className="relative h-12 w-8 overflow-hidden rounded">
                       <Image
@@ -262,7 +279,11 @@ export function BookList({ books, onEdit, isRefreshing = false }: BookListProps)
               <button
                 type="button"
                 className="rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-70 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600"
-                onClick={() => void deleteMutation.mutateAsync(selectedBookId)}
+                onClick={() => {
+                  if (selectedBookId) {
+                    deleteMutation.mutate(selectedBookId);
+                  }
+                }}
                 disabled={deleteMutation.isPending}
               >
                 {deleteMutation.isPending ? "Deleting…" : "Delete"}
