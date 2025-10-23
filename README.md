@@ -24,6 +24,7 @@ A modern, full-featured Islamic bookstore built with Next.js 14, TypeScript, and
 - **Contact System** - Direct messaging to the team
 - **FAQ Section** - Common questions and answers
 - **Mobile Responsive** - Optimized for all devices
+- **Smooth Scrolling** - Touch-optimized scrolling for mobile and tablet devices
 
 ### 👨‍💼 Admin Features
 - **Dashboard** - Comprehensive analytics and insights
@@ -225,6 +226,16 @@ Currently manual testing. Future improvements:
 - **Code Splitting:** Automatic with App Router
 - **Caching:** ISR with 60-second revalidation
 - **Bundle Analysis:** Optimized imports
+- **Smooth Scrolling:** Touch-optimized with iOS momentum scrolling support
+
+### Smooth Scrolling Features
+- Native `scroll-behavior: smooth` for modern browsers
+- iOS Safari momentum scrolling (`-webkit-overflow-scrolling: touch`)
+- Polyfill for older browsers with easeInOutCubic animation
+- Anchor link smooth navigation
+- Performance optimized (uses `requestAnimationFrame`)
+- Accessibility compliant (respects `prefers-reduced-motion`)
+- Touch-optimized viewport settings
 
 See [PERFORMANCE_OPTIMIZATION_GUIDE.md](./PERFORMANCE_OPTIMIZATION_GUIDE.md) for details.
 

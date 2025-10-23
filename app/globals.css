@@ -8,6 +8,8 @@
 
 html {
   scroll-behavior: smooth;
+  /* Enable momentum scrolling on iOS devices */
+  -webkit-overflow-scrolling: touch;
 }
 
 /* Enable inertial touch scrolling on iOS and other WebKit browsers */
@@ -39,6 +41,23 @@ body {
     linear-gradient(180deg, #faf8ff 0%, #f5f8fb 100%);
   background-attachment: fixed;
   -webkit-font-smoothing: antialiased;
+  /* Enable momentum scrolling on iOS devices */
+  -webkit-overflow-scrolling: touch;
+  /* Improve scroll performance on touch devices */
+  touch-action: pan-y pan-x;
+}
+
+/* Apply smooth scrolling to all scrollable containers */
+* {
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Optimize scrolling containers for touch devices */
+[data-scroll-container],
+.scroll-container {
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+  overscroll-behavior: contain;
 }
 
 .skip-link {
