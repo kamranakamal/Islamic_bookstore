@@ -54,10 +54,10 @@ export function BooksManager({ books, categories }: BooksManagerProps) {
 
   return (
     <div className="space-y-6">
-      <div className="flex gap-2 rounded-full border border-gray-200 bg-gray-100 p-1 text-sm font-semibold text-gray-600 shadow-sm">
+      <div className="flex gap-2 rounded-full border border-gray-200 bg-gray-100 p-1 text-xs font-semibold text-gray-600 shadow-sm sm:text-sm">
         <button
           type="button"
-          className={`flex-1 rounded-full px-4 py-2 text-center transition ${
+          className={`flex-1 rounded-full px-3 py-2 text-center transition sm:px-4 ${
             activeTab === "compose" ? "bg-white text-primary shadow" : "hover:text-primary"
           }`}
           onClick={() => setActiveTab("compose")}
@@ -66,7 +66,7 @@ export function BooksManager({ books, categories }: BooksManagerProps) {
         </button>
         <button
           type="button"
-          className={`flex-1 rounded-full px-4 py-2 text-center transition ${
+          className={`flex-1 rounded-full px-3 py-2 text-center transition sm:px-4 ${
             activeTab === "manage" ? "bg-white text-primary shadow" : "hover:text-primary"
           }`}
           onClick={() => setActiveTab("manage")}
@@ -87,7 +87,7 @@ export function BooksManager({ books, categories }: BooksManagerProps) {
         />
       ) : (
         <div className="space-y-4">
-          <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h2 className="text-lg font-semibold text-gray-900">Existing books</h2>
               <p className="text-sm text-gray-600">
@@ -98,9 +98,9 @@ export function BooksManager({ books, categories }: BooksManagerProps) {
             <button
               type="button"
               onClick={handleCreateBook}
-              className="rounded border border-primary px-4 py-2 text-sm font-semibold text-primary transition hover:bg-primary/10"
+              className="w-full rounded border border-primary px-4 py-2 text-sm font-semibold text-primary transition hover:bg-primary/10 sm:w-auto"
             >
-              New book
+              + New book
             </button>
           </div>
           <BookList books={booksData} onEdit={handleEditBook} isRefreshing={booksQuery.isFetching} />

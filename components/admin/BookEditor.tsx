@@ -344,10 +344,10 @@ export function BookEditor({ categories, book, onCancel, onSuccess }: BookEditor
   );
 
   return (
-    <section className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+    <section className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm sm:p-6">
       <header className="mb-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <div>
-          <h2 className="text-xl font-semibold text-gray-900">
+          <h2 className="text-lg font-semibold text-gray-900 sm:text-xl">
             {isEditing ? `Edit “${book?.title ?? "book"}”` : "Add a new book"}
           </h2>
           <p className="text-sm text-gray-600">
@@ -360,7 +360,7 @@ export function BookEditor({ categories, book, onCancel, onSuccess }: BookEditor
           <button
             type="button"
             onClick={onCancel}
-            className="self-start rounded border border-gray-300 px-3 py-1 text-sm font-medium text-gray-600 transition hover:bg-gray-100"
+            className="w-full self-start rounded border border-gray-300 px-3 py-2 text-sm font-medium text-gray-600 transition hover:bg-gray-100 md:w-auto md:py-1"
           >
             Cancel editing
           </button>
@@ -711,7 +711,7 @@ export function BookEditor({ categories, book, onCancel, onSuccess }: BookEditor
           <p className="md:col-span-2 text-sm text-green-600">Book saved. The catalog has been refreshed.</p>
         ) : null}
 
-        <div className="md:col-span-2 flex justify-end gap-3">
+        <div className="flex flex-col gap-3 md:col-span-2 md:flex-row md:justify-end">
           {isEditing ? (
             <button
               type="button"
@@ -719,7 +719,7 @@ export function BookEditor({ categories, book, onCancel, onSuccess }: BookEditor
                 reset(defaultFormValues);
                 onCancel?.();
               }}
-              className="rounded border border-gray-300 px-4 py-2 text-sm font-medium text-gray-600 transition hover:bg-gray-100"
+              className="w-full rounded border border-gray-300 px-4 py-2 text-sm font-medium text-gray-600 transition hover:bg-gray-100 md:w-auto"
               disabled={status === "saving" || uploading}
             >
               Start new book
@@ -729,7 +729,7 @@ export function BookEditor({ categories, book, onCancel, onSuccess }: BookEditor
             type="submit"
             disabled={disableSubmit}
             title={!hasCategories ? "Add a category first" : undefined}
-            className="rounded bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-70"
+            className="w-full rounded bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-70 md:w-auto"
           >
             {status === "saving" ? "Saving…" : isEditing ? "Update book" : "Save book"}
           </button>
