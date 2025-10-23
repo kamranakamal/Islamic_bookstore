@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import { getBookLanguageLabel, type AdminBook } from "@/lib/types";
 
@@ -17,6 +17,8 @@ export function BookList({ books, onEdit, isRefreshing = false }: BookListProps)
   const [selectedBookId, setSelectedBookId] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const pageSize = 10;
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     if (!selectedBookId) return;
@@ -25,6 +27,32 @@ export function BookList({ books, onEdit, isRefreshing = false }: BookListProps)
       setSelectedBookId(null);
     }
   }, [books, selectedBookId]);
+
+  // Focus management for modal
+  useEffect(() => {
+    if (!selectedBookId || !closeButtonRef.current) return;
+    closeButtonRef.current.focus();
+    
+    // Lock scroll when modal is open
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [selectedBookId]);
+
+  // Handle Escape key to close modal
+  useEffect(() => {
+    if (!selectedBookId) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setSelectedBookId(null);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [selectedBookId]);
 
   const deleteMutation = useMutation({
     mutationFn: async (bookId: string) => {
@@ -75,7 +103,7 @@ export function BookList({ books, onEdit, isRefreshing = false }: BookListProps)
           </p>
         </div>
       </header>
-      <div className="overflow-x-auto">
+      <div className="admin-table-responsive overflow-x-auto">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
@@ -198,30 +226,49 @@ export function BookList({ books, onEdit, isRefreshing = false }: BookListProps)
         </div>
       ) : null}
       {selectedBookId ? (
-        <div className="border-t border-gray-200 bg-gray-50 px-6 py-4">
-          <div className="flex items-center justify-between">
-            <p className="text-sm text-gray-700">Permanently remove this book from the catalog?</p>
-            <div className="flex items-center gap-3">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
+          <div
+            ref={dialogRef}
+            role="alertdialog"
+            aria-modal="true"
+            aria-labelledby="delete-dialog-title"
+            aria-describedby="delete-dialog-desc"
+            className="max-w-sm space-y-4 rounded-2xl border border-gray-200 bg-white p-6 shadow-xl"
+          >
+            <div>
+              <h3 id="delete-dialog-title" className="text-lg font-semibold text-gray-900">
+                Delete book?
+              </h3>
+              <p id="delete-dialog-desc" className="mt-1 text-sm text-gray-600">
+                This action cannot be undone. The book will be permanently removed from the catalog.
+              </p>
+            </div>
+
+            {deleteMutation.isError ? (
+              <div className="rounded-lg border border-red-200 bg-red-50 p-3">
+                <p className="text-sm text-red-600">{(deleteMutation.error as Error).message}</p>
+              </div>
+            ) : null}
+
+            <div className="flex justify-end gap-3">
               <button
+                ref={closeButtonRef}
                 type="button"
-                className="rounded border border-gray-300 px-3 py-1 text-sm text-gray-600 hover:bg-gray-200"
+                className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
                 onClick={() => setSelectedBookId(null)}
               >
                 Cancel
               </button>
               <button
                 type="button"
-                className="rounded bg-red-600 px-3 py-1 text-sm font-semibold text-white hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-70"
+                className="rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-70 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600"
                 onClick={() => void deleteMutation.mutateAsync(selectedBookId)}
                 disabled={deleteMutation.isPending}
               >
-                {deleteMutation.isPending ? "Deleting…" : "Confirm"}
+                {deleteMutation.isPending ? "Deleting…" : "Delete"}
               </button>
             </div>
           </div>
-          {deleteMutation.isError ? (
-            <p className="mt-2 text-sm text-red-600">{(deleteMutation.error as Error).message}</p>
-          ) : null}
         </div>
       ) : null}
     </section>

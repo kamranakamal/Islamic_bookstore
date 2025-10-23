@@ -3,6 +3,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactNode, useState } from "react";
 
+import { SmoothScrollProvider } from "@/components/SmoothScrollProvider";
 import { CurrencyProvider } from "@/components/currency/CurrencyProvider";
 import { SupabaseListener } from "@/components/SupabaseListener";
 import type { SupportedCurrency } from "@/lib/currency";
@@ -21,6 +22,7 @@ export function Providers({ children, serverSession, initialCurrency }: Provider
     <CurrencyProvider initialCurrency={initialCurrency}>
       <QueryClientProvider client={queryClient}>
         <SupabaseListener serverSession={serverSession} />
+        <SmoothScrollProvider />
         {children}
       </QueryClientProvider>
     </CurrencyProvider>
