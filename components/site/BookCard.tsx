@@ -90,7 +90,7 @@ export function BookCard({ book }: BookCardProps) {
             <button
               type="button"
               onClick={handleAddToCart}
-              className="inline-flex w-full items-center justify-center rounded-full bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow transition hover:bg-primary/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:cursor-not-allowed disabled:opacity-75 sm:py-2.5"
+              className="inline-flex w-full items-center justify-center rounded-full bg-amber-500 px-4 py-2 text-sm font-semibold text-white shadow transition hover:bg-amber-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-500 disabled:cursor-not-allowed disabled:opacity-75 sm:py-2.5"
               disabled={feedback === "added"}
             >
               {feedback === "added" ? "Added to cart" : "Add to cart"}

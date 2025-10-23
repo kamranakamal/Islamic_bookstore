@@ -152,7 +152,7 @@ export default async function BookPage({ params }: BookPageParams) {
     <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-1">
       <Link
         href={`/cart?add=${encodeURIComponent(book.id)}`}
-        className="inline-flex items-center justify-center gap-2 rounded-full bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground transition hover:-translate-y-0.5 hover:bg-primary/90"
+        className="inline-flex items-center justify-center gap-2 rounded-full bg-amber-500 px-4 py-3 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:bg-amber-600"
       >
         <span aria-hidden="true">🛒</span>
         Add to cart
