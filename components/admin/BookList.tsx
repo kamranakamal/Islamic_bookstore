@@ -28,10 +28,15 @@ export function BookList({ books, onEdit, isRefreshing = false }: BookListProps)
 
   const deleteMutation = useMutation({
     mutationFn: async (bookId: string) => {
-      const response = await fetch(`/api/admin/books?id=${bookId}`, { method: "DELETE" });
+      const response = await fetch(`/api/admin/books?id=${bookId}`, {
+        method: "DELETE",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" }
+      });
       if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data?.error ?? "Unable to delete book");
+        // attempt to parse JSON error if present
+        const data = await response.json().catch(() => null);
+        throw new Error((data as { error?: string })?.error ?? "Unable to delete book");
       }
     },
     onSuccess: () => {
@@ -87,8 +92,8 @@ export function BookList({ books, onEdit, isRefreshing = false }: BookListProps)
           </thead>
           <tbody className="divide-y divide-gray-200 bg-white">
             {paginatedBooks.map((book: AdminBook) => (
-              <tr key={book.id} className="hover:bg-gray-50">
-                <td className="px-4 py-3 text-sm font-medium text-gray-900">
+                      <tr key={book.id} className="hover:bg-gray-50">
+                        <td className="px-4 py-3 text-sm font-medium text-gray-900">
                   <div className="flex items-center gap-3">
                     <div className="relative h-12 w-8 overflow-hidden rounded">
                       <Image
@@ -131,10 +136,10 @@ export function BookList({ books, onEdit, isRefreshing = false }: BookListProps)
                   {new Date(book.updatedAt).toLocaleDateString()}
                 </td>
                 <td className="px-4 py-3 text-right text-sm">
-                  <div className="flex justify-end gap-2">
+                  <div className="flex justify-end gap-2 admin-actions-mobile">
                     <button
                       type="button"
-                      className="rounded border border-gray-300 px-3 py-1 text-xs font-semibold text-gray-700 transition hover:bg-gray-100"
+                      className="rounded border border-gray-300 px-3 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-100"
                       onClick={() => {
                         setSelectedBookId(null);
                         onEdit?.(book);
@@ -144,8 +149,9 @@ export function BookList({ books, onEdit, isRefreshing = false }: BookListProps)
                     </button>
                     <button
                       type="button"
-                      className="rounded border border-red-200 px-3 py-1 text-xs font-semibold text-red-600 transition hover:bg-red-50"
+                      className="rounded border border-red-200 px-3 py-2 text-sm font-semibold text-red-600 transition hover:bg-red-50"
                       onClick={() => setSelectedBookId(book.id)}
+                      aria-label={`Delete ${book.title}`}
                     >
                       Delete
                     </button>
