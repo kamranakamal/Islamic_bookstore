@@ -11,6 +11,7 @@ import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
 import { Footer } from "@/components/layout/Footer";
 import { Header } from "@/components/layout/Header";
 import { Providers } from "@/components/providers";
+import { SmoothScrollProvider } from "@/components/SmoothScrollProvider";
 import { appUrl, organization } from "@/lib/config";
 import { getSessionUser } from "@/lib/authHelpers";
 import {
@@ -105,7 +106,11 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
 
   return (
     <html lang="en" className="h-full">
+      <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=yes" />
+      </head>
       <body className={`${inter.variable} relative min-h-screen bg-transparent text-gray-900`}>
+        <SmoothScrollProvider />
         <a href="#main-content" className="skip-link">
           Skip to main content
         </a>
