@@ -195,7 +195,66 @@ export function PaymentsManager({ preferences }: PaymentsManagerProps) {
         <div className="border-b border-red-100 bg-red-50 px-6 py-3 text-sm text-red-700">{combinedError}</div>
       ) : null}
 
-      <div className="overflow-x-auto -mx-6">
+      {/* Mobile card view */}
+      <div className="grid gap-4 p-4 sm:hidden">
+        {filteredPreferences.length ? (
+          filteredPreferences.map((entry) => (
+            <div key={entry.id} className="rounded-lg border border-gray-200 bg-gray-50 p-4 shadow-sm">
+              <div className="flex flex-col gap-2">
+                <div className="flex items-start justify-between">
+                  <div className="flex flex-col gap-1">
+                    <span className="font-semibold text-gray-900 text-base">{entry.profileName ?? "Member"}</span>
+                    <span className="text-xs text-gray-500">ID: {entry.profileId.slice(0, 8)}...</span>
+                  </div>
+                  <select
+                    aria-label={`Update status for ${entry.profileName ?? entry.profileEmail}`}
+                    className="min-w-[120px] rounded-full border border-gray-300 bg-white px-2 py-1 text-xs focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30 disabled:cursor-not-allowed disabled:opacity-60"
+                    value={entry.status}
+                    onChange={(event) =>
+                      updateMutation.mutate({
+                        id: entry.id,
+                        status: event.target.value as CheckoutPaymentStatus
+                      })
+                    }
+                    disabled={updatingId === entry.id}
+                  >
+                    {STATUS_UPDATE_OPTIONS.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="flex flex-col gap-1">
+                  <span className="font-semibold text-gray-900 text-sm">{entry.billingName ?? "—"}</span>
+                  <a
+                    href={`mailto:${entry.billingEmail ?? entry.profileEmail}`}
+                    className="text-primary hover:underline text-xs"
+                  >
+                    {entry.billingEmail ?? entry.profileEmail}
+                  </a>
+                </div>
+                <div className="flex flex-col gap-1 text-xs text-gray-600">
+                  <span><strong>Payment:</strong> {formatTitleCase(entry.paymentMethod)}</span>
+                  <span><strong>Delivery:</strong> {entry.deliveryWindow ?? "—"}</span>
+                  <span><strong>Reference:</strong> {entry.referenceCode ? entry.referenceCode.slice(0, 10) : "—"}</span>
+                  <span><strong>Updated:</strong> {new Date(entry.updatedAt).toLocaleDateString()}</span>
+                </div>
+                {updatingId === entry.id ? (
+                  <span className="text-xs text-gray-500">Saving changes…</span>
+                ) : null}
+              </div>
+            </div>
+          ))
+        ) : (
+          <div className="rounded-lg border border-gray-200 bg-gray-50 p-4 text-center text-sm text-gray-500">
+            No submissions match the selected status.
+          </div>
+        )}
+      </div>
+
+      {/* Table view for larger screens */}
+      <div className="overflow-x-auto -mx-6 hidden sm:block">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>

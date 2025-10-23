@@ -22,7 +22,36 @@ export function UsersList({ users }: UsersListProps) {
           <p className="text-sm text-gray-600">Review who has access and what permissions they have.</p>
         </div>
       </header>
-      <div className="overflow-x-auto -mx-4 sm:-mx-6">
+      {/* Mobile card view */}
+      <div className="grid gap-4 p-4 sm:hidden">
+        {sorted.length === 0 ? (
+          <div className="rounded-lg border border-gray-200 bg-gray-50 p-4 text-center text-sm text-gray-500">
+            No users yet. Invite team members through Supabase authentication to manage catalog access.
+          </div>
+        ) : (
+          sorted.map((user) => (
+            <div key={user.id} className="rounded-lg border border-gray-200 bg-gray-50 p-4 shadow-sm">
+              <div className="flex flex-col gap-2">
+                <div className="flex items-start justify-between">
+                  <div className="flex flex-col gap-1">
+                    <span className="font-semibold text-gray-900 text-base">{user.displayName ?? "Unspecified"}</span>
+                    <span className="text-xs text-gray-500 truncate">{user.email}</span>
+                  </div>
+                  <span className="text-xs font-semibold text-gray-600 capitalize bg-gray-100 px-2 py-1 rounded">
+                    {user.role}
+                  </span>
+                </div>
+                <div className="text-xs text-gray-500">
+                  <strong>Joined:</strong> {new Date(user.createdAt).toLocaleDateString()}
+                </div>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+
+      {/* Table view for larger screens */}
+      <div className="overflow-x-auto -mx-4 hidden sm:block">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
