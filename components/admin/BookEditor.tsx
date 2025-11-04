@@ -226,31 +226,63 @@ export function BookEditor({ categories, book, onCancel, onSuccess }: BookEditor
       isFeatured: values.isFeatured ?? false
     };
 
-    const response = await fetch("/api/admin/books", {
-      method: book ? "PUT" : "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload)
-    });
+    try {
+      const response = await fetch("/api/admin/books", {
+        method: book ? "PUT" : "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify(payload)
+      });
 
-    const json = await response.json();
+      if (response.redirected && typeof window !== "undefined") {
+        setStatus("error");
+        setError("Your session has expired. Redirecting to login…");
+        window.location.href = response.url;
+        return;
+      }
 
-    if (!response.ok) {
-      setError((json as { error?: string })?.error ?? "Unable to save book");
+      const contentType = response.headers.get("content-type") ?? "";
+      let parsedBody: unknown = null;
+
+      if (contentType.includes("application/json")) {
+        parsedBody = await response.json();
+      } else if (!response.ok) {
+        const text = await response.text();
+        parsedBody = text ? { error: text } : null;
+      }
+
+      if (!response.ok) {
+        const message = (parsedBody as { error?: string } | null)?.error ?? "Unable to save book";
+        setError(message);
+        setStatus("error");
+        if (response.status === 401 && typeof window !== "undefined") {
+          window.location.href = "/adminlogin";
+        }
+        return;
+      }
+
+      const saved = (parsedBody as { book?: AdminBook } | null)?.book;
+      if (!saved) {
+        setError("Unable to save book");
+        setStatus("error");
+        return;
+      }
+
+      setStatus("success");
+      onSuccess?.(saved);
+      if (book) {
+        reset(mapBookToFormValues(saved, defaultCategoryId));
+      } else {
+        reset(defaultFormValues);
+      }
+      await queryClient.invalidateQueries({ queryKey: ["admin-books"] });
+      setTimeout(() => setStatus("idle"), 1500);
+      return saved;
+    } catch (err) {
+      console.error("Failed to save book", err);
+      setError(err instanceof Error ? err.message : "Unable to save book");
       setStatus("error");
-      return;
     }
-
-    const saved = (json as { book: AdminBook }).book;
-    setStatus("success");
-    onSuccess?.(saved);
-    if (book) {
-      reset(mapBookToFormValues(saved, defaultCategoryId));
-    } else {
-      reset(defaultFormValues);
-    }
-    await queryClient.invalidateQueries({ queryKey: ["admin-books"] });
-    setTimeout(() => setStatus("idle"), 1500);
-    return saved;
   };
 
   const handleCoverChange = async (event: ChangeEvent<HTMLInputElement>) => {
