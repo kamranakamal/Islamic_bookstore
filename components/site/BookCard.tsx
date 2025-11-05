@@ -14,7 +14,7 @@ interface BookCardProps {
 
 export function BookCard({ book }: BookCardProps) {
   const titleId = `book-${book.id}-title`;
-  const { addItem } = useCart();
+  const { addItem } = useCart({ hydrate: false });
   const { getBookPrice } = useCurrency();
   const [feedback, setFeedback] = useState<"idle" | "added">("idle");
   const timerRef = useRef<number | null>(null);

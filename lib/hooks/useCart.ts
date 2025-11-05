@@ -1,11 +1,16 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { useCurrency } from "@/components/currency/CurrencyProvider";
 import { getCurrencyInfo } from "@/lib/currency";
+import { getSupabaseClient } from "@/lib/supabaseClient";
 
 import type { BookSummary, CartBook, CartItem, ShippingAddressPayload } from "@/lib/types";
+
+type UseCartOptions = {
+  hydrate?: boolean;
+};
 
 const STORAGE_KEY = "maktab-muhammadiya-cart";
 const STORAGE_ADDRESS_KEY = "maktab-muhammadiya-cart-address";
@@ -138,12 +143,15 @@ function deserializeShippingAddress(value: string | null): ShippingAddressPayloa
   }
 }
 
-export function useCart() {
+export function useCart(options: UseCartOptions = {}) {
+  const { hydrate = true } = options;
   const [items, setItems] = useState<CartItem[]>([]);
-  const [isHydrated, setIsHydrated] = useState(false);
+  const [isHydrated, setIsHydrated] = useState(() => !hydrate);
   const [isRemoteSynced, setIsRemoteSynced] = useState(false);
   const [shippingAddress, setShippingAddress] = useState<ShippingAddressPayload | null>(null);
   const { getBookPrice, formatAmount } = useCurrency();
+  const supabase = useMemo(() => getSupabaseClient(), []);
+  const initialFetchRef = useRef(false);
 
   useEffect(() => {
     let storedValue: string | null = null;
@@ -159,10 +167,39 @@ export function useCart() {
   }, []);
 
   useEffect(() => {
+    if (!hydrate) return;
+    if (initialFetchRef.current) return;
+    initialFetchRef.current = true;
+
     let cancelled = false;
+
+    const hydrateFromLocal = () => {
+      let storedValue: string | null = null;
+      try {
+        storedValue = window.localStorage.getItem(STORAGE_KEY);
+      } catch (storageError) {
+        console.warn("Failed to read cart from storage", storageError);
+      }
+      const localItems = deserialize(storedValue);
+
+      if (!cancelled) {
+        setItems(localItems);
+        setIsRemoteSynced(false);
+        setIsHydrated(true);
+      }
+    };
 
     const loadCart = async () => {
       try {
+        const {
+          data: { session }
+        } = await supabase.auth.getSession();
+
+        if (!session) {
+          hydrateFromLocal();
+          return;
+        }
+
         const response = await fetch("/api/profile/cart", { credentials: "include" });
 
         if (!response.ok || response.status === 401) {
@@ -183,20 +220,12 @@ export function useCart() {
           }
         }
       } catch (error) {
-        console.warn("Falling back to local cart", error);
-        let storedValue: string | null = null;
-        try {
-          storedValue = window.localStorage.getItem(STORAGE_KEY);
-        } catch (storageError) {
-          console.warn("Failed to read cart from storage", storageError);
+        if (error instanceof Error && error.message.includes("session")) {
+          console.info("Cart sync skipped: no active session");
+        } else {
+          console.warn("Falling back to local cart", error);
         }
-        const localItems = deserialize(storedValue);
-
-        if (!cancelled) {
-          setItems(localItems);
-          setIsRemoteSynced(false);
-          setIsHydrated(true);
-        }
+        hydrateFromLocal();
       }
     };
 
@@ -205,7 +234,7 @@ export function useCart() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [hydrate, supabase]);
 
   useEffect(() => {
     if (!isHydrated) return;
