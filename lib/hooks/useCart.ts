@@ -76,6 +76,44 @@ function normalizeCartItems(items: CartItem[]): CartItem[] {
     });
 }
 
+function readCartFromStorage(): CartItem[] {
+  if (typeof window === "undefined") {
+    return [];
+  }
+
+  try {
+    const storedValue = window.localStorage.getItem(STORAGE_KEY);
+    return deserialize(storedValue);
+  } catch (error) {
+    console.warn("Failed to access cart storage", error);
+    return [];
+  }
+}
+
+function mergeCartSources(prev: CartItem[], stored: CartItem[]): CartItem[] {
+  if (!prev.length && !stored.length) {
+    return [];
+  }
+
+  if (!stored.length) {
+    return [...prev];
+  }
+
+  if (!prev.length) {
+    return [...stored];
+  }
+
+  const map = new Map<string, CartItem>();
+  for (const item of stored) {
+    map.set(item.book.id, item);
+  }
+  for (const item of prev) {
+    map.set(item.book.id, item);
+  }
+
+  return Array.from(map.values());
+}
+
 function toCartBook(book: BookSummary): CartBook {
   const inrRate = getCurrencyInfo("INR").usdRate;
   const priceInternationalUsd =
@@ -229,6 +267,7 @@ export function useCart(options: UseCartOptions = {}) {
       }
     };
 
+    hydrateFromLocal();
     void loadCart();
 
     return () => {
@@ -315,23 +354,32 @@ export function useCart(options: UseCartOptions = {}) {
   const addItem = useCallback(
     (book: BookSummary, quantity = 1) => {
       setItems((prev: CartItem[]) => {
-        const existing = prev.find((item: CartItem) => item.book.id === book.id);
-        if (existing) {
-          return prev.map((item: CartItem) =>
-            item.book.id === book.id ? { ...item, quantity: item.quantity + quantity } : item
+        const baseline = mergeCartSources(prev, readCartFromStorage());
+        const existingIndex = baseline.findIndex((item: CartItem) => item.book.id === book.id);
+
+        if (existingIndex >= 0) {
+          return baseline.map((item, index) =>
+            index === existingIndex ? ({ ...item, quantity: item.quantity + quantity } as CartItem) : item
           );
         }
-        return [...prev, { book: toCartBook(book), quantity }];
+
+        return [...baseline, { book: toCartBook(book), quantity } as CartItem];
       });
       syncAdd(book.id, quantity);
     },
     [syncAdd]
   );
 
-  const removeItem = useCallback((id: string) => {
-    setItems((prev: CartItem[]) => prev.filter((item: CartItem) => item.book.id !== id));
-    syncRemove(id);
-  }, [syncRemove]);
+  const removeItem = useCallback(
+    (id: string) => {
+      setItems((prev: CartItem[]) => {
+        const baseline = mergeCartSources(prev, readCartFromStorage());
+        return baseline.filter((item: CartItem) => item.book.id !== id);
+      });
+      syncRemove(id);
+    },
+    [syncRemove]
+  );
 
   const clear = useCallback(() => {
     setItems([]);
@@ -351,20 +399,22 @@ export function useCart(options: UseCartOptions = {}) {
       const safeQuantity = Math.max(0, Math.min(99, Math.floor(quantity)));
 
       setItems((prev: CartItem[]) => {
+        const baseline = mergeCartSources(prev, readCartFromStorage());
+
         if (safeQuantity <= 0) {
-          return prev.filter((item) => item.book.id !== bookId);
+          return baseline.filter((item) => item.book.id !== bookId);
         }
 
         let found = false;
-        const next = prev.map((item) => {
+        const next = baseline.map((item) => {
           if (item.book.id === bookId) {
             found = true;
-            return { ...item, quantity: safeQuantity } satisfies CartItem;
+            return { ...item, quantity: safeQuantity } as CartItem;
           }
           return item;
         });
 
-        return found ? next : prev;
+        return found ? next : baseline;
       });
 
       syncSetQuantity(bookId, safeQuantity);
