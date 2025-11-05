@@ -5,6 +5,8 @@ import { redirect } from "next/navigation";
 import { AdminLoginForm } from "@/components/admin/AdminLoginForm";
 import { getSessionUser } from "@/lib/authHelpers";
 
+export const dynamic = "force-dynamic";
+
 interface AdminLoginPageProps {
   searchParams?: Record<string, string | string[] | undefined>;
 }

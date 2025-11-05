@@ -3,6 +3,9 @@ import { NextResponse } from "next/server";
 import { requireAdminUser } from "@/lib/authHelpers";
 import { getAdminAnalytics } from "@/lib/data/admin";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 function escapeCsv(value: string | number): string {
   const stringValue = typeof value === "number" ? String(value) : value;
   if (/[,"\n]/.test(stringValue)) {

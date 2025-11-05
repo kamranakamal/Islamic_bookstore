@@ -5,6 +5,8 @@ import { redirect } from "next/navigation";
 import { SignupForm } from "@/components/site/SignupForm";
 import { getSessionUser } from "@/lib/authHelpers";
 
+export const dynamic = "force-dynamic";
+
 interface SignupPageProps {
   searchParams?: Record<string, string | string[] | undefined>;
 }

@@ -4,6 +4,9 @@ import { z } from "zod";
 import { requireAdminUser } from "@/lib/authHelpers";
 import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 const schema = z.object({
   fileName: z.string().min(1),
   fileType: z.string().regex(/^image\//, "Only image uploads are supported"),
@@ -55,7 +58,7 @@ export async function GET(request: NextRequest) {
 
   return NextResponse.json({
     url: data.signedUrl,
-  bucket: bucketName,
+    bucket: bucketName,
     path: filePath,
     token: data.token,
     expiresAt: new Date(Date.now() + SIGNED_URL_EXPIRY_SECONDS * 1000).toISOString(),

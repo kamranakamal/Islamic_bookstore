@@ -4,6 +4,8 @@ import { redirect } from "next/navigation";
 import { CheckoutContent } from "@/components/site/checkout/CheckoutContent";
 import { getSessionUser } from "@/lib/authHelpers";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "Checkout | Maktab Muhammadiya",
   description: "Confirm payment preferences and delivery details to complete your Maktab Muhammadiya order."

@@ -4,6 +4,9 @@ import { requireAdminUser } from "@/lib/authHelpers";
 import { getAdminBooksData } from "@/lib/data/admin";
 import { getBookLanguageLabel } from "@/lib/types";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 function escapeCsv(value: string | number): string {
   const stringValue = typeof value === "number" ? String(value) : value;
   if (/["\n,]/.test(stringValue)) {

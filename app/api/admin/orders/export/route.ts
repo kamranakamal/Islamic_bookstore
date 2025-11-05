@@ -4,6 +4,9 @@ import { requireAdminUser } from "@/lib/authHelpers";
 import { getAdminBooksData, getAdminOrders } from "@/lib/data/admin";
 import type { AdminOrder } from "@/lib/types";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 function formatShippingAddress(address: AdminOrder["shippingAddress"]): string {
   if (!address) return "";
   const lines: string[] = [];

@@ -8,12 +8,12 @@ import { listPublishedBlogPosts } from "@/lib/data/blog";
 import { getSitePage } from "@/lib/data/pages";
 import { formatDateLong } from "@/lib/utils";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "Blog · Maktab Muhammadiya",
   description: "Insights, reading guides, and reflections on cultivating a life anchored in knowledge."
 };
-
-export const revalidate = 60;
 
 export default async function BlogPage() {
   const [page, posts] = await Promise.all([getSitePage("blog"), listPublishedBlogPosts()]);
