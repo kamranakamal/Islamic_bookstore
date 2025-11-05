@@ -8,6 +8,7 @@ import {
 import type { User } from "@supabase/supabase-js";
 
 import type { Database, ProfileRow } from "@/lib/types";
+import { fetchWithRetry } from "@/lib/utils/fetchWithRetry";
 
 export type SessionUser = {
   id: string;
@@ -21,18 +22,44 @@ export type RequireAdminOptions = {
 };
 
 export function getServerSupabaseClient() {
-  return createServerComponentClient<Database>({ cookies });
+  return createServerComponentClient<Database>(
+    { cookies },
+    {
+      options: {
+        global: {
+          fetch: (input: RequestInfo | URL, init?: RequestInit) => fetchWithRetry(input, init)
+        }
+      }
+    }
+  );
 }
 
 export function getRouteHandlerSupabaseClient() {
-  return createRouteHandlerClient<Database>({ cookies });
+  return createRouteHandlerClient<Database>(
+    { cookies },
+    {
+      options: {
+        global: {
+          fetch: (input: RequestInfo | URL, init?: RequestInit) => fetchWithRetry(input, init)
+        }
+      }
+    }
+  );
 }
 
 export async function getSessionUser(): Promise<SessionUser | null> {
   const supabase = getServerSupabaseClient();
-  const {
-    data: { user }
-  } = await supabase.auth.getUser();
+  let user: User | null = null;
+
+  try {
+    const response = await supabase.auth.getUser();
+    user = response.data.user;
+  } catch (error) {
+    console.error("Failed to retrieve Supabase user", error);
+    throw new Error(
+      "Unable to reach the authentication service. Please verify your Supabase configuration and internet connectivity."
+    );
+  }
 
   if (!user) return null;
 

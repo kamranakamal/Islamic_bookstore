@@ -90,7 +90,9 @@ export function AdminShell({ user, children }: AdminShellProps) {
           role="main"
           className="w-full flex-1 pb-12"
         >
-          <div className="space-y-6 pb-6 lg:pb-8">{children}</div>
+          <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm shadow-primary/5 sm:p-6 lg:p-8">
+            <div className="space-y-6">{children}</div>
+          </div>
         </main>
       </div>
 

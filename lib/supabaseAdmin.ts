@@ -1,6 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 
 import type { Database } from "@/lib/types";
+import { fetchWithRetry } from "@/lib/utils/fetchWithRetry";
 
 type AdminClient = ReturnType<typeof createClient<Database>>;
 
@@ -22,10 +23,8 @@ export function getSupabaseAdmin(): AdminClient {
       persistSession: false
     },
     global: {
-      fetch: (input, init) => {
-        const nextInit = { ...(init ?? {}), cache: "no-store" as RequestCache };
-        return fetch(input, nextInit);
-      }
+      fetch: (input, init) =>
+        fetchWithRetry(input, { ...(init ?? {}), cache: "no-store" as RequestCache })
     }
   });
 

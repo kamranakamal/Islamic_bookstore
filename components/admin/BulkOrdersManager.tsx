@@ -28,6 +28,16 @@ const STATUS_LABELS: Record<BulkOrderStatus, string> = {
   cancelled: "Cancelled"
 };
 
+const BULK_STATUS_KEYS = Object.keys(STATUS_LABELS) as BulkOrderStatus[];
+
+const STATUS_COLORS: Record<BulkOrderStatus, string> = {
+  pending: "bg-amber-100 text-amber-700 border-amber-200",
+  reviewing: "bg-sky-100 text-sky-700 border-sky-200",
+  quoted: "bg-indigo-100 text-indigo-700 border-indigo-200",
+  completed: "bg-emerald-100 text-emerald-700 border-emerald-200",
+  cancelled: "bg-rose-100 text-rose-700 border-rose-200"
+};
+
 function normalizePhoneForWhatsapp(phone: string): string {
   const digits = phone.replace(/[^0-9+]/g, "");
   return digits.startsWith("+") ? digits.slice(1) : digits;
@@ -55,7 +65,9 @@ function buildMessageBody(request: AdminBulkOrderRequest): string {
 export function BulkOrdersManager({ requests }: BulkOrdersManagerProps) {
   const queryClient = useQueryClient();
   const [statusFilter, setStatusFilter] = useState<BulkOrderStatus | "all">("all");
+  const [searchTerm, setSearchTerm] = useState("");
   const [updatingId, setUpdatingId] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const requestsQuery = useQuery<AdminBulkOrderRequest[]>({
@@ -119,14 +131,95 @@ export function BulkOrdersManager({ requests }: BulkOrdersManagerProps) {
 
   const filteredRequests = useMemo(() => {
     const list = requestsQuery.data ?? [];
-    if (statusFilter === "all") return list;
-    return list.filter((request) => request.status === statusFilter);
-  }, [requestsQuery.data, statusFilter]);
+    const needle = searchTerm.trim().toLowerCase();
+    const byStatus = statusFilter === "all" ? list : list.filter((request) => request.status === statusFilter);
+    if (!needle) return byStatus;
+    return byStatus.filter((request) => {
+      const haystack = [
+        request.organizationName,
+        request.contactName,
+        request.contactEmail,
+        request.contactPhone,
+        request.location,
+        request.requestedTitles.join(" ")
+      ]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase();
+      return haystack.includes(needle);
+    });
+  }, [requestsQuery.data, statusFilter, searchTerm]);
 
   const totalPending = useMemo(() => {
     const list = requestsQuery.data ?? [];
     return list.filter((request) => request.status === "pending").length;
   }, [requestsQuery.data]);
+
+  const statusSummary = useMemo(() => {
+    const list = requestsQuery.data ?? [];
+    return BULK_STATUS_KEYS.reduce<Record<BulkOrderStatus, number>>((acc, key) => {
+      acc[key] = list.filter((request) => request.status === key).length;
+      return acc;
+    },
+    {
+      pending: 0,
+      reviewing: 0,
+      quoted: 0,
+      completed: 0,
+      cancelled: 0
+    });
+  }, [requestsQuery.data]);
+
+  const deleteMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const response = await fetch("/api/admin/bulk-orders", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id })
+      });
+      const data = (await response.json()) as { success?: boolean; error?: string };
+      if (!response.ok || !data.success) {
+        throw new Error(data.error ?? "Unable to delete bulk order");
+      }
+      return id;
+    },
+    onMutate: async (id) => {
+      setDeletingId(id);
+      setErrorMessage(null);
+      await queryClient.cancelQueries({ queryKey: ["admin-bulk-orders"] });
+
+      const previous = queryClient.getQueryData<AdminBulkOrderRequest[]>(["admin-bulk-orders"]);
+      if (previous) {
+        queryClient.setQueryData<AdminBulkOrderRequest[]>(["admin-bulk-orders"], (old = []) =>
+          old.filter((request) => request.id !== id)
+        );
+      }
+
+      return { previous };
+    },
+    onError: (error, _variables, context) => {
+      setErrorMessage(error instanceof Error ? error.message : "Failed to delete bulk order");
+      if (context?.previous) {
+        queryClient.setQueryData(["admin-bulk-orders"], context.previous);
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-bulk-orders"], exact: true }).catch(() => {
+        /* ignore background refetch errors */
+      });
+    },
+    onSettled: () => {
+      setDeletingId(null);
+    }
+  });
+
+  const handleDelete = (id: string) => {
+    const confirmed = window.confirm(
+      "Are you sure you want to remove this bulk order request? This action cannot be undone."
+    );
+    if (!confirmed) return;
+    deleteMutation.mutate(id);
+  };
 
   if ((requestsQuery.data ?? []).length === 0) {
     return (
@@ -141,20 +234,36 @@ export function BulkOrdersManager({ requests }: BulkOrdersManagerProps) {
 
   return (
     <section className="space-y-5">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <p className="text-sm font-semibold text-gray-900">
-            {filteredRequests.length} {filteredRequests.length === 1 ? "request" : "requests"}
-          </p>
-          <p className="text-xs text-gray-500">Pending responses: {totalPending}</p>
+      <div className="-mx-1 flex gap-2 overflow-x-auto pb-1">
+        <div className="min-w-[155px] rounded-xl border border-gray-200 bg-white p-3 shadow-sm shadow-primary/5">
+          <p className="text-[11px] font-semibold uppercase tracking-wide text-gray-500">Total requests</p>
+          <p className="mt-1 text-xl font-semibold text-gray-900">{requestsQuery.data?.length ?? 0}</p>
+          <p className="text-[11px] text-gray-500">Pending: {totalPending}</p>
         </div>
-        <div className="flex flex-wrap items-center gap-2">
+        {BULK_STATUS_KEYS.map((status) => (
+          <button
+            key={status}
+            type="button"
+            onClick={() => setStatusFilter((current) => (current === status ? "all" : status))}
+            className={`min-w-[140px] rounded-xl border border-gray-200 bg-white p-3 text-left shadow-sm transition focus:outline-none focus:ring-2 focus:ring-primary/30 hover:-translate-y-0.5 hover:shadow-md ${
+              statusFilter === status ? "ring-2 ring-primary/40" : ""
+            }`}
+          >
+            <p className="text-[11px] font-semibold uppercase tracking-wide text-gray-500">{STATUS_LABELS[status]}</p>
+            <p className="mt-1 text-xl font-semibold text-gray-900">{statusSummary[status]}</p>
+            <p className="text-[11px] text-gray-500">{statusFilter === status ? "Showing all" : "Tap to filter"}</p>
+          </button>
+        ))}
+      </div>
+
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+        <div className="flex items-center gap-2">
           <label htmlFor="bulk-order-status-filter" className="text-xs font-semibold uppercase tracking-wide text-gray-500">
-            Filter
+            Status
           </label>
           <select
             id="bulk-order-status-filter"
-            className="rounded-full border border-gray-300 bg-white px-3 py-1 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30"
+            className="rounded-full border border-gray-300 bg-white px-2 py-1 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30"
             value={statusFilter}
             onChange={(event) => setStatusFilter(event.target.value as BulkOrderStatus | "all")}
           >
@@ -165,6 +274,33 @@ export function BulkOrdersManager({ requests }: BulkOrdersManagerProps) {
             ))}
           </select>
         </div>
+        <div className="flex items-center gap-2">
+          <label htmlFor="bulk-order-search" className="text-xs font-semibold uppercase tracking-wide text-gray-500">
+            Search
+          </label>
+          <div className="flex w-full max-w-xs items-center rounded-full border border-gray-300 bg-white pl-2 focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/30">
+            <span aria-hidden="true" className="text-xs text-gray-400">
+              🔍
+            </span>
+            <input
+              id="bulk-order-search"
+              type="search"
+              value={searchTerm}
+              onChange={(event) => setSearchTerm(event.target.value)}
+              placeholder="Filter by organisation or contact"
+              className="w-full rounded-full border-0 bg-transparent px-2 py-1.5 text-sm text-gray-700 placeholder:text-gray-400 focus:outline-none"
+            />
+            {searchTerm ? (
+              <button
+                type="button"
+                className="px-2 text-[11px] font-semibold uppercase tracking-wide text-primary"
+                onClick={() => setSearchTerm("")}
+              >
+                Clear
+              </button>
+            ) : null}
+          </div>
+        </div>
       </div>
 
       {errorMessage ? (
@@ -173,8 +309,8 @@ export function BulkOrdersManager({ requests }: BulkOrdersManagerProps) {
         </div>
       ) : null}
 
-      <div className="grid gap-4 lg:hidden">
-        {filteredRequests.map((request) => {
+      <div className="grid gap-3 lg:hidden">
+        {filteredRequests.length ? filteredRequests.map((request) => {
           const messageBody = buildMessageBody(request);
           const whatsappHref = request.contactPhone
             ? `https://wa.me/${encodeURIComponent(normalizePhoneForWhatsapp(request.contactPhone))}?text=${encodeURIComponent(messageBody)}`
@@ -196,7 +332,9 @@ export function BulkOrdersManager({ requests }: BulkOrdersManagerProps) {
                   <h3 className="text-base font-semibold text-gray-900">{request.organizationName}</h3>
                   <p className="text-sm text-gray-600">Contact: {request.contactName}</p>
                 </div>
-                <span className="inline-flex items-center rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-gray-600">
+                <span
+                  className={`inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-wide ${STATUS_COLORS[request.status]}`}
+                >
                   {STATUS_LABELS[request.status]}
                 </span>
               </div>
@@ -255,21 +393,21 @@ export function BulkOrdersManager({ requests }: BulkOrdersManagerProps) {
                     href={whatsappHref}
                     target="_blank"
                     rel="noreferrer"
-                    className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-emerald-500 px-3 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-600 sm:flex-1 sm:min-w-[140px]"
+                    className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-emerald-500 px-3 py-1.5 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-600 sm:flex-1 sm:min-w-[130px]"
                   >
                     WhatsApp
                   </a>
                 ) : null}
                 <a
                   href={emailHref}
-                  className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-primary px-3 py-2 text-sm font-semibold text-primary transition hover:border-primary/80 hover:bg-primary/10 sm:flex-1 sm:min-w-[140px]"
+                  className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-primary px-3 py-1.5 text-sm font-semibold text-primary transition hover:border-primary/80 hover:bg-primary/10 sm:flex-1 sm:min-w-[130px]"
                 >
                   Email
                 </a>
                 {smsHref ? (
                   <a
                     href={smsHref}
-                    className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-gray-300 px-3 py-2 text-sm font-semibold text-gray-700 transition hover:border-gray-400 hover:bg-gray-50 sm:flex-1 sm:min-w-[140px]"
+                    className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-gray-300 px-3 py-1.5 text-sm font-semibold text-gray-700 transition hover:border-gray-400 hover:bg-gray-50 sm:flex-1 sm:min-w-[130px]"
                   >
                     SMS
                   </a>
@@ -282,7 +420,7 @@ export function BulkOrdersManager({ requests }: BulkOrdersManagerProps) {
                 </label>
                 <select
                   id={`status-${request.id}`}
-                  className="mt-1 w-full rounded-full border border-gray-300 bg-white px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30"
+                  className="mt-1 w-full rounded-full border border-gray-300 bg-white px-2 py-1.5 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30"
                   value={request.status}
                   onChange={(event) =>
                     updateMutation.mutate({ id: request.id, status: event.target.value as BulkOrderStatus })
@@ -295,28 +433,40 @@ export function BulkOrdersManager({ requests }: BulkOrdersManagerProps) {
                     </option>
                   ))}
                 </select>
+                <button
+                  type="button"
+                  onClick={() => handleDelete(request.id)}
+                  className="mt-3 inline-flex w-full items-center justify-center rounded-full border border-rose-200 bg-rose-50 px-3 py-1.5 text-sm font-semibold text-rose-600 transition hover:-translate-y-0.5 hover:bg-rose-100 disabled:cursor-not-allowed disabled:opacity-60"
+                  disabled={deletingId === request.id}
+                >
+                  {deletingId === request.id ? "Removing…" : "Delete request"}
+                </button>
               </div>
             </article>
           );
-        })}
+        }) : (
+          <div className="rounded-2xl border border-dashed border-gray-200 bg-white p-6 text-center text-sm text-gray-500">
+            No requests match your filters.
+          </div>
+        )}
       </div>
 
-      <div className="hidden overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm lg:block">
+      <div className="hidden rounded-lg border border-gray-200 bg-white shadow-sm lg:block">
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-600">Organisation</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-600">Contact</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-600">Details</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-600">Requested</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-600">Status</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-600">Submitted</th>
-                <th className="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wide text-gray-600">Quick actions</th>
+                <th className="px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-wide text-gray-600">Organisation</th>
+                <th className="px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-wide text-gray-600">Contact</th>
+                <th className="px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-wide text-gray-600">Details</th>
+                <th className="px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-wide text-gray-600">Requested</th>
+                <th className="px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-wide text-gray-600">Status</th>
+                <th className="px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-wide text-gray-600">Submitted</th>
+                <th className="px-3 py-2 text-center text-[11px] font-semibold uppercase tracking-wide text-gray-600">Quick actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200 bg-white">
-              {filteredRequests.map((request) => {
+              {filteredRequests.length ? filteredRequests.map((request) => {
                 const messageBody = buildMessageBody(request);
                 const whatsappHref = request.contactPhone
                   ? `https://wa.me/${encodeURIComponent(normalizePhoneForWhatsapp(request.contactPhone))}?text=${encodeURIComponent(messageBody)}`
@@ -330,8 +480,8 @@ export function BulkOrdersManager({ requests }: BulkOrdersManagerProps) {
 
                 return (
                   <tr key={request.id} className="hover:bg-gray-50">
-                    <td className="px-4 py-3 text-sm font-semibold text-gray-900">{request.organizationName}</td>
-                    <td className="px-4 py-3 text-sm text-gray-700">
+                    <td className="px-3 py-2 text-sm font-semibold text-gray-900">{request.organizationName}</td>
+                    <td className="px-3 py-2 text-sm text-gray-700">
                       <div className="space-y-1">
                         <p className="font-semibold text-gray-900">{request.contactName}</p>
                         <a href={`mailto:${request.contactEmail}`} className="text-primary hover:underline">
@@ -344,13 +494,13 @@ export function BulkOrdersManager({ requests }: BulkOrdersManagerProps) {
                         ) : null}
                       </div>
                     </td>
-                    <td className="px-4 py-3 text-sm text-gray-600">
+                    <td className="px-3 py-2 text-sm text-gray-600">
                       {request.location ? <p>Location: {request.location}</p> : null}
                       {request.quantityEstimate ? <p>Quantity: {request.quantityEstimate}</p> : null}
                       {request.budgetRange ? <p>Budget: {request.budgetRange}</p> : null}
                       {request.notes ? <p className="mt-2 text-xs text-gray-500">Notes: {request.notes}</p> : null}
                     </td>
-                    <td className="px-4 py-3 text-sm text-gray-600">
+                    <td className="px-3 py-2 text-sm text-gray-600">
                       {request.requestedTitles.length ? (
                         <ul className="list-disc space-y-1 pl-5">
                           {request.requestedTitles.map((title) => (
@@ -361,9 +511,9 @@ export function BulkOrdersManager({ requests }: BulkOrdersManagerProps) {
                         <span>—</span>
                       )}
                     </td>
-                    <td className="px-4 py-3 text-sm text-gray-700">
+                    <td className="px-3 py-2 text-sm text-gray-700">
                       <select
-                        className="rounded-full border border-gray-300 bg-white px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30"
+                        className="rounded-full border border-gray-300 bg-white px-2 py-1.5 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30"
                         value={request.status}
                         onChange={(event) =>
                           updateMutation.mutate({ id: request.id, status: event.target.value as BulkOrderStatus })
@@ -377,40 +527,54 @@ export function BulkOrdersManager({ requests }: BulkOrdersManagerProps) {
                         ))}
                       </select>
                     </td>
-                    <td className="px-4 py-3 text-sm text-gray-500">
+                    <td className="px-3 py-2 text-sm text-gray-500">
                       {new Date(request.submittedAt).toLocaleString()}
                     </td>
-                    <td className="px-4 py-3 text-sm">
-                      <div className="flex flex-wrap items-center justify-center gap-2">
+                    <td className="px-3 py-2 text-sm">
+                      <div className="flex flex-wrap items-center justify-center gap-1">
                         {whatsappHref ? (
                           <a
                             href={whatsappHref}
                             target="_blank"
                             rel="noreferrer"
-                            className="inline-flex items-center rounded-full bg-emerald-500 px-3 py-1 text-xs font-semibold text-white transition hover:bg-emerald-600"
+                            className="inline-flex items-center rounded-full bg-emerald-500 px-2.5 py-1 text-[11px] font-semibold text-white transition hover:bg-emerald-600"
                           >
                             WhatsApp
                           </a>
                         ) : null}
                         <a
                           href={emailHref}
-                          className="inline-flex items-center rounded-full border border-primary px-3 py-1 text-xs font-semibold text-primary transition hover:border-primary/80 hover:bg-primary/10"
+                          className="inline-flex items-center rounded-full border border-primary px-2.5 py-1 text-[11px] font-semibold text-primary transition hover:border-primary/80 hover:bg-primary/10"
                         >
                           Email
                         </a>
                         {smsHref ? (
                           <a
                             href={smsHref}
-                            className="inline-flex items-center rounded-full border border-gray-300 px-3 py-1 text-xs font-semibold text-gray-700 transition hover:border-gray-400 hover:bg-gray-50"
+                            className="inline-flex items-center rounded-full border border-gray-300 px-2.5 py-1 text-[11px] font-semibold text-gray-700 transition hover:border-gray-400 hover:bg-gray-50"
                           >
                             SMS
                           </a>
                         ) : null}
+                        <button
+                          type="button"
+                          onClick={() => handleDelete(request.id)}
+                          className="inline-flex items-center rounded-full border border-rose-200 px-2.5 py-1 text-[11px] font-semibold text-rose-600 transition hover:-translate-y-0.5 hover:bg-rose-50 disabled:cursor-not-allowed disabled:opacity-60"
+                          disabled={deletingId === request.id}
+                        >
+                          {deletingId === request.id ? "Removing…" : "Delete"}
+                        </button>
                       </div>
                     </td>
                   </tr>
                 );
-              })}
+              }) : (
+                <tr>
+                  <td colSpan={7} className="px-4 py-6 text-center text-sm text-gray-500">
+                    No requests match your filters.
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>

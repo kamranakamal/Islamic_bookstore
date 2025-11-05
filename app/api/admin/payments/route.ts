@@ -11,6 +11,10 @@ const updateSchema = z.object({
   status: z.enum(PAYMENT_STATUSES)
 });
 
+const deleteSchema = z.object({
+  id: z.string().uuid()
+});
+
 export async function GET() {
   await requireAdminUser();
   const preferences = await getAdminCheckoutPreferences();
@@ -52,6 +56,52 @@ export async function PATCH(request: NextRequest) {
     entity: "checkout_preferences",
     entity_id: parsed.data.id,
     metadata: { status: parsed.data.status }
+  });
+
+  return NextResponse.json({ success: true });
+}
+
+export async function DELETE(request: NextRequest) {
+  const adminUser = await requireAdminUser();
+
+  const json = await request.json().catch(() => undefined);
+  const parsed = deleteSchema.safeParse(json);
+
+  if (!parsed.success) {
+    return NextResponse.json(
+      { error: parsed.error.issues[0]?.message ?? "Invalid payload", code: "BAD_REQUEST" },
+      { status: 400 }
+    );
+  }
+
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from("checkout_preferences")
+    .delete()
+    .eq("id", parsed.data.id)
+    .select("id")
+    .maybeSingle();
+
+  if (error) {
+    console.error("Failed to delete checkout preference", error);
+    return NextResponse.json(
+      { error: "Unable to delete checkout submission", code: "PAYMENT_DELETE_FAILED" },
+      { status: 500 }
+    );
+  }
+
+  if (!data) {
+    return NextResponse.json(
+      { error: "Checkout submission not found", code: "PAYMENT_NOT_FOUND" },
+      { status: 404 }
+    );
+  }
+
+  await supabase.from("audit_logs").insert({
+    actor_id: adminUser.id,
+    action: "checkout_preferences.deleted",
+    entity: "checkout_preferences",
+    entity_id: parsed.data.id
   });
 
   return NextResponse.json({ success: true });
