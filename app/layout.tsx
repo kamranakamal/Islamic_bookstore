@@ -8,6 +8,9 @@ import { Inter } from "next/font/google";
 
 import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
 
+import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
+
 import { Footer } from "@/components/layout/Footer";
 import { Header } from "@/components/layout/Header";
 import { Providers } from "@/components/providers";
@@ -126,6 +129,8 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
             <Footer />
           </div>
         </Providers>
+        <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );
