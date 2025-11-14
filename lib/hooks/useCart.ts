@@ -17,6 +17,11 @@ const STORAGE_ADDRESS_KEY = "maktab-muhammadiya-cart-address";
 const formatLocalCurrency = new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR" });
 const formatInternationalCurrency = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" });
 
+let latestItems: CartItem[] = [];
+let latestShippingAddress: ShippingAddressPayload | null = null;
+let latestHydrated = false;
+let latestRemoteSynced = false;
+
 function serialize(items: CartItem[]): string {
   return JSON.stringify(items);
 }
@@ -114,6 +119,28 @@ function mergeCartSources(prev: CartItem[], stored: CartItem[]): CartItem[] {
   return Array.from(map.values());
 }
 
+function persistCartItems(items: CartItem[]) {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(STORAGE_KEY, serialize(items));
+  } catch (error) {
+    console.warn("Failed to store cart", error);
+  }
+}
+
+function persistShippingAddress(address: ShippingAddressPayload | null) {
+  if (typeof window === "undefined") return;
+  try {
+    if (address) {
+      window.localStorage.setItem(STORAGE_ADDRESS_KEY, JSON.stringify(address));
+    } else {
+      window.localStorage.removeItem(STORAGE_ADDRESS_KEY);
+    }
+  } catch (error) {
+    console.warn("Failed to persist cart address", error);
+  }
+}
+
 function toCartBook(book: BookSummary): CartBook {
   const inrRate = getCurrencyInfo("INR").usdRate;
   const priceInternationalUsd =
@@ -183,13 +210,63 @@ function deserializeShippingAddress(value: string | null): ShippingAddressPayloa
 
 export function useCart(options: UseCartOptions = {}) {
   const { hydrate = true } = options;
-  const [items, setItems] = useState<CartItem[]>([]);
-  const [isHydrated, setIsHydrated] = useState(() => !hydrate);
-  const [isRemoteSynced, setIsRemoteSynced] = useState(false);
-  const [shippingAddress, setShippingAddress] = useState<ShippingAddressPayload | null>(null);
+  const [itemsState, setItemsState] = useState<CartItem[]>(() => (latestItems.length ? latestItems : []));
+  const [isHydratedState, setIsHydratedState] = useState(() => (!hydrate ? true : latestHydrated));
+  const [isRemoteSyncedState, setIsRemoteSyncedState] = useState(() => latestRemoteSynced);
+  const [shippingAddressState, setShippingAddressState] = useState<ShippingAddressPayload | null>(() => latestShippingAddress);
   const { getBookPrice, formatAmount } = useCurrency();
   const supabase = useMemo(() => getSupabaseClient(), []);
   const initialFetchRef = useRef(false);
+
+  const commitIsHydrated = useCallback((value: boolean) => {
+    latestHydrated = value;
+    setIsHydratedState(value);
+  }, []);
+
+  const commitIsRemoteSynced = useCallback((value: boolean) => {
+    latestRemoteSynced = value;
+    setIsRemoteSyncedState(value);
+  }, []);
+
+  const commitItems = useCallback(
+    (next: CartItem[], persist = true) => {
+      latestItems = next;
+      setItemsState(next);
+      if (persist) {
+        persistCartItems(next);
+      }
+      if (!latestHydrated) {
+        commitIsHydrated(true);
+      }
+    },
+    [commitIsHydrated]
+  );
+
+  const commitShippingAddress = useCallback((address: ShippingAddressPayload | null, persist = true) => {
+    latestShippingAddress = address;
+    setShippingAddressState(address);
+    if (persist) {
+      persistShippingAddress(address);
+    }
+  }, []);
+
+  const items = itemsState;
+  const isHydrated = isHydratedState;
+  const isRemoteSynced = isRemoteSyncedState;
+  const shippingAddress = shippingAddressState;
+
+  const getBaselineItems = useCallback(() => {
+    return mergeCartSources(latestItems, readCartFromStorage());
+  }, []);
+
+  const applyItemsUpdate = useCallback(
+    (updater: (current: CartItem[]) => CartItem[]) => {
+      const baseline = getBaselineItems();
+      const next = updater(baseline);
+      commitItems(next);
+    },
+    [commitItems, getBaselineItems]
+  );
 
   useEffect(() => {
     let storedValue: string | null = null;
@@ -200,9 +277,9 @@ export function useCart(options: UseCartOptions = {}) {
     }
     const address = deserializeShippingAddress(storedValue);
     if (address) {
-      setShippingAddress(address);
+      commitShippingAddress(address, false);
     }
-  }, []);
+  }, [commitShippingAddress]);
 
   useEffect(() => {
     if (!hydrate) return;
@@ -221,9 +298,10 @@ export function useCart(options: UseCartOptions = {}) {
       const localItems = deserialize(storedValue);
 
       if (!cancelled) {
-        setItems(localItems);
-        setIsRemoteSynced(false);
-        setIsHydrated(true);
+        if (localItems.length || !latestItems.length) {
+          commitItems(localItems);
+        }
+        commitIsRemoteSynced(false);
       }
     };
 
@@ -235,6 +313,7 @@ export function useCart(options: UseCartOptions = {}) {
 
         if (!session) {
           hydrateFromLocal();
+          commitIsHydrated(true);
           return;
         }
 
@@ -248,14 +327,8 @@ export function useCart(options: UseCartOptions = {}) {
         const normalized = normalizeCartItems(data.items ?? []);
 
         if (!cancelled) {
-          setItems(normalized);
-          setIsRemoteSynced(true);
-          setIsHydrated(true);
-          try {
-            window.localStorage.setItem(STORAGE_KEY, serialize(normalized));
-          } catch (storageError) {
-            console.warn("Failed to persist cart locally", storageError);
-          }
+          commitItems(normalized);
+          commitIsRemoteSynced(true);
         }
       } catch (error) {
         if (error instanceof Error && error.message.includes("session")) {
@@ -264,6 +337,7 @@ export function useCart(options: UseCartOptions = {}) {
           console.warn("Falling back to local cart", error);
         }
         hydrateFromLocal();
+        commitIsHydrated(true);
       }
     };
 
@@ -273,29 +347,7 @@ export function useCart(options: UseCartOptions = {}) {
     return () => {
       cancelled = true;
     };
-  }, [hydrate, supabase]);
-
-  useEffect(() => {
-    if (!isHydrated) return;
-
-    try {
-      window.localStorage.setItem(STORAGE_KEY, serialize(items));
-    } catch (storageError) {
-      console.warn("Failed to store cart", storageError);
-    }
-  }, [items, isHydrated]);
-
-  useEffect(() => {
-    try {
-      if (shippingAddress) {
-        window.localStorage.setItem(STORAGE_ADDRESS_KEY, JSON.stringify(shippingAddress));
-      } else {
-        window.localStorage.removeItem(STORAGE_ADDRESS_KEY);
-      }
-    } catch (storageError) {
-      console.warn("Failed to persist cart address", storageError);
-    }
-  }, [shippingAddress]);
+  }, [commitIsHydrated, commitIsRemoteSynced, commitItems, hydrate, supabase]);
 
   const syncAdd = useCallback(
     (bookId: string, quantity: number) => {
@@ -353,60 +405,60 @@ export function useCart(options: UseCartOptions = {}) {
 
   const addItem = useCallback(
     (book: BookSummary, quantity = 1) => {
-      setItems((prev: CartItem[]) => {
-        const baseline = mergeCartSources(prev, readCartFromStorage());
-        const existingIndex = baseline.findIndex((item: CartItem) => item.book.id === book.id);
+      applyItemsUpdate((current: CartItem[]) => {
+        const existingIndex = current.findIndex((item) => item.book.id === book.id);
 
         if (existingIndex >= 0) {
-          return baseline.map((item, index) =>
+          return current.map((item, index) =>
             index === existingIndex ? ({ ...item, quantity: item.quantity + quantity } as CartItem) : item
           );
         }
 
-        return [...baseline, { book: toCartBook(book), quantity } as CartItem];
+        return [...current, { book: toCartBook(book), quantity } as CartItem];
       });
       syncAdd(book.id, quantity);
     },
-    [syncAdd]
+    [applyItemsUpdate, syncAdd]
   );
 
-  const removeItem = useCallback(
-    (id: string) => {
-      setItems((prev: CartItem[]) => {
-        const baseline = mergeCartSources(prev, readCartFromStorage());
-        return baseline.filter((item: CartItem) => item.book.id !== id);
-      });
-      syncRemove(id);
-    },
-    [syncRemove]
-  );
+  const removeItem = useCallback((id: string) => {
+    applyItemsUpdate((current: CartItem[]) => current.filter((item) => item.book.id !== id));
+    syncRemove(id);
+  }, [applyItemsUpdate, syncRemove]);
 
   const clear = useCallback(() => {
-    setItems([]);
+    commitItems([]);
     syncClear();
-  }, [syncClear]);
+  }, [commitItems, syncClear]);
 
-  const updateShippingAddress = useCallback((address: ShippingAddressPayload | null) => {
-    setShippingAddress((prev) => {
-      if (!address) return null;
+  const updateShippingAddress = useCallback(
+    (address: ShippingAddressPayload | null) => {
+      if (!address) {
+        commitShippingAddress(null);
+        return;
+      }
+
       const normalized = normalizeShippingAddress(address);
-      return JSON.stringify(prev) === JSON.stringify(normalized) ? prev : normalized;
-    });
-  }, []);
+      if (JSON.stringify(latestShippingAddress) === JSON.stringify(normalized)) {
+        return;
+      }
+
+      commitShippingAddress(normalized);
+    },
+    [commitShippingAddress]
+  );
 
   const setItemQuantity = useCallback(
     (bookId: string, quantity: number) => {
       const safeQuantity = Math.max(0, Math.min(99, Math.floor(quantity)));
 
-      setItems((prev: CartItem[]) => {
-        const baseline = mergeCartSources(prev, readCartFromStorage());
-
+      applyItemsUpdate((current: CartItem[]) => {
         if (safeQuantity <= 0) {
-          return baseline.filter((item) => item.book.id !== bookId);
+          return current.filter((item) => item.book.id !== bookId);
         }
 
         let found = false;
-        const next = baseline.map((item) => {
+        const next = current.map((item) => {
           if (item.book.id === bookId) {
             found = true;
             return { ...item, quantity: safeQuantity } as CartItem;
@@ -414,12 +466,12 @@ export function useCart(options: UseCartOptions = {}) {
           return item;
         });
 
-        return found ? next : baseline;
+        return found ? next : current;
       });
 
       syncSetQuantity(bookId, safeQuantity);
     },
-    [syncSetQuantity]
+    [applyItemsUpdate, syncSetQuantity]
   );
 
   const subtotalValue = useMemo(() => {
