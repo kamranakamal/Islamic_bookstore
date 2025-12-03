@@ -112,17 +112,17 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
         <a href="#main-content" className="skip-link">
           Skip to main content
         </a>
-        <div aria-hidden="true" className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
+        <div aria-hidden="true" className="pointer-events-none fixed inset-0 -z-10 hidden overflow-hidden lg:block">
           <div className="absolute left-1/2 top-[-18rem] h-[32rem] w-[32rem] -translate-x-1/2 rounded-full bg-primary/20 blur-[140px]" />
           <div className="absolute right-[-12rem] top-[35%] h-[28rem] w-[28rem] rounded-full bg-amber-200/40 blur-[160px]" />
           <div className="absolute bottom-[-14rem] left-[-8rem] h-[24rem] w-[26rem] rounded-full bg-sky-200/35 blur-[160px]" />
-    </div>
-    <Providers serverSession={sessionTokens} initialCurrency={initialCurrency}>
+        </div>
+        <Providers serverSession={sessionTokens} initialCurrency={initialCurrency}>
           <div className="flex min-h-screen flex-col">
             <Header sessionUser={sessionUser} />
             <main
               id="main-content"
-              className="relative mx-auto mt-6 w-full max-w-7xl flex-1 rounded-[1.75rem] border border-white/50 bg-white px-4 py-6 shadow-lg shadow-amber-100/30 sm:px-5 sm:py-8 md:mt-8 md:rounded-[2.25rem] md:border-white/60 md:bg-white/85 md:px-6 md:py-9 md:shadow-xl md:backdrop-blur-sm lg:px-10"
+              className="relative mx-auto mt-6 w-full max-w-7xl flex-1 rounded-[1.75rem] border border-white/50 bg-white px-4 py-6 shadow-lg shadow-amber-100/30 sm:px-5 sm:py-8 md:mt-8 md:rounded-[2.25rem] md:border-white/60 md:bg-white/85 md:px-6 md:py-9 md:shadow-xl lg:px-10"
             >
               {children}
             </main>

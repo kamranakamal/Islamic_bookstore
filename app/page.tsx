@@ -67,7 +67,7 @@ export default async function HomePage() {
         }}
       />
       <section
-        className="relative overflow-hidden rounded-3xl border border-white/60 bg-gradient-to-r from-primary/10 via-white to-amber-50/60 p-5 shadow-lg shadow-primary/10 md:rounded-[2.5rem] md:border-white/70 md:p-8 md:backdrop-blur-sm lg:p-10"
+        className="content-visibility-auto relative overflow-hidden rounded-3xl border border-white/60 bg-gradient-to-r from-primary/10 via-white to-amber-50/60 p-5 shadow-lg shadow-primary/10 md:rounded-[2.5rem] md:border-white/70 md:p-8 md:backdrop-blur-sm lg:p-10"
         role="region"
         aria-labelledby="hero-heading"
       >
@@ -123,7 +123,7 @@ export default async function HomePage() {
       </section>
 
       <section
-        className="space-y-6 rounded-3xl border border-white/60 bg-white p-5 shadow-md shadow-amber-100/30 md:rounded-[2.25rem] md:border-white/70 md:bg-white/85 md:p-7 md:shadow-lg md:backdrop-blur-sm"
+        className="content-visibility-auto space-y-6 rounded-3xl border border-white/60 bg-white p-5 shadow-md shadow-amber-100/30 md:rounded-[2.25rem] md:border-white/70 md:bg-white/85 md:p-7 md:shadow-lg md:backdrop-blur-sm"
         role="region"
         aria-labelledby="featured-heading"
       >
@@ -151,7 +151,7 @@ export default async function HomePage() {
       </section>
 
       <section
-        className="space-y-6 rounded-3xl border border-white/60 bg-white p-5 shadow-md shadow-amber-100/30 md:rounded-[2.25rem] md:border-white/70 md:bg-white/85 md:p-7 md:shadow-lg md:backdrop-blur-sm"
+        className="content-visibility-auto space-y-6 rounded-3xl border border-white/60 bg-white p-5 shadow-md shadow-amber-100/30 md:rounded-[2.25rem] md:border-white/70 md:bg-white/85 md:p-7 md:shadow-lg md:backdrop-blur-sm"
         role="region"
         aria-labelledby="latest-heading"
       >
@@ -179,7 +179,7 @@ export default async function HomePage() {
       </section>
 
       <section
-        className="space-y-4 rounded-3xl border border-white/60 bg-white p-5 shadow-md shadow-amber-100/30 md:rounded-[2.25rem] md:border-white/70 md:bg-white/85 md:p-7 md:shadow-lg md:backdrop-blur-sm"
+        className="content-visibility-auto space-y-4 rounded-3xl border border-white/60 bg-white p-5 shadow-md shadow-amber-100/30 md:rounded-[2.25rem] md:border-white/70 md:bg-white/85 md:p-7 md:shadow-lg md:backdrop-blur-sm"
         role="region"
         aria-labelledby="categories-heading"
       >

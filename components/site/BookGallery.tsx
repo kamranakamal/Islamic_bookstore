@@ -146,7 +146,7 @@ export function BookGallery({ title, images }: BookGalleryProps) {
   }, []);
 
   return (
-    <div className="mx-auto w-full max-w-[320px] space-y-3 sm:max-w-[420px] sm:space-y-4 lg:mx-0 lg:max-w-full">
+    <div className="content-visibility-auto mx-auto w-full max-w-[320px] space-y-3 sm:max-w-[420px] sm:space-y-4 lg:mx-0 lg:max-w-full">
       <div className="relative">
         <div
           ref={trackRef}
