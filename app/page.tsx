@@ -67,7 +67,7 @@ export default async function HomePage() {
         }}
       />
       <section
-        className="relative overflow-hidden rounded-[2.5rem] border border-white/70 bg-gradient-to-r from-primary/10 via-white/95 to-amber-50/60 p-6 shadow-xl shadow-primary/10 backdrop-blur-sm sm:p-10"
+        className="relative overflow-hidden rounded-3xl border border-white/60 bg-gradient-to-r from-primary/10 via-white to-amber-50/60 p-5 shadow-lg shadow-primary/10 md:rounded-[2.5rem] md:border-white/70 md:p-8 md:backdrop-blur-sm lg:p-10"
         role="region"
         aria-labelledby="hero-heading"
       >
@@ -77,10 +77,10 @@ export default async function HomePage() {
         >
           العلم
         </figure>
-        <div className="flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between lg:gap-12">
+        <div className="flex flex-col gap-7 md:gap-8 lg:flex-row lg:items-center lg:justify-between lg:gap-12">
           <div className="space-y-6 lg:max-w-2xl">
             <p className="text-xs font-semibold uppercase tracking-[0.3em] text-primary sm:text-sm">Preserving knowledge</p>
-            <h1 id="hero-heading" className="text-2xl font-semibold tracking-tight text-gray-900 sm:text-3xl md:text-4xl">
+            <h1 id="hero-heading" className="text-2xl font-semibold tracking-tight text-gray-900 sm:text-3xl md:text-[2.55rem] md:leading-tight">
               Primary sources. Reliable scholarship. A curated bookstore for seekers of authentic knowledge.
             </h1>
             <p className="text-base text-gray-600 sm:text-lg">
@@ -90,21 +90,21 @@ export default async function HomePage() {
             <div className="flex flex-wrap gap-3">
               <Link
                 href="/shop"
-                className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-sm shadow-primary/30 transition-all hover:-translate-y-0.5 hover:bg-primary/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-sm shadow-primary/30 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
               >
                 Explore catalog
                 <span aria-hidden="true">→</span>
               </Link>
               <Link
                 href="/shop?sort=newest"
-                className="inline-flex items-center gap-2 rounded-full border border-primary/70 px-5 py-2.5 text-sm font-semibold text-primary transition-all hover:-translate-y-0.5 hover:border-primary hover:bg-primary/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                className="inline-flex items-center gap-2 rounded-full border border-primary/70 px-5 py-2.5 text-sm font-semibold text-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
               >
                 See latest arrivals
                 <span aria-hidden="true">↗</span>
               </Link>
               <Link
                 href="/contact"
-                className="inline-flex items-center gap-2 rounded-full border border-white/70 bg-white/60 px-5 py-2.5 text-sm font-semibold text-gray-700 transition-all hover:-translate-y-0.5 hover:border-primary/70 hover:text-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                className="inline-flex items-center gap-2 rounded-full border border-white/70 bg-white/60 px-5 py-2.5 text-sm font-semibold text-gray-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
               >
                 Talk to the team
                 <span aria-hidden="true">→</span>
@@ -112,7 +112,7 @@ export default async function HomePage() {
             </div>
           </div>
           <div className="w-full lg:max-w-xl">
-            <div className="w-full rounded-3xl border border-white/70 bg-white/95 p-6 shadow-lg shadow-primary/10 ring-1 ring-white/60 backdrop-blur-sm">
+            <div className="w-full rounded-3xl border border-white/60 bg-white p-5 shadow-md shadow-primary/5 md:border-white/70 md:bg-white/95 md:p-6 md:shadow-lg md:ring-1 md:ring-white/60 md:backdrop-blur-sm">
               <p className="text-xs font-semibold uppercase tracking-[0.4em] text-gray-500">Search the catalogue</p>
               <div className="mt-3">
                 <SearchForm />
@@ -123,7 +123,7 @@ export default async function HomePage() {
       </section>
 
       <section
-        className="space-y-6 rounded-[2.25rem] border border-white/70 bg-white/85 p-6 shadow-md shadow-amber-100/40 backdrop-blur-sm sm:p-8"
+        className="space-y-6 rounded-3xl border border-white/60 bg-white p-5 shadow-md shadow-amber-100/30 md:rounded-[2.25rem] md:border-white/70 md:bg-white/85 md:p-7 md:shadow-lg md:backdrop-blur-sm"
         role="region"
         aria-labelledby="featured-heading"
       >
@@ -141,9 +141,9 @@ export default async function HomePage() {
             </span>
           </Link>
         </header>
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3 xl:grid-cols-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:gap-6 lg:grid-cols-3 xl:grid-cols-4">
           {featuredBooks.map((book, index) => (
-            <div key={book.id} className={index >= 8 ? "hidden h-full sm:block" : "block h-full"}>
+            <div key={book.id} className={index >= 6 ? "hidden h-full md:block" : "block h-full"}>
               <BookCard book={book} />
             </div>
           ))}
@@ -151,7 +151,7 @@ export default async function HomePage() {
       </section>
 
       <section
-        className="space-y-6 rounded-[2.25rem] border border-white/70 bg-white/85 p-6 shadow-md shadow-amber-100/40 backdrop-blur-sm sm:p-8"
+        className="space-y-6 rounded-3xl border border-white/60 bg-white p-5 shadow-md shadow-amber-100/30 md:rounded-[2.25rem] md:border-white/70 md:bg-white/85 md:p-7 md:shadow-lg md:backdrop-blur-sm"
         role="region"
         aria-labelledby="latest-heading"
       >
@@ -169,9 +169,9 @@ export default async function HomePage() {
             </span>
           </Link>
         </header>
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3 xl:grid-cols-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:gap-6 lg:grid-cols-3 xl:grid-cols-4">
           {latestBooks.map((book, index) => (
-            <div key={book.id} className={index >= 8 ? "hidden h-full sm:block" : "block h-full"}>
+            <div key={book.id} className={index >= 6 ? "hidden h-full md:block" : "block h-full"}>
               <BookCard book={book} />
             </div>
           ))}
@@ -179,19 +179,19 @@ export default async function HomePage() {
       </section>
 
       <section
-        className="space-y-4 rounded-[2.25rem] border border-white/70 bg-white/85 p-6 shadow-md shadow-amber-100/40 backdrop-blur-sm sm:p-8"
+        className="space-y-4 rounded-3xl border border-white/60 bg-white p-5 shadow-md shadow-amber-100/30 md:rounded-[2.25rem] md:border-white/70 md:bg-white/85 md:p-7 md:shadow-lg md:backdrop-blur-sm"
         role="region"
         aria-labelledby="categories-heading"
       >
         <h2 id="categories-heading" className="text-2xl font-semibold text-gray-900">
           Browse by category
         </h2>
-  <ul className="grid grid-cols-2 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" aria-label="Book categories">
+        <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" aria-label="Book categories">
           {categories.map((category) => (
             <li key={category.slug}>
               <Link
                 href={`/shop?category=${category.slug}`}
-                className="inline-flex items-center gap-2 rounded-full border border-white/70 bg-white/70 px-4 py-2 text-sm font-medium text-gray-700 transition-all hover:-translate-y-0.5 hover:border-primary/70 hover:bg-primary/10 hover:text-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                className="inline-flex items-center gap-2 rounded-full border border-white/60 bg-white/80 px-4 py-2 text-sm font-medium text-gray-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
               >
                 <span>{category.name}</span>
                 <span aria-hidden="true" className="text-xs text-primary/70">

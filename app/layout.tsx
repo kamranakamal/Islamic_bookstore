@@ -122,7 +122,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
             <Header sessionUser={sessionUser} />
             <main
               id="main-content"
-              className="relative mx-auto mt-8 w-full max-w-7xl flex-1 rounded-[2.5rem] border border-white/70 bg-white/80 px-4 py-8 shadow-xl shadow-amber-100/40 backdrop-blur-sm sm:px-6 sm:py-10 lg:px-10"
+              className="relative mx-auto mt-6 w-full max-w-7xl flex-1 rounded-[1.75rem] border border-white/50 bg-white px-4 py-6 shadow-lg shadow-amber-100/30 sm:px-5 sm:py-8 md:mt-8 md:rounded-[2.25rem] md:border-white/60 md:bg-white/85 md:px-6 md:py-9 md:shadow-xl md:backdrop-blur-sm lg:px-10"
             >
               {children}
             </main>

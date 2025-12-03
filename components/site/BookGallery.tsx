@@ -20,7 +20,7 @@ export function BookGallery({ title, images }: BookGalleryProps) {
   const activeImage = galleryImages[Math.min(activeIndex, galleryImages.length - 1)] ?? galleryImages[0];
 
   const scrollToIndex = useCallback(
-    (index: number, behavior: ScrollBehavior = "smooth") => {
+    (index: number, behavior: ScrollBehavior = "auto") => {
       const track = trackRef.current;
       if (!track) return;
 
@@ -37,7 +37,7 @@ export function BookGallery({ title, images }: BookGalleryProps) {
       }
       releaseScrollRef.current = window.setTimeout(() => {
         programmaticScrollRef.current = false;
-      }, behavior === "smooth" ? 360 : 0);
+      }, 0);
     },
     []
   );
@@ -146,11 +146,11 @@ export function BookGallery({ title, images }: BookGalleryProps) {
   }, []);
 
   return (
-    <div className="space-y-3 sm:space-y-4">
+    <div className="mx-auto w-full max-w-[320px] space-y-3 sm:max-w-[420px] sm:space-y-4 lg:mx-0 lg:max-w-full">
       <div className="relative">
         <div
           ref={trackRef}
-          className="flex snap-x snap-mandatory overflow-x-auto rounded-2xl border border-gray-200 bg-white shadow-sm shadow-primary/5 scroll-smooth focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          className="flex snap-x snap-mandatory overflow-x-auto rounded-2xl border border-gray-200 bg-white shadow-sm shadow-primary/5 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
           tabIndex={0}
           role="group"
           aria-roledescription="carousel"
@@ -176,7 +176,7 @@ export function BookGallery({ title, images }: BookGalleryProps) {
               type="button"
               key={src + index}
               onClick={() => openFullscreen(index)}
-              className="group relative aspect-[4/5] w-full flex-shrink-0 snap-center overflow-hidden focus:outline-none focus-visible:ring-2 focus-visible:ring-primary sm:aspect-[3/4]"
+              className="relative aspect-[4/5] w-full flex-shrink-0 snap-center overflow-hidden focus:outline-none focus-visible:ring-2 focus-visible:ring-primary sm:aspect-[3/4]"
               aria-label={`View image ${index + 1} of ${galleryImages.length} in fullscreen`}
             >
               <Image
@@ -184,7 +184,7 @@ export function BookGallery({ title, images }: BookGalleryProps) {
                 alt={`${title} - image ${index + 1}`}
                 fill
                 sizes="(max-width: 1024px) 100vw, 420px"
-                className="object-cover transition duration-500 group-hover:scale-[1.03]"
+                className="object-cover"
                 priority={index === 0}
               />
             </button>
@@ -195,7 +195,7 @@ export function BookGallery({ title, images }: BookGalleryProps) {
             <button
               type="button"
               onClick={showPrevious}
-              className="absolute left-2 top-1/2 hidden -translate-y-1/2 rounded-full bg-white/80 p-2 text-gray-700 shadow-md transition hover:bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-primary lg:inline-flex"
+              className="absolute left-2 top-1/2 hidden -translate-y-1/2 rounded-full bg-white/80 p-2 text-gray-700 shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-primary lg:inline-flex"
               aria-label="Show previous image"
             >
               ‹
@@ -203,7 +203,7 @@ export function BookGallery({ title, images }: BookGalleryProps) {
             <button
               type="button"
               onClick={showNext}
-              className="absolute right-2 top-1/2 hidden -translate-y-1/2 rounded-full bg-white/80 p-2 text-gray-700 shadow-md transition hover:bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-primary lg:inline-flex"
+              className="absolute right-2 top-1/2 hidden -translate-y-1/2 rounded-full bg-white/80 p-2 text-gray-700 shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-primary lg:inline-flex"
               aria-label="Show next image"
             >
               ›
@@ -231,8 +231,8 @@ export function BookGallery({ title, images }: BookGalleryProps) {
                 type="button"
                 key={src + index}
                 onClick={() => goToImage(index)}
-                className={`relative h-20 w-16 flex-shrink-0 snap-center overflow-hidden rounded-xl border bg-white transition focus:outline-none focus-visible:ring-2 focus-visible:ring-primary sm:h-24 sm:w-18 ${
-                  isActive ? "border-primary ring-2 ring-primary" : "border-gray-200 hover:border-primary/60"
+                className={`relative h-16 w-14 flex-shrink-0 snap-center overflow-hidden rounded-xl border bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-primary sm:h-20 sm:w-16 ${
+                  isActive ? "border-primary ring-2 ring-primary" : "border-gray-200"
                 }`}
                 aria-label={`Go to image ${index + 1} of ${galleryImages.length}`}
               >
@@ -248,7 +248,7 @@ export function BookGallery({ title, images }: BookGalleryProps) {
           <button
             type="button"
             onClick={closeFullscreen}
-            className="absolute right-6 top-6 rounded-full bg-white/10 p-2 text-white transition hover:bg-white/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
+            className="absolute right-6 top-6 rounded-full bg-white/10 p-2 text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
             aria-label="Close fullscreen gallery"
           >
             ×
@@ -259,7 +259,7 @@ export function BookGallery({ title, images }: BookGalleryProps) {
               <button
                 type="button"
                 onClick={showPrevious}
-                className="absolute left-6 top-1/2 -translate-y-1/2 rounded-full bg-white/10 p-3 text-white transition hover:bg-white/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
+                className="absolute left-6 top-1/2 -translate-y-1/2 rounded-full bg-white/10 p-3 text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
                 aria-label="Show previous image"
               >
                 ‹
@@ -267,7 +267,7 @@ export function BookGallery({ title, images }: BookGalleryProps) {
               <button
                 type="button"
                 onClick={showNext}
-                className="absolute right-6 top-1/2 -translate-y-1/2 rounded-full bg-white/10 p-3 text-white transition hover:bg-white/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
+                className="absolute right-6 top-1/2 -translate-y-1/2 rounded-full bg-white/10 p-3 text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
                 aria-label="Show next image"
               >
                 ›

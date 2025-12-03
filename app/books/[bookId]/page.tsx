@@ -152,14 +152,14 @@ export default async function BookPage({ params }: BookPageParams) {
     <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-1">
       <Link
         href={`/cart?add=${encodeURIComponent(book.id)}`}
-        className="inline-flex items-center justify-center gap-2 rounded-full bg-amber-500 px-4 py-3 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:bg-amber-600"
+        className="inline-flex items-center justify-center gap-2 rounded-full bg-amber-500 px-4 py-3 text-sm font-semibold text-white"
       >
         <span aria-hidden="true">🛒</span>
         Add to cart
       </Link>
       <Link
         href={`/contact?book=${encodeURIComponent(book.id)}`}
-        className="inline-flex items-center justify-center gap-2 rounded-full border border-primary px-4 py-3 text-sm font-semibold text-primary transition hover:-translate-y-0.5 hover:bg-primary/10"
+        className="inline-flex items-center justify-center gap-2 rounded-full border border-primary px-4 py-3 text-sm font-semibold text-primary"
       >
         <span aria-hidden="true">✉️</span>
         Contact us about this title
@@ -215,7 +215,7 @@ export default async function BookPage({ params }: BookPageParams) {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbList) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(bookJsonLd) }} />
       <div className="mb-6 flex items-center gap-3 text-sm text-gray-500">
-        <Link href="/shop" className="inline-flex items-center gap-1 text-primary hover:text-primary/80">
+        <Link href="/shop" className="inline-flex items-center gap-1 text-primary">
           <span aria-hidden="true">←</span> Back to catalog
         </Link>
         <span aria-hidden="true" className="hidden text-gray-300 sm:inline">

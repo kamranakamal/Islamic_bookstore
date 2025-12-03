@@ -29,7 +29,17 @@ select,
 }
 
 html {
-  scroll-behavior: smooth;
+  scroll-behavior: auto;
+}
+
+button,
+a,
+input,
+textarea,
+select,
+[role="button"] {
+  transition: none !important;
+  animation: none !important;
 }
 
 /* Enable inertial touch scrolling on iOS and other WebKit browsers */
@@ -75,13 +85,13 @@ body {
   font-weight: 600;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition: none;
   z-index: 1000;
 }
 
 .skip-link:focus {
   transform: translate(-50%, 0);
-  box-shadow: 0 10px 30px rgba(15, 118, 110, 0.25);
+  box-shadow: none;
 }
 
 ::selection {
