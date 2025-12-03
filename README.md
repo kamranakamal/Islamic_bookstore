@@ -132,7 +132,6 @@ maktab_muhammadiya/
    ```
 
 6. **Open your browser**
-   
    Navigate to [http://localhost:3000](http://localhost:3000)
 
 ### Admin Access
